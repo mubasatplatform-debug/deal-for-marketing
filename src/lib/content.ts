@@ -1,7 +1,7 @@
 export const phone = {
-  display: "0548127444",
-  tel: "+966548127444",
-  wa: "https://wa.me/966548127444",
+  display: "0165107138",
+  tel: "+966165107138",
+  wa: "https://wa.me/966165107138",
 } as const;
 
 export const nav = [
