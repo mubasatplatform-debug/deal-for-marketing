@@ -507,13 +507,21 @@ export function Leadership() {
           <span className="lime-pulse absolute inset-0 rounded-full bg-lime" />
           <img
             src="/images/chairman-now.jpg"
-            alt="خالد العنزي، رئيس مجلس إدارة ديل"
+            alt="خالد العنزي أبو فيصل، رئيس مجلس إدارة ديل"
             className="absolute inset-3 rounded-full object-cover object-[center_28%]"
           />
         </div>
         <h3 className="mt-8 font-display text-2xl text-snow">خالد العنزي</h3>
-        <p className="mt-1 font-slab text-sm text-mist">رئيس مجلس الإدارة</p>
+        <p className="mt-1 font-display text-lg text-lime">أبو فيصل</p>
+        <p className="mt-2 font-display text-sm text-mist">رئيس مجلس الإدارة</p>
         <p className="mt-1 text-sm text-dim">القصيم — بريدة</p>
+        <p className="mx-auto mt-6 max-w-xs font-display text-base leading-loose text-snow/80">
+          يكره الأخطاء. يخوض الصعاب.
+          <br />
+          تاجر · دكتور · محامي
+          <br />
+          وشباب نار.
+        </p>
         <SocialRow className="mt-6 justify-center" />
       </Reveal>
     </section>
