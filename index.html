@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ديل | DEAL FOR MARKETING</title>
+    <meta name="description" content="حيث يبقي التأثير. CRM وواتساب وكول سنتر لحظي — القصيم، بريدة." />
+    <meta property="og:title" content="ديل | DEAL FOR MARKETING" />
+    <meta property="og:description" content="التأثير لا يأتي صدفة … نحن نصنعه." />
+    <meta property="og:image" content="./images/og.jpg" />
+    <link rel="icon" href="./images/logo-deal.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700&family=Great+Vibes&family=Manrope:wght@500;600;800&family=Roboto+Slab:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      @font-face {
+        font-family: "deal-font";
+        src: url("./fonts/Deal-Font.woff2") format("woff2");
+        font-weight: 600;
+        font-style: normal;
+        font-display: swap;
+      }
+      :root {
+        --ink: #050505;
+        --snow: #f5f5f5;
+        --mist: #9a9a9a;
+        --dim: #6e6e6e;
+        --lime: #c2cf30;
+        --card: #141414;
+        --hair: #2a2a2a;
+        --display: "deal-font", "Cairo", sans-serif;
+        --ui: "Manrope", sans-serif;
+        --slab: "Roboto Slab", serif;
+        --script: "Great Vibes", cursive;
+        --ease: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: var(--ink);
+        color: var(--snow);
+        font-family: var(--display);
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+      }
+      a { color: inherit; text-decoration: none; }
+      button { font: inherit; background: none; border: 0; color: inherit; cursor: pointer; }
+      img, video { display: block; max-width: 100%; }
+      ::selection { background: var(--lime); color: var(--ink); }
+
+      .kicker {
+        font-size: 0.95rem;
+        color: var(--lime);
+        letter-spacing: 0.02em;
+      }
+      .poster {
+        font-size: clamp(1.7rem, 4.6vw, 2.65rem);
+        line-height: 1.28;
+      }
+      .hair { border-color: var(--hair); }
+
+      header {
+        position: fixed; inset: 0 0 auto 0; z-index: 40;
+        height: 64px; display: flex; align-items: center; justify-content: space-between;
+        padding: 0 20px; background: rgba(5,5,5,.95); backdrop-filter: blur(8px);
+        direction: ltr;
+      }
+      .logo { display: flex; align-items: center; gap: 12px; }
+      .logo b { font-family: var(--display); font-size: 1.35rem; color: var(--lime); font-weight: 600; }
+      .logo img { height: 32px; width: auto; }
+      .burger { width: 24px; display: flex; flex-direction: column; gap: 6px; }
+      .burger i { display: block; height: 1px; background: var(--snow); }
+
+      .menu {
+        position: fixed; inset: 0; z-index: 50; background: var(--ink);
+        display: none; padding: 88px 28px 40px;
+      }
+      .menu.open { display: block; }
+      .menu a {
+        display: block; padding: 12px 0; font-size: 1.6rem; color: var(--snow);
+        border-bottom: 1px solid var(--hair);
+      }
+      .menu a:hover { color: var(--lime); }
+      .menu .x { position: absolute; top: 18px; left: 20px; font-size: 1.6rem; color: var(--lime); }
+
+      .hero { position: relative; min-height: 100dvh; overflow: hidden; isolation: isolate; }
+      .hero .media, .hero video, .hero .poster-img {
+        position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: grayscale(1);
+      }
+      .hero .shade { position: absolute; inset: 0; background: rgba(5,5,5,.7); }
+      .hero .inner {
+        position: relative; z-index: 2; min-height: 100dvh;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        text-align: center; padding: 96px 24px 120px;
+      }
+      .hero h1 { color: var(--lime); font-size: clamp(1.7rem, 5vw, 3rem); margin: 0; }
+      .hero .sub { margin: 16px 0 0; font-size: clamp(1.05rem, 2.6vw, 1.5rem); }
+      .hero .en { margin-top: 10px; font-family: var(--slab); color: var(--mist); font-size: .95rem; }
+      .big-line { position: relative; margin-top: 40px; width: min(100%, 32rem); }
+      .big-line .ar { font-size: clamp(2.2rem, 8vw, 4.5rem); color: rgba(194,207,48,.8); line-height: 1; }
+      .big-line .script {
+        position: absolute; inset-inline: 0; top: 36px;
+        font-family: var(--script); font-size: clamp(2rem, 7vw, 3.6rem); color: rgba(245,245,245,.9);
+        transform: rotate(-4deg); animation: float 5s var(--ease) infinite;
+      }
+      .cta-col { margin-top: 64px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+      .arrow {
+        display: inline-flex; align-items: center; gap: 10px;
+        color: var(--lime); font-size: 1rem;
+      }
+      .arrow::after { content: "←"; }
+      .hero-foot {
+        position: absolute; inset-inline: 0; bottom: 112px; z-index: 3;
+        display: flex; justify-content: space-between; padding: 0 24px;
+        font-family: var(--ui); font-size: .62rem; letter-spacing: .28em; color: rgba(245,245,245,.8);
+        direction: ltr;
+      }
+      .hero-foot button:hover { color: var(--lime); }
+
+      .wave { pointer-events: none; position: absolute; inset-inline: 0; bottom: 0; height: 112px; color: var(--lime); overflow: hidden; }
+      .wave svg { width: 110%; height: 100%; min-height: 96px; margin-inline-start: -5%; animation: drift 18s linear infinite alternate; }
+
+      section { position: relative; }
+      .pad { padding: 40px 24px; }
+      .center { text-align: center; }
+      .max { max-width: 42rem; margin-inline: auto; }
+      .lime { color: var(--lime); }
+      .mist { color: var(--mist); }
+      .story p { margin: 18px 0 0; }
+
+      .split { display: grid; }
+      @media (min-width: 768px) { .split { grid-template-columns: 1fr 1fr; } }
+      .frame { position: relative; min-height: 22rem; overflow: hidden; }
+      @media (min-width: 768px) { .frame { min-height: 34rem; } }
+      .frame video, .frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+      .phone {
+        display: inline-block; margin-top: 32px;
+        font-family: var(--ui); font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 600; color: var(--lime);
+      }
+      .btns { margin-top: 28px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-width: 10rem; height: 48px; padding: 0 24px; border: 1px solid var(--lime);
+      }
+      .btn.fill { background: var(--lime); color: var(--ink); }
+
+      .film { min-height: 100dvh; overflow: hidden; isolation: isolate; }
+      .film video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      .film .shade { position: absolute; inset: 0; background: rgba(5,5,5,.25); }
+      .bar { position: absolute; inset-inline: 0; height: 40px; background: var(--ink); z-index: 4; }
+      .bar.top { top: 0; } .bar.bot { bottom: 0; }
+      .giant {
+        position: absolute; inset-inline: 0; top: 22%; z-index: 2;
+        text-align: center; font-size: 22vw; line-height: 1; color: rgba(194,207,48,.2); pointer-events: none;
+      }
+      .motion {
+        position: absolute; top: 38%; left: 50%; transform: translateX(-50%) rotate(-4deg);
+        font-family: var(--script); font-size: clamp(2.4rem, 8vw, 4.5rem); color: rgba(245,245,245,.8);
+        pointer-events: none; animation: float 5s var(--ease) infinite;
+      }
+      .still {
+        position: absolute; top: 88px; right: 20px; z-index: 5; width: 7.5rem;
+        outline: 1px solid var(--hair); overflow: hidden;
+      }
+      .still img { height: 64px; width: 100%; object-fit: cover; }
+      .still p { margin: 0; padding: 6px 8px; background: var(--ink); font-family: var(--ui); font-size: .62rem; letter-spacing: .22em; color: var(--lime); direction: ltr; }
+      .cinema {
+        position: absolute; top: 88px; left: 20px; z-index: 5;
+        font-family: var(--ui); font-size: .62rem; letter-spacing: .28em; color: rgba(245,245,245,.7); direction: ltr;
+      }
+      .film .copy { position: relative; z-index: 3; min-height: 100dvh; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 32px 80px; }
+
+      .svc-img { height: 18rem; width: 100%; object-fit: cover; }
+      @media (min-width: 768px) { .svc-img { height: 28rem; } }
+      .svc-next {
+        position: absolute; right: 0; bottom: 0; width: 64px; height: 64px;
+        display: grid; place-items: center; background: var(--lime); color: var(--ink);
+      }
+      .dots { display: flex; justify-content: center; gap: 8px; margin-top: 28px; }
+      .dots b { display: block; width: 24px; height: 4px; background: var(--hair); cursor: pointer; }
+      .dots b.on { background: var(--lime); }
+
+      .about { min-height: 34rem; overflow: hidden; isolation: isolate; }
+      .about video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: grayscale(1); animation: pan 22s linear infinite alternate; }
+      .about .shade { position: absolute; inset: 0; background: rgba(5,5,5,.55); }
+      .about .copy { position: relative; z-index: 2; min-height: 34rem; display: flex; flex-direction: column; justify-content: center; padding: 80px 32px; }
+
+      .work img { height: 18rem; width: 100%; object-fit: cover; filter: grayscale(1); }
+      @media (min-width: 768px) { .work img { height: 30rem; } }
+      .work .meta { position: relative; background: var(--card); padding: 40px 32px; text-align: center; }
+      .work .n { position: absolute; top: 24px; left: 24px; font-family: var(--ui); font-size: .75rem; letter-spacing: .2em; color: var(--lime); }
+
+      .marquee { overflow: hidden; border-block: 1px solid var(--hair); padding: 24px 0; direction: ltr; }
+      .track { display: flex; width: max-content; animation: marquee 28s linear infinite; }
+      .track span { margin: 0 32px; white-space: nowrap; font-size: clamp(2rem, 6vw, 4.5rem); color: rgba(194,207,48,.8); }
+      .grid6 { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--hair); max-width: 48rem; margin: 40px auto 0; }
+      @media (min-width: 640px) { .grid6 { grid-template-columns: 1fr 1fr 1fr; } }
+      .grid6 li {
+        list-style: none; background: var(--ink); padding: 32px 8px;
+        font-family: var(--ui); font-size: .8rem; letter-spacing: .28em; color: var(--mist); text-align: center; direction: ltr;
+      }
+      ul.grid6 { padding: 0; margin-top: 40px; }
+
+      .avatar { position: relative; width: min(80vw, 20rem); height: min(80vw, 20rem); margin: 56px auto 0; }
+      .avatar .ring { position: absolute; inset: 0; border-radius: 50%; background: var(--lime); animation: glow 3s ease-in-out infinite; }
+      .avatar img { position: absolute; inset: 12px; width: calc(100% - 24px); height: calc(100% - 24px); border-radius: 50%; object-fit: cover; }
+
+      .quote { overflow: hidden; isolation: isolate; padding: 96px 32px; }
+      .quote img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: grayscale(1); }
+      .quote .shade { position: absolute; inset: 0; background: rgba(5,5,5,.7); }
+      .quote .copy { position: relative; z-index: 2; text-align: center; }
+      .quote blockquote { max-width: 40rem; margin: 32px auto 0; font-size: clamp(1.25rem, 3vw, 1.85rem); line-height: 1.6; }
+
+      footer { padding: 80px 32px 48px; }
+      .mail { display: block; text-align: center; font-family: var(--ui); font-size: clamp(1.4rem, 4vw, 3rem); font-weight: 600; color: var(--lime); }
+      .foot-block { margin-top: 56px; }
+      .foot-block small { color: var(--dim); font-size: .85rem; }
+      .links { margin-top: 56px; padding: 0; list-style: none; color: var(--mist); }
+      .links a:hover { color: var(--lime); }
+      .copyr { margin-top: 48px; display: flex; justify-content: space-between; align-items: end; font-family: var(--ui); font-size: .75rem; color: var(--dim); }
+
+      .edge {
+        position: fixed; top: 96px; left: 12px; z-index: 40; width: 1px; height: 64px;
+        background: rgba(194,207,48,.8); transform-origin: top; animation: pulse 2.4s var(--ease) infinite alternate;
+      }
+      .topbtn {
+        position: fixed; bottom: 96px; left: 12px; z-index: 40; width: 48px; height: 48px;
+        display: grid; place-items: center; background: var(--ink); color: var(--lime); outline: 1px solid var(--hair);
+        opacity: 0; pointer-events: none; transition: opacity .3s;
+      }
+      .topbtn.on { opacity: 1; pointer-events: auto; }
+
+      @keyframes float {
+        0%,100% { transform: translateX(-50%) translateY(0) rotate(-4deg); }
+        50% { transform: translateX(-50%) translateY(-10px) rotate(-2deg); }
+      }
+      @keyframes drift { from { transform: translateX(0); } to { transform: translateX(-6%); } }
+      @keyframes pan {
+        from { transform: scale(1.08) translateX(-2%); }
+        to { transform: scale(1.16) translateX(2%); }
+      }
+      @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+      @keyframes glow { 0%,100% { opacity: .72; } 50% { opacity: 1; } }
+      @keyframes pulse { from { transform: scaleY(.2); opacity: .35; } to { transform: scaleY(1); opacity: 1; } }
+      @keyframes fade {
+        from { opacity: 0; transform: translateY(28px); }
+        to { opacity: 1; transform: none; }
+      }
+      .hero .inner > * { opacity: 0; animation: fade .95s var(--ease) forwards; }
+      .hero .inner > *:nth-child(1) { animation-delay: .08s; }
+      .hero .inner > *:nth-child(2) { animation-delay: .2s; }
+      .hero .inner > *:nth-child(3) { animation-delay: .36s; }
+      .hero .inner > *:nth-child(4) { animation-delay: .5s; }
+      .hero .inner > *:nth-child(5) { animation-delay: .64s; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <button class="burger" id="openMenu" aria-label="القائمة"><i></i><i></i><i></i></button>
+      <a class="logo" href="#top" aria-label="ديل DEAL">
+        <b>ديل</b>
+        <img src="./images/logo-deal.png" alt="DEAL FOR MARKETING" />
+      </a>
+    </header>
+    <span class="edge" aria-hidden="true"></span>
+    <button class="topbtn" id="toTop" aria-label="العودة للأعلى">↑</button>
+
+    <div class="menu" id="menu">
+      <button class="x" id="closeMenu" aria-label="إغلاق">×</button>
+      <a href="#top">الرئيسية</a>
+      <a href="#instant">الحل اللحظي</a>
+      <a href="#film">إنتاج مرئي</a>
+      <a href="#works">أعمالنا</a>
+      <a href="#about">من نحن</a>
+      <a href="#contact">تواصل معنا</a>
+      <a href="https://wa.me/966548127444">واتساب</a>
+    </div>
+
+    <section class="hero" id="top">
+      <img class="poster-img" id="heroPoster" src="./images/hero.jpg" alt="" />
+      <video id="heroVid" class="media" autoplay muted loop playsinline poster="./images/hero.jpg">
+        <source src="./video/hero.mp4" type="video/mp4" />
+      </video>
+      <div class="shade"></div>
+      <div class="inner">
+        <p class="kicker"><span>ديل</span> &nbsp; <span dir="ltr">DEAL</span></p>
+        <h1>حيـــــث يبقـــــي التـــــاثير</h1>
+        <p class="sub">التـــأثير لا ياتــي صدفــــة … نحــــن نصنعــــة</p>
+        <p class="en" dir="ltr">Impact doesn’t come by chance … we make it.</p>
+        <div class="big-line">
+          <p class="ar">حيث يبقي التأثير</p>
+          <p class="script" dir="ltr">Where Impact Stays</p>
+        </div>
+        <div class="cta-col">
+          <a class="arrow" href="https://wa.me/966548127444">اطلب خدمتك</a>
+          <a class="arrow" href="#contact">تواصل معنا</a>
+        </div>
+      </div>
+      <div class="hero-foot">
+        <span>
+          <button type="button" id="nextSlide">NEXT</button>
+          <span> | </span>
+          <button type="button" id="prevSlide">PREV</button>
+        </span>
+        <span>DIGITAL AGENCY</span>
+      </div>
+      <div class="wave" aria-hidden="true">
+        <svg viewBox="0 0 1440 180" preserveAspectRatio="none">
+          <path d="M-80 30 C 200 14, 480 46, 720 30 S 1240 14, 1600 30" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/>
+          <path d="M-80 54 C 200 38, 480 70, 720 54 S 1240 38, 1600 54" fill="none" stroke="currentColor" stroke-width=".9" opacity=".55"/>
+          <path d="M-80 78 C 200 62, 480 94, 720 78 S 1240 62, 1600 78" fill="none" stroke="currentColor" stroke-width="1.3" opacity=".8"/>
+          <path d="M-80 102 C 200 86, 480 118, 720 102 S 1240 86, 1600 102" fill="none" stroke="currentColor" stroke-width=".9" opacity=".55"/>
+          <path d="M-80 126 C 200 110, 480 142, 720 126 S 1240 110, 1600 126" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/>
+        </svg>
+      </div>
+    </section>
+
+    <section class="pad center story">
+      <p class="kicker">من هنـا تبـدا القصـة</p>
+      <p class="poster">في عالم تتسارع فيه الرسائل وتشتد فيه المنافسة تأتي</p>
+      <p class="poster">شركة <u style="text-decoration-color:var(--lime);text-underline-offset:8px">ديل</u> <span class="lime" dir="ltr" style="font-family:var(--ui);font-weight:800">DEAL</span> لتكون شريكك</p>
+      <p class="poster">المثالي في بناء صورة مؤثرة وإدارة حضورك الإعلامي.</p>
+      <p style="margin-top:40px"><a class="arrow" href="#instant">الحل اللحظي</a></p>
+    </section>
+
+    <section id="instant">
+      <div class="split">
+        <div class="frame">
+          <video autoplay muted loop playsinline poster="./images/instant.jpg">
+            <source src="./video/instant.mp4" type="video/mp4" />
+          </video>
+        </div>
+        <div class="frame">
+          <img src="./images/instant-phone.jpg" alt="نظام ديل للواتساب والـ CRM" />
+        </div>
+      </div>
+      <div class="pad center">
+        <p class="kicker">الحل اللحظي // 01</p>
+        <h2 class="poster">نعطيك السلوشن<br />لحظــي.</h2>
+        <p class="mist max" style="line-height:1.9;margin-top:24px">نظام CRM متكامل مع واتساب وكول سنتر. رقم جوال واحد، رد فوري، وكل المحادثات في شاشة واحدة. النظام سريع — والحل يُسلَّم لحظيًا.</p>
+        <a class="phone" href="tel:+966548127444" dir="ltr">0548127444</a>
+        <div class="btns">
+          <a class="btn fill" href="https://wa.me/966548127444">واتساب الآن</a>
+          <a class="btn" href="tel:+966548127444">اتصال مباشر</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="film" id="film">
+      <video autoplay muted loop playsinline poster="./images/amg.jpg">
+        <source src="./video/amg.mp4" type="video/mp4" />
+      </video>
+      <div class="shade"></div>
+      <div class="bar top"></div>
+      <div class="bar bot"></div>
+      <p class="giant">ديل</p>
+      <p class="motion" dir="ltr">Motion</p>
+      <div class="still">
+        <img src="./images/amg-gt.jpg" alt="" />
+        <p>STILL · 02</p>
+      </div>
+      <p class="cinema">CINEMA · AMG</p>
+      <div class="copy">
+        <p class="kicker">إنتاج مرئي //</p>
+        <h2 class="poster">الحركة<br />تصنع الأثــــر.</h2>
+      </div>
+      <div class="wave" style="height:80px" aria-hidden="true">
+        <svg viewBox="0 0 1440 180" preserveAspectRatio="none">
+          <path d="M-80 78 C 200 62, 480 94, 720 78 S 1240 62, 1600 78" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".8"/>
+        </svg>
+      </div>
+    </section>
+
+    <section id="services">
+      <div style="position:relative">
+        <img class="svc-img" id="svcImg" src="./images/instant.jpg" alt="" />
+        <button class="svc-next" id="svcNext" aria-label="الخدمة التالية">↗</button>
+      </div>
+      <div class="pad center">
+        <div style="display:flex;align-items:baseline;justify-content:center;gap:16px">
+          <h2 id="svcTitle" style="margin:0;font-size:clamp(1.4rem,3vw,2.2rem)">الحل اللحظي</h2>
+          <span class="lime" id="svcN" style="font-family:var(--ui);letter-spacing:.2em">01</span>
+        </div>
+        <p class="mist max" id="svcBody" style="line-height:1.9;margin-top:20px">نظام CRM متكامل مع واتساب وكول سنتر. نعطيك السلوشن لحظي: رقم جوال، رد سريع، وكل المحادثات في شاشة واحدة.</p>
+        <div class="dots" id="svcDots"></div>
+      </div>
+    </section>
+
+    <section class="about" id="about">
+      <video autoplay muted loop playsinline poster="./images/about.jpg">
+        <source src="./video/about.mp4" type="video/mp4" />
+      </video>
+      <div class="shade"></div>
+      <div class="copy">
+        <p class="kicker">من نحــن //</p>
+        <h2 class="poster">نحوّل الأفكار إلى<br />تجارب إبــداعية<br />تصنع تـــأثيرًا لا<br />يُنســـى.</h2>
+        <p style="margin-top:40px"><a class="arrow" href="#services">اكتشف خدماتنا</a></p>
+      </div>
+    </section>
+
+    <section id="works" class="pad" style="padding-bottom:0">
+      <div class="center">
+        <p class="kicker">أعمالنـــا //</p>
+        <h2 class="poster">أعمــال إبداعيـــة وحلـــول<br />متكاملــة</h2>
+        <p class="poster" style="margin-top:16px">تصنـــع نتائـــج ملموســـة.</p>
+        <p class="en mist" dir="ltr">Creative work. Measurable impact.</p>
+      </div>
+      <div id="worksList" style="margin-top:48px"></div>
+    </section>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="track" id="marquee"></div>
+    </div>
+
+    <section id="clients" class="pad center">
+      <p class="kicker">عملاؤنـــا //</p>
+      <p class="mist" style="margin-top:16px">علامات نبني معها حضورًا يبقى.</p>
+      <ul class="grid6">
+        <li>NORAH</li><li>QIDDIYA</li><li>DIRIYAH</li><li>STC</li><li>ROSHN</li><li>NEOM</li>
+      </ul>
+    </section>
+
+    <section class="pad center">
+      <p class="kicker">القيــادة //</p>
+      <h2 class="poster">رؤية تقــود ديــــل…<br />وتصنــع تأثيـــرًا يبقـــى.</h2>
+      <div class="avatar">
+        <span class="ring"></span>
+        <img src="./images/chairman-v4.jpg" alt="خالد العنزي، رئيس مجلس إدارة ديل" />
+      </div>
+      <h3 style="margin:32px 0 4px;font-size:1.5rem">خالد العنزي</h3>
+      <p class="mist" style="font-family:var(--slab);font-size:.9rem">رئيس مجلس الإدارة</p>
+      <p style="color:var(--dim);font-size:.9rem">القصيم — بريدة</p>
+    </section>
+
+    <section class="quote">
+      <img src="./images/quote.jpg" alt="" />
+      <div class="shade"></div>
+      <div class="copy">
+        <p class="kicker">كلمة رئيس مجلس الإدارة //</p>
+        <blockquote id="qText">«نؤمن في ديل أن التأثير الحقيقي لا يأتي صدفة؛ بل تصنعه فكرة واضحة، وإبداع متجدد، وتنفيذ احترافي.»</blockquote>
+        <p class="lime" id="qBy" style="margin-top:32px">— خالد العنزي</p>
+        <div style="margin-top:36px;display:flex;justify-content:center;gap:24px">
+          <button type="button" id="qPrev">→</button>
+          <button type="button" id="qNext">←</button>
+        </div>
+      </div>
+    </section>
+
+    <footer id="contact">
+      <a class="mail" href="mailto:info@dealadv.sa" dir="ltr">info@dealadv.sa</a>
+      <div class="foot-block">
+        <small>هاتف</small>
+        <p><a href="tel:+966548127444" dir="ltr">0548127444 <span class="lime">•</span></a></p>
+        <p><a class="lime" href="https://wa.me/966548127444">واتساب مباشر</a></p>
+      </div>
+      <div class="foot-block">
+        <small>العنوان</small>
+        <p class="lime">القصيم، بريدة<br />المملكة العربية السعودية</p>
+      </div>
+      <ul class="links">
+        <li><a href="#top">• الرئيسية</a></li>
+        <li><a href="#instant">• الحل اللحظي</a></li>
+        <li><a href="#works">• اعمالنا</a></li>
+        <li><a href="#clients">• عملاؤنا</a></li>
+        <li><a href="#about">• من نحن</a></li>
+        <li><a href="#contact">• تواصل معنا</a></li>
+      </ul>
+      <div class="copyr">
+        <span></span>
+        <span dir="ltr">Copyright © 2026</span>
+      </div>
+    </footer>
+
+    <script>
+      const slides = [
+        { src: "./video/hero.mp4", poster: "./images/hero.jpg" },
+        { src: "./video/about.mp4", poster: "./images/about.jpg" },
+        { src: "./video/chairman.mp4", poster: "./images/chairman-v4.jpg" },
+      ];
+      let si = 0;
+      const vid = document.getElementById("heroVid");
+      const poster = document.getElementById("heroPoster");
+      function setSlide(n) {
+        si = (n + slides.length) % slides.length;
+        poster.src = slides[si].poster;
+        vid.poster = slides[si].poster;
+        vid.querySelector("source").src = slides[si].src;
+        vid.load();
+        vid.play().catch(() => {});
+      }
+      document.getElementById("nextSlide").onclick = () => setSlide(si + 1);
+      document.getElementById("prevSlide").onclick = () => setSlide(si - 1);
+      setInterval(() => setSlide(si + 1), 12000);
+
+      const services = [
+        { n: "01", title: "الحل اللحظي", img: "./images/instant.jpg", gray: false, body: "نظام CRM متكامل مع واتساب وكول سنتر. نعطيك السلوشن لحظي: رقم جوال، رد سريع، وكل المحادثات في شاشة واحدة." },
+        { n: "02", title: "بناء العلامة التجارية", img: "./images/service.jpg", gray: true, body: "نصنع لعلامتك هوية متكاملة تعبّر عن قصتها وقيمها، وتمنحها حضورًا مميزًا يرسخ في ذهن جمهورها." },
+        { n: "03", title: "التسويق عبر المؤثرين", img: "./images/service.jpg", gray: true, body: "نختار المؤثرين الأنسب لعلامتك، ونبتكر حملات مؤثرة تصل إلى جمهورك بأسلوب طبيعي يحقق الانتشار والتفاعل." },
+        { n: "04", title: "التصوير والإنتاج المرئي", img: "./images/service.jpg", gray: true, body: "نقدّم تصوير المنتجات والفعاليات والفيديو والمحتوى الإعلاني، لنحوّل أفكارك إلى مشاهد احترافية تحكي قصة علامتك." },
+        { n: "05", title: "تنظيم الفعاليات", img: "./images/service.jpg", gray: true, body: "نخطط ونصمم وننفذ الفعاليات والمعارض والمؤتمرات، ونهتم بجميع التفاصيل لنصنع تجربة متكاملة لا تُنسى." },
+        { n: "06", title: "إدارة المراكز الإعلامية", img: "./images/service.jpg", gray: true, body: "ندير التغطيات والمحتوى والتواصل الإعلامي باحترافية، لنضمن حضورًا منظمًا ورسالة واضحة تصل إلى الجمهور في الوقت المناسب." },
+      ];
+      let svc = 0;
+      const dots = document.getElementById("svcDots");
+      services.forEach((_, i) => {
+        const b = document.createElement("b");
+        b.onclick = () => showSvc(i);
+        dots.appendChild(b);
+      });
+      function showSvc(i) {
+        svc = i;
+        const s = services[i];
+        const img = document.getElementById("svcImg");
+        img.src = s.img;
+        img.style.filter = s.gray ? "grayscale(1)" : "none";
+        document.getElementById("svcTitle").textContent = s.title;
+        document.getElementById("svcN").textContent = s.n;
+        document.getElementById("svcBody").textContent = s.body;
+        [...dots.children].forEach((d, idx) => d.classList.toggle("on", idx === i));
+      }
+      document.getElementById("svcNext").onclick = () => showSvc((svc + 1) % services.length);
+      showSvc(0);
+
+      const works = [
+        { img: "./images/work-beat.jpg", ar: "تصميم تجربة وهوية صوتية", en: "UI/UX design for SEO and marketing Startup", cats: "Copywriting · UI/UX Design" },
+        { img: "./images/work-desert.jpg", ar: "هوية بصرية لوجهة سياحية", en: "Brand identity for silicon valley startup", cats: "Copywriting · Branding" },
+        { img: "./images/work-app.jpg", ar: "تصميم تطبيق فريد", en: "Unique app design for fortune 500", cats: "UI/UX Design · Product" },
+        { img: "./images/work-luxe.jpg", ar: "إنتاج مرئي لعلامة فاخرة", en: "Cinematic product film & stills", cats: "Production · Art Direction" },
+        { img: "./images/work-event.jpg", ar: "تغطية وإدارة فعالية كبرى", en: "Live event identity & media center", cats: "Events · Media" },
+        { img: "./images/work-shop.jpg", ar: "تجربة تجارة إلكترونية", en: "E-commerce experience design", cats: "UX · Commerce" },
+      ];
+      document.getElementById("worksList").innerHTML = works.map((w, i) => `
+        <article class="work">
+          <img src="${w.img}" alt="${w.ar}" />
+          <div class="meta">
+            <span class="n">0${i + 1}</span>
+            <h3 style="margin:0;font-size:1.4rem">${w.ar}</h3>
+            <p dir="ltr" style="font-family:var(--slab);margin:12px 0 0">${w.en}</p>
+            <p dir="ltr" class="mist" style="font-family:var(--ui);font-size:.85rem">${w.cats}</p>
+          </div>
+        </article>`).join("");
+
+      const item = `<span>ديل <b dir="ltr" style="font-family:var(--ui);font-weight:800">DEAL</b> <i style="color:rgba(245,245,245,.2);font-style:normal;margin:0 32px">/</i></span>`;
+      document.getElementById("marquee").innerHTML = item.repeat(10);
+
+      const quotes = [
+        "نؤمن في ديل أن التأثير الحقيقي لا يأتي صدفة؛ بل تصنعه فكرة واضحة، وإبداع متجدد، وتنفيذ احترافي.",
+        "في ديل، لا نسعى إلى الظهور فقط؛ بل نصنع حضورًا يترك أثرًا، ونحوّل الأفكار إلى نجاحات مستدامة.",
+      ];
+      let qi = 0;
+      function setQ(n) {
+        qi = (n + quotes.length) % quotes.length;
+        document.getElementById("qText").textContent = "«" + quotes[qi] + "»";
+      }
+      document.getElementById("qPrev").onclick = () => setQ(qi - 1);
+      document.getElementById("qNext").onclick = () => setQ(qi + 1);
+
+      const menu = document.getElementById("menu");
+      document.getElementById("openMenu").onclick = () => menu.classList.add("open");
+      document.getElementById("closeMenu").onclick = () => menu.classList.remove("open");
+      menu.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => menu.classList.remove("open")));
+
+      const topbtn = document.getElementById("toTop");
+      window.addEventListener("scroll", () => topbtn.classList.toggle("on", scrollY > 420), { passive: true });
+      topbtn.onclick = () => scrollTo({ top: 0, behavior: "smooth" });
+
+      document.querySelectorAll("video").forEach((v) => {
+        const play = () => v.play().catch(() => {});
+        v.addEventListener("canplay", play);
+        play();
+      });
+    </script>
+  </body>
+</html>
