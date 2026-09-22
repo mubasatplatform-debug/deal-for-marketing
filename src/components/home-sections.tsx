@@ -362,12 +362,12 @@ export function Pay() {
         </Reveal>
       </div>
       <Reveal className="px-8 py-14 text-center md:px-16">
-        <p className="text-kicker text-lime">التحصيل // 03</p>
+        <p className="text-kicker text-lime">التحصيل // 04</p>
         <h2 className="mt-5 font-display text-poster text-snow">
           الدفع المبسط.
         </h2>
         <p className="mx-auto mt-6 max-w-xl text-pretty leading-loose text-mist">
-          من منصة مبسط. رابط، فاتورة، وتحصيل. فتحة مالية جاهزة — بلا تعقيد بوابة.
+          من منصة مبسط، على بوابة ادفع باي: رابط، فاتورة إلكترونية، والجوال نقطة بيع. مرخّصة، والتسوية سريعة.
         </p>
       </Reveal>
       <Atlas items={payAtlas} />
