@@ -1,12 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { AiClose, AiInbox, AiPublish, AiRoute } from "@/components/ai-desk";
 import { ArrowLink } from "@/components/arrow-link";
-import { LawBooking, LawCases, LawClients, LawContracts, LawMarketing, LawStaff, LawThubut, LawVideo } from "@/components/law-screens";
 import { LimeWave } from "@/components/lime-wave";
-import { ProductTour } from "@/components/product-tour";
 import { Reveal } from "@/components/reveal";
 import { SocialRow } from "@/components/site-chrome";
-import { clients, heroSlides, lawModules, phone, quotes, services, works } from "@/lib/content";
+import { clients, heroSlides, lawShots, phone, quotes, services, works } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
 function LiveVideo({
@@ -239,86 +236,80 @@ export function Instant() {
   );
 }
 
+function ShotCycle({
+  items,
+}: {
+  items: readonly { image: string; n: string; title: string }[];
+}) {
+  const [i, setI] = useState(0);
+  const s = items[i];
+  return (
+    <div>
+      <Reveal kind="clip-in" className="relative">
+        <img src={s.image} alt={s.title} className="h-72 w-full object-cover md:h-[28rem]" />
+        <button
+          type="button"
+          aria-label="التالي"
+          onClick={() => setI((n) => (n + 1) % items.length)}
+          className="absolute right-0 bottom-0 flex size-16 items-center justify-center bg-lime text-ink md:size-20"
+        >
+          <svg viewBox="0 0 24 24" className="size-8" fill="none" stroke="currentColor" strokeWidth="1.7">
+            <path d="M4 14l5-5 4 4 7-8" />
+            <path d="M14 5h6v6" />
+          </svg>
+        </button>
+      </Reveal>
+      <Reveal className="px-8 pt-10 text-center md:px-16">
+        <div className="flex items-baseline justify-center gap-4">
+          <h3 className="font-display text-2xl text-snow md:text-4xl">{s.title}</h3>
+          <span className="font-display text-sm text-lime">{s.n}</span>
+        </div>
+        <div className="mt-8 flex justify-center gap-2">
+          {items.map((item, idx) => (
+            <button
+              key={item.n}
+              type="button"
+              aria-label={item.title}
+              onClick={() => setI(idx)}
+              className={cn("h-1 w-6", idx === i ? "bg-lime" : "bg-hair")}
+            />
+          ))}
+        </div>
+      </Reveal>
+    </div>
+  );
+}
+
 export function Lawyers() {
   return (
     <section id="law" className="bg-ink">
-      <div className="relative isolate min-h-dvh overflow-hidden">
-        <LiveVideo
-          src="/video/law.mp4"
-          poster="/images/law.jpg"
-          className="absolute inset-0 h-full w-full object-cover object-center"
-        />
-        <div className="pointer-events-none absolute inset-0 bg-ink/40" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-9 bg-ink md:h-12" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-9 bg-ink md:h-12" />
-
-        <p
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-[18%] z-10 text-center font-display text-[20vw] leading-none text-lime/20"
-        >
-          ديل
-        </p>
-
-        <p dir="ltr" className="absolute top-20 left-5 z-20 font-ui text-micro tracking-[0.28em] text-snow/70 md:left-10">
-          CINEMA · LAW
-        </p>
-        <p dir="ltr" className="absolute top-20 right-5 z-20 font-ui text-micro tracking-[0.28em] text-lime md:right-10">
-          LIVE
-        </p>
-
-        <div className="relative z-10 flex min-h-dvh flex-col justify-end px-8 pb-20 md:px-16">
-          <Reveal>
-            <p className="text-kicker text-lime">الأنشطة المهنية // 01</p>
-            <h2 className="mt-3 max-w-xl font-display text-poster text-snow md:text-6xl">
-              للمحاميـــن.
-            </h2>
-            <p className="mt-4 max-w-md font-display text-xl text-snow/90">
-              نظام متكامل لإدارة المكتب القانوني.
-            </p>
-          </Reveal>
+      <div className="grid md:grid-cols-2">
+        <div className="relative min-h-[22rem] overflow-hidden md:min-h-[34rem]">
+          <LiveVideo
+            src="/video/law.mp4"
+            poster="/images/law.jpg"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
         </div>
-        <LimeWave className="absolute inset-x-0 bottom-0 z-20 h-14 opacity-80 md:h-20" />
+        <Reveal kind="clip-in" className="relative min-h-[22rem] overflow-hidden md:min-h-[34rem]">
+          <img src="/images/law-phone.jpg" alt="واجهة مكتب المحامي" className="absolute inset-0 h-full w-full object-cover" />
+        </Reveal>
       </div>
 
-      <ProductTour
-        kicker="النظام خطوة بخطوة //"
-        steps={[
-          { ...lawModules[0], screen: <LawThubut /> },
-          { ...lawModules[1], screen: <LawBooking /> },
-          { ...lawModules[2], screen: <LawClients /> },
-          { ...lawModules[3], screen: <LawStaff /> },
-          { ...lawModules[4], screen: <LawContracts /> },
-          { ...lawModules[5], screen: <LawCases /> },
-          { ...lawModules[6], screen: <LawVideo /> },
-          { ...lawModules[7], screen: <LawMarketing /> },
-        ]}
-      />
-
-      <Reveal className="px-8 py-16 text-center md:px-16">
-        <p className="text-kicker text-lime">الضمان الذهبي //</p>
-        <h3 className="mt-5 font-display text-poster text-snow">
-          ثلاثون يومًا.
-          <br />
-          إن لم تستفد… لا تدفع.
-        </h3>
-        <p className="mx-auto mt-6 max-w-lg text-pretty leading-loose text-mist">
-          نضمن لك ضمانًا ذهبيًا ٣٠ يومًا. إن لم تستفد من النظام، لا تدفع شيئًا. فلسفتنا ليست الربح العالي — نقف معك خطوة بخطوة، ونكبر سوا.
+      <Reveal className="px-8 py-14 text-center md:px-16">
+        <p className="text-kicker text-lime">الأنشطة المهنية // 01</p>
+        <h2 className="mt-5 font-display text-poster text-snow">
+          للمحاميـــن.
+        </h2>
+        <p className="mx-auto mt-6 max-w-xl text-pretty leading-loose text-mist">
+          موقع وصفحة ثبوت، حجوزات، عملاء، موظفين، عقود، قضايا، وجلسات فيديو من داخل موقعك. نظام واحد للمكتب.
         </p>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <a
-            href="/start/law"
-            className="inline-flex h-12 min-w-40 items-center justify-center border border-lime bg-lime px-6 font-display text-ink"
-          >
-            اطلب هذا الحل
-          </a>
-          <a
-            href={phone.wa}
-            className="inline-flex h-12 min-w-40 items-center justify-center border border-lime px-6 font-display text-lime"
-          >
-            واتساب
-          </a>
-        </div>
+        <ArrowLink href="/start/law" className="mt-8">
+          اطلب هذا الحل
+        </ArrowLink>
       </Reveal>
+
+      <ShotCycle items={lawShots} />
     </section>
   );
 }
@@ -326,136 +317,37 @@ export function Lawyers() {
 export function AiUse() {
   return (
     <section id="ai" className="bg-ink">
-      <div className="relative isolate min-h-dvh overflow-hidden">
-        <LiveVideo
-          src="/video/ai.mp4"
-          poster="/images/ai.jpg"
-          className="absolute inset-0 h-full w-full object-cover object-center"
-        />
-        <div className="pointer-events-none absolute inset-0 bg-ink/40" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-9 bg-ink md:h-12" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-9 bg-ink md:h-12" />
-
-        <p
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-[18%] z-10 text-center font-display text-[20vw] leading-none text-lime/20"
-        >
-          ديل
-        </p>
-
-        <p dir="ltr" className="absolute top-20 left-5 z-20 font-ui text-micro tracking-[0.28em] text-snow/70 md:left-10">
-          CINEMA · SAUDI
-        </p>
-        <p dir="ltr" className="absolute top-20 right-5 z-20 font-ui text-micro tracking-[0.28em] text-lime md:right-10">
-          LIVE
-        </p>
-
-        <div className="relative z-10 flex min-h-dvh flex-col justify-end px-8 pb-20 md:px-16">
-          <Reveal>
-            <p className="text-kicker text-lime">الأنشطة المهنية // 02</p>
-            <h2 className="mt-3 max-w-2xl font-display text-poster text-snow md:text-6xl">
-              مو روبوت.
-              <br />
-              نظام سعودي.
-            </h2>
-            <p className="mt-4 max-w-md font-display text-xl text-snow/90">
-              ولدنا. من عيالنا. يشتغل مكان الموظف في آخر الخط.
-            </p>
-          </Reveal>
+      <div className="grid md:grid-cols-2">
+        <div className="relative min-h-[22rem] overflow-hidden md:min-h-[34rem]">
+          <LiveVideo
+            src="/video/ai.mp4"
+            poster="/images/ai.jpg"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
         </div>
-        <LimeWave className="absolute inset-x-0 bottom-0 z-20 h-14 opacity-80 md:h-20" />
+        <Reveal kind="clip-in" className="relative min-h-[22rem] overflow-hidden md:min-h-[34rem]">
+          <img src="/images/ai-phone.jpg" alt="واجهة الذكاء الاصطناعي" className="absolute inset-0 h-full w-full object-cover" />
+        </Reveal>
       </div>
 
-      <ProductTour
-        kicker="النظام خطوة بخطوة //"
-        steps={[
-          { n: "01", title: "يرد بلهجتك وبأسلوبك", body: "نجدية، قصيمية، حجازية. يتعلّم نبرتك، ويفاوت الرد من عميل لعميل.", screen: <AiInbox /> },
-          { n: "02", title: "يوجّه المحادثات", body: "يرد هو، أو يحوّل لك، أو يقفل الموضوع. التوجيه شغل، مو زر.", screen: <AiRoute /> },
-          { n: "03", title: "يدير المنصات والنشر", body: "تيك توك وباقي القنوات: الجدولة، النشر، والردود من شاشة واحدة.", screen: <AiPublish /> },
-          { n: "04", title: "ينوب عن آخر السلسلة", body: "مو إدارة فلسفية. يخلّص شغل الموظف في نهاية الخط.", screen: <AiClose /> },
-        ]}
-      />
-
-      <Reveal className="px-8 py-16 text-center md:px-16">
-        <p className="text-kicker text-lime">الضمان الذهبي //</p>
-        <h3 className="mt-5 font-display text-poster text-snow">
-          ثلاثون يومًا.
+      <Reveal className="px-8 py-14 text-center md:px-16">
+        <p className="text-kicker text-lime">الأنشطة المهنية // 02</p>
+        <h2 className="mt-5 font-display text-poster text-snow">
+          مو روبوت.
           <br />
-          إن لم تستفد… لا تدفع.
-        </h3>
-        <p className="mx-auto mt-6 max-w-lg text-pretty leading-loose text-mist">
-          نضمن لك ٣٠ يومًا. إن ما استفدت، لا تدفع. مو كلام تسويق — هذا شرط الشغل.
+          نظام سعودي.
+        </h2>
+        <p className="mx-auto mt-6 max-w-xl text-pretty leading-loose text-mist">
+          يتحمل اللهجات، يرد بأسلوبك، يفاوت بين العملاء، يوجّه المحادثات، ويدير التيك توك والمنصات. ينوب عن الموظف في آخر الخط.
         </p>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <a
-            href="/start/ai"
-            className="inline-flex h-12 min-w-40 items-center justify-center border border-lime bg-lime px-6 font-display text-ink"
-          >
-            اطلب هذا الحل
-          </a>
-          <a
-            href={phone.wa}
-            className="inline-flex h-12 min-w-40 items-center justify-center border border-lime px-6 font-display text-lime"
-          >
-            واتساب
-          </a>
-        </div>
+        <ArrowLink href="/start/ai" className="mt-8">
+          اطلب هذا الحل
+        </ArrowLink>
       </Reveal>
     </section>
   );
 }
 
-export function AmgFilm() {
-  return (
-    <section id="film" className="relative isolate min-h-dvh overflow-hidden bg-ink">
-      <LiveVideo
-        src="/video/amg.mp4"
-        poster="/images/amg.jpg"
-        className="absolute inset-0 h-full w-full object-cover object-center"
-      />
-      <div className="pointer-events-none absolute inset-0 bg-ink/25" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-9 bg-ink md:h-12" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-9 bg-ink md:h-12" />
-
-      <p
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-[22%] z-10 text-center font-display text-[22vw] leading-none text-lime/20"
-      >
-        ديل
-      </p>
-      <p
-        dir="ltr"
-        aria-hidden="true"
-        className="float-script pointer-events-none absolute top-[38%] left-1/2 z-10 -translate-x-1/2 font-script text-5xl text-snow/80 md:text-7xl"
-      >
-        Motion
-      </p>
-
-      <div className="absolute top-20 right-5 z-20 w-[7.5rem] overflow-hidden outline outline-hair md:top-24 md:right-10 md:w-56">
-        <img src="/images/amg-gt.jpg" alt="" className="h-16 w-full object-cover md:h-28" />
-        <p dir="ltr" className="bg-ink px-2 py-1.5 font-ui text-micro tracking-[0.22em] text-lime">
-          STILL · 02
-        </p>
-      </div>
-
-      <p dir="ltr" className="absolute top-20 left-5 z-20 font-ui text-micro tracking-[0.28em] text-snow/70 md:left-10">
-        CINEMA · AMG
-      </p>
-
-      <div className="relative z-10 flex min-h-dvh flex-col justify-end px-8 pb-20 md:px-16">
-        <Reveal>
-          <p className="text-kicker text-lime">إنتاج مرئي //</p>
-          <h2 className="mt-3 max-w-xl font-display text-poster text-snow md:text-6xl">
-            الحركة
-            <br />
-            تصنع الأثــــر.
-          </h2>
-        </Reveal>
-      </div>
-      <LimeWave className="absolute inset-x-0 bottom-0 z-20 h-14 opacity-80 md:h-20" />
-    </section>
-  );
-}
 
 export function Services() {
   const [i, setI] = useState(0);

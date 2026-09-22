@@ -211,5 +211,11 @@ export const clients = ["NORAH", "QIDDIYA", "DIRIYAH", "STC", "ROSHN", "NEOM"] a
 export const heroSlides = [
   { src: "/video/hero.mp4", poster: "/images/hero.jpg" },
   { src: "/video/about.mp4", poster: "/images/about.jpg" },
-  { src: "/video/chairman.mp4", poster: "/images/chairman-now.jpg" },
+] as const;
+
+export const lawShots = [
+  { image: "/images/law-site.jpg", n: "01", title: "موقع وصفحة ثبوت" },
+  { image: "/images/law-book.jpg", n: "02", title: "حجوزات بالذكاء الاصطناعي" },
+  { image: "/images/law-phone.jpg", n: "03", title: "إدارة العملاء والردود" },
+  { image: "/images/law-doc.jpg", n: "04", title: "العقود والقضايا والفيديو" },
 ] as const;
