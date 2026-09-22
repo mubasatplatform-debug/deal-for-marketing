@@ -248,7 +248,7 @@ export function Lawyers() {
           />
         </div>
         <Reveal kind="clip-in" className="relative min-h-[22rem] overflow-hidden md:min-h-[34rem]">
-          <img src="/images/law-crm.jpg" alt="ملف العميل — CRM المكتب القانوني" className="absolute inset-0 h-full w-full object-cover" />
+          <img src="/images/desk-crm.jpg" alt="ملف العميل — CRM المكتب القانوني" className="absolute inset-0 h-full w-full object-cover object-top" />
         </Reveal>
       </div>
 
