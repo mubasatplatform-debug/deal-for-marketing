@@ -6,6 +6,7 @@ import {
   Footer,
   Hero,
   Instant,
+  Lawyers,
   Leadership,
   Quote,
   Services,
@@ -23,6 +24,7 @@ function Home() {
         <Hero />
         <Story />
         <Instant />
+        <Lawyers />
         <AmgFilm />
         <Services />
         <About />

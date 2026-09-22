@@ -3,7 +3,7 @@ import { ArrowLink } from "@/components/arrow-link";
 import { LimeWave } from "@/components/lime-wave";
 import { Reveal } from "@/components/reveal";
 import { SocialRow } from "@/components/site-chrome";
-import { clients, heroSlides, phone, quotes, services, works } from "@/lib/content";
+import { clients, heroSlides, lawModules, phone, quotes, services, works } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
 function LiveVideo({
@@ -231,6 +231,104 @@ export function Instant() {
         <ArrowLink href="/start/crm" className="mt-8">
           اطلب هذا الحل
         </ArrowLink>
+      </Reveal>
+    </section>
+  );
+}
+
+export function Lawyers() {
+  return (
+    <section id="law" className="bg-ink">
+      <div className="relative isolate min-h-dvh overflow-hidden">
+        <LiveVideo
+          src="/video/law.mp4"
+          poster="/images/law.jpg"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-ink/40" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-9 bg-ink md:h-12" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-9 bg-ink md:h-12" />
+
+        <p
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-[18%] z-10 text-center font-display text-[20vw] leading-none text-lime/20"
+        >
+          ديل
+        </p>
+
+        <p dir="ltr" className="absolute top-20 left-5 z-20 font-ui text-micro tracking-[0.28em] text-snow/70 md:left-10">
+          CINEMA · LAW
+        </p>
+        <p dir="ltr" className="absolute top-20 right-5 z-20 font-ui text-micro tracking-[0.28em] text-lime md:right-10">
+          LIVE
+        </p>
+
+        <div className="relative z-10 flex min-h-dvh flex-col justify-end px-8 pb-20 md:px-16">
+          <Reveal>
+            <p className="text-kicker text-lime">الأنشطة المهنية // 01</p>
+            <h2 className="mt-3 max-w-xl font-display text-poster text-snow md:text-6xl">
+              للمحاميـــن.
+            </h2>
+            <p className="mt-4 max-w-md font-display text-xl text-snow/90">
+              نظام متكامل لإدارة المكتب القانوني.
+            </p>
+            <p dir="ltr" className="mt-2 font-slab text-sm text-mist">
+              The lawyer’s operating system.
+            </p>
+          </Reveal>
+        </div>
+        <LimeWave className="absolute inset-x-0 bottom-0 z-20 h-14 opacity-80 md:h-20" />
+      </div>
+
+      <Reveal className="px-8 py-16 text-center md:px-16">
+        <p className="text-kicker text-lime">ماذا نقدّم للمحامي //</p>
+        <h3 className="mt-5 font-display text-poster text-snow">
+          المكتب يعمل…
+          <br />
+          والنظام يتولّى الباقي.
+        </h3>
+        <p className="mx-auto mt-5 max-w-xl text-pretty leading-loose text-mist">
+          موقع، حجوزات، عملاء، موظفون، عقود، قضايا، وجلسات فيديو من داخل موقعك. بالذكاء الاصطناعي — وبهيبة المهنة.
+        </p>
+      </Reveal>
+
+      <div className="grid gap-px bg-hair sm:grid-cols-2">
+        {lawModules.map((m) => (
+          <article key={m.n} className="bg-ink px-8 py-10 md:px-12">
+            <p className="font-ui text-xs tracking-widest text-lime">{m.n}</p>
+            <h4 className="mt-3 font-display text-2xl text-snow">{m.title}</h4>
+            <p className="mt-3 max-w-md text-pretty leading-loose text-mist">{m.body}</p>
+          </article>
+        ))}
+      </div>
+
+      <Reveal className="px-8 py-20 text-center md:px-16">
+        <p className="text-kicker text-lime">الضمان الذهبي //</p>
+        <h3 className="mt-5 font-display text-poster text-snow">
+          ثلاثون يومًا.
+          <br />
+          إن لم تستفد… لا تدفع.
+        </h3>
+        <p className="mx-auto mt-6 max-w-lg text-pretty leading-loose text-mist">
+          نضمن لك ضمانًا ذهبيًا ٣٠ يومًا. إن لم تستفد من النظام، لا تدفع شيئًا. فلسفتنا ليست الربح العالي — نقف معك خطوة بخطوة، ونكبر سوا.
+        </p>
+        <p dir="ltr" className="mt-3 font-slab text-sm text-mist">
+          Step by step. We grow with you.
+        </p>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <a
+            href="/start/law"
+            className="inline-flex h-12 min-w-40 items-center justify-center border border-lime bg-lime px-6 font-display text-ink"
+          >
+            اطلب هذا الحل
+          </a>
+          <a
+            href={phone.wa}
+            className="inline-flex h-12 min-w-40 items-center justify-center border border-lime px-6 font-display text-lime"
+          >
+            واتساب
+          </a>
+        </div>
       </Reveal>
     </section>
   );
