@@ -516,11 +516,11 @@ export function Leadership() {
         <p className="mt-2 font-display text-sm text-mist">رئيس مجلس الإدارة</p>
         <p className="mt-1 text-sm text-dim">القصيم — بريدة</p>
         <p className="mx-auto mt-6 max-w-xs font-display text-base leading-loose text-snow/80">
-          يكره الأخطاء. يخوض الصعاب.
+          لا يتسامح مع الخطأ. ولا يهاب الصعب.
           <br />
           تاجر · دكتور · محامي
           <br />
-          وشباب نار.
+          ومعيار يرفع من يعمل معه.
         </p>
         <SocialRow className="mt-6 justify-center" />
       </Reveal>
