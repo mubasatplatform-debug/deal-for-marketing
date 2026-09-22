@@ -3,7 +3,7 @@ import { ArrowLink } from "@/components/arrow-link";
 import { LimeWave } from "@/components/lime-wave";
 import { Reveal } from "@/components/reveal";
 import { SocialRow } from "@/components/site-chrome";
-import { clients, heroSlides, lawAtlas, phone, quotes, services, works } from "@/lib/content";
+import { clients, crmAtlas, heroSlides, lawAtlas, payAtlas, phone, quotes, services, works } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
 function LiveVideo({
@@ -185,6 +185,29 @@ export function Story() {
   );
 }
 
+function Atlas({
+  items,
+}: {
+  items: readonly { image: string; n: string; title: string; body: string }[];
+}) {
+  return (
+    <div>
+      {items.map((item) => (
+        <article key={item.n} className="work-card">
+          <Reveal kind="clip-in">
+            <img src={item.image} alt={item.title} className="h-72 w-full object-cover object-top md:h-[30rem]" />
+          </Reveal>
+          <div className="relative bg-card px-8 py-10 text-center">
+            <span className="absolute top-6 left-6 font-display text-xs text-lime">{item.n}</span>
+            <h3 className="font-display text-2xl text-snow md:text-3xl">{item.title}</h3>
+            <p className="mx-auto mt-4 max-w-lg text-pretty leading-loose text-mist">{item.body}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
 export function Instant() {
   return (
     <section id="instant" className="bg-ink">
@@ -197,7 +220,7 @@ export function Instant() {
           />
         </div>
         <Reveal kind="clip-in" className="relative min-h-[22rem] overflow-hidden md:min-h-[34rem]">
-          <img src="/images/instant-phone.jpg" alt="نظام ديل للواتساب والـ CRM" className="absolute inset-0 h-full w-full object-cover" />
+          <img src="/images/ops-inbox.jpg" alt="وارد الحل اللحظي" className="absolute inset-0 h-full w-full object-cover object-top" />
         </Reveal>
       </div>
 
@@ -209,28 +232,29 @@ export function Instant() {
           لحظــي.
         </h2>
         <p className="mx-auto mt-6 max-w-xl text-pretty leading-loose text-mist">
-          نظام CRM متكامل مع واتساب وكول سنتر. رقم جوال واحد، رد فوري، وكل المحادثات في شاشة واحدة. النظام سريع — والحل يُسلَّم لحظيًا.
+          غرفة عمليات: واتساب وكول سنتر. الذكاء يدير الخط بالكامل. أنت لا تدخل إلا إذا احتاجك.
         </p>
         <a href={`tel:${phone.tel}`} className="mt-8 inline-block font-ui text-3xl font-semibold text-lime md:text-4xl" dir="ltr">
           {phone.display}
         </a>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-          <a
-            href={phone.wa}
-            className="inline-flex h-12 min-w-40 items-center justify-center border border-lime bg-lime px-6 font-display text-ink"
-          >
-            واتساب الآن
-          </a>
-          <a
-            href={`tel:${phone.tel}`}
-            className="inline-flex h-12 min-w-40 items-center justify-center border border-lime px-6 font-display text-lime"
-          >
-            اتصال مباشر
-          </a>
-        </div>
-        <ArrowLink href="/start/crm" className="mt-8">
-          اطلب هذا الحل
-        </ArrowLink>
+      </Reveal>
+
+      <Reveal className="border-y border-hair px-8 py-14 text-center md:px-16">
+        <p className="text-kicker text-lime">CRM // ماذا يعني هنا؟</p>
+        <h3 className="mt-5 font-display text-poster text-snow">
+          ذاكرة البيع.
+          <br />
+          لا دفتر، ولا شات ضائع.
+        </h3>
+        <p className="mx-auto mt-6 max-w-xl text-pretty leading-loose text-mist">
+          كل عميل: واتسابه، مكالمته، طلبه، فاتورته — في ملف واحد. الذكاء يرد بأسلوبك، يوزّع الخط، ويقفل ما اكتمل.
+        </p>
+      </Reveal>
+
+      <Atlas items={crmAtlas} />
+
+      <Reveal className="px-8 py-16 text-center md:px-16">
+        <ArrowLink href="/start/crm">اطلب هذا الحل</ArrowLink>
       </Reveal>
     </section>
   );
@@ -272,20 +296,7 @@ export function Lawyers() {
         </p>
       </Reveal>
 
-      <div>
-        {lawAtlas.map((item) => (
-          <article key={item.n} className="work-card">
-            <Reveal kind="clip-in">
-              <img src={item.image} alt={item.title} className="h-72 w-full object-cover md:h-[30rem]" />
-            </Reveal>
-            <div className="relative bg-card px-8 py-10 text-center">
-              <span className="absolute top-6 left-6 font-display text-xs text-lime">{item.n}</span>
-              <h3 className="font-display text-2xl text-snow md:text-3xl">{item.title}</h3>
-              <p className="mx-auto mt-4 max-w-lg text-pretty leading-loose text-mist">{item.body}</p>
-            </div>
-          </article>
-        ))}
-      </div>
+      <Atlas items={lawAtlas} />
 
       <Reveal className="px-8 py-16 text-center md:px-16">
         <p className="text-kicker text-lime">القيمة //</p>
@@ -339,6 +350,33 @@ export function AiUse() {
   );
 }
 
+export function Pay() {
+  return (
+    <section id="pay" className="bg-ink">
+      <div className="grid md:grid-cols-2">
+        <Reveal kind="clip-in" className="relative min-h-[22rem] overflow-hidden md:min-h-[34rem]">
+          <img src="/images/pay-pay.jpg" alt="رابط الدفع المبسط" className="absolute inset-0 h-full w-full object-cover object-top" />
+        </Reveal>
+        <Reveal kind="clip-in" className="relative min-h-[22rem] overflow-hidden md:min-h-[34rem]">
+          <img src="/images/pay-home.jpg" alt="تحصيل الدفع المبسط" className="absolute inset-0 h-full w-full object-cover object-top" />
+        </Reveal>
+      </div>
+      <Reveal className="px-8 py-14 text-center md:px-16">
+        <p className="text-kicker text-lime">التحصيل // 03</p>
+        <h2 className="mt-5 font-display text-poster text-snow">
+          الدفع المبسط.
+        </h2>
+        <p className="mx-auto mt-6 max-w-xl text-pretty leading-loose text-mist">
+          من منصة مبسط. رابط، فاتورة، وتحصيل. فتحة مالية جاهزة — بلا تعقيد بوابة.
+        </p>
+      </Reveal>
+      <Atlas items={payAtlas} />
+      <Reveal className="px-8 py-16 text-center md:px-16">
+        <ArrowLink href="/start/pay">اطلب هذا الحل</ArrowLink>
+      </Reveal>
+    </section>
+  );
+}
 
 export function Services() {
   const [i, setI] = useState(0);

@@ -8,6 +8,7 @@ import {
   Instant,
   Lawyers,
   Leadership,
+  Pay,
   Quote,
   Services,
   Story,
@@ -26,6 +27,7 @@ function Home() {
         <Instant />
         <Lawyers />
         <AiUse />
+        <Pay />
         <Services />
         <About />
         <Works />

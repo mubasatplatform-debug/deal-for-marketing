@@ -15,6 +15,9 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as StartRouteImport } from './routes/start'
 import { Route as StartSlugRouteImport } from './routes/start.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as DeskCrmViewRouteImport } from './routes/desk.crm.$view'
+import { Route as DeskLawViewRouteImport } from './routes/desk.law.$view'
+import { Route as DeskPayViewRouteImport } from './routes/desk.pay.$view'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +49,21 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DeskCrmViewRoute = DeskCrmViewRouteImport.update({
+  id: '/desk/crm/$view',
+  path: '/desk/crm/$view',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeskLawViewRoute = DeskLawViewRouteImport.update({
+  id: '/desk/law/$view',
+  path: '/desk/law/$view',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeskPayViewRoute = DeskPayViewRouteImport.update({
+  id: '/desk/pay/$view',
+  path: '/desk/pay/$view',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +72,9 @@ export interface FileRoutesByFullPath {
   '/start': typeof StartRouteWithChildren
   '/start/$slug': typeof StartSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/desk/crm/$view': typeof DeskCrmViewRoute
+  '/desk/law/$view': typeof DeskLawViewRoute
+  '/desk/pay/$view': typeof DeskPayViewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +83,9 @@ export interface FileRoutesByTo {
   '/start': typeof StartRouteWithChildren
   '/start/$slug': typeof StartSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/desk/crm/$view': typeof DeskCrmViewRoute
+  '/desk/law/$view': typeof DeskLawViewRoute
+  '/desk/pay/$view': typeof DeskPayViewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,13 +95,33 @@ export interface FileRoutesById {
   '/start': typeof StartRouteWithChildren
   '/start/$slug': typeof StartSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/desk/crm/$view': typeof DeskCrmViewRoute
+  '/desk/law/$view': typeof DeskLawViewRoute
+  '/desk/pay/$view': typeof DeskPayViewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/client' | '/login' | '/start' | '/start/$slug' | '/api/auth/$'
+    | '/'
+    | '/client'
+    | '/login'
+    | '/start'
+    | '/start/$slug'
+    | '/api/auth/$'
+    | '/desk/crm/$view'
+    | '/desk/law/$view'
+    | '/desk/pay/$view'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/client' | '/login' | '/start' | '/start/$slug' | '/api/auth/$'
+  to:
+    | '/'
+    | '/client'
+    | '/login'
+    | '/start'
+    | '/start/$slug'
+    | '/api/auth/$'
+    | '/desk/crm/$view'
+    | '/desk/law/$view'
+    | '/desk/pay/$view'
   id:
     | '__root__'
     | '/'
@@ -86,6 +130,9 @@ export interface FileRouteTypes {
     | '/start'
     | '/start/$slug'
     | '/api/auth/$'
+    | '/desk/crm/$view'
+    | '/desk/law/$view'
+    | '/desk/pay/$view'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -94,6 +141,9 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   StartRoute: typeof StartRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  DeskCrmViewRoute: typeof DeskCrmViewRoute
+  DeskLawViewRoute: typeof DeskLawViewRoute
+  DeskPayViewRoute: typeof DeskPayViewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -140,6 +190,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/desk/crm/$view': {
+      id: '/desk/crm/$view'
+      path: '/desk/crm/$view'
+      fullPath: '/desk/crm/$view'
+      preLoaderRoute: typeof DeskCrmViewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/desk/law/$view': {
+      id: '/desk/law/$view'
+      path: '/desk/law/$view'
+      fullPath: '/desk/law/$view'
+      preLoaderRoute: typeof DeskLawViewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/desk/pay/$view': {
+      id: '/desk/pay/$view'
+      path: '/desk/pay/$view'
+      fullPath: '/desk/pay/$view'
+      preLoaderRoute: typeof DeskPayViewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -159,6 +230,9 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   StartRoute: StartRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  DeskCrmViewRoute: DeskCrmViewRoute,
+  DeskLawViewRoute: DeskLawViewRoute,
+  DeskPayViewRoute: DeskPayViewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
