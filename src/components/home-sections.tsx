@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { AiDesk } from "@/components/ai-desk";
+import { AiClose, AiInbox, AiPublish, AiRoute } from "@/components/ai-desk";
 import { ArrowLink } from "@/components/arrow-link";
+import { LawBooking, LawCases, LawClients, LawContracts, LawMarketing, LawStaff, LawThubut, LawVideo } from "@/components/law-screens";
 import { LimeWave } from "@/components/lime-wave";
+import { ProductTour } from "@/components/product-tour";
 import { Reveal } from "@/components/reveal";
 import { SocialRow } from "@/components/site-chrome";
-import { aiModules, clients, heroSlides, lawModules, phone, quotes, services, works } from "@/lib/content";
+import { clients, heroSlides, lawModules, phone, quotes, services, works } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
 function LiveVideo({
@@ -273,37 +275,26 @@ export function Lawyers() {
             <p className="mt-4 max-w-md font-display text-xl text-snow/90">
               نظام متكامل لإدارة المكتب القانوني.
             </p>
-            <p dir="ltr" className="mt-2 font-slab text-sm text-mist">
-              The lawyer’s operating system.
-            </p>
           </Reveal>
         </div>
         <LimeWave className="absolute inset-x-0 bottom-0 z-20 h-14 opacity-80 md:h-20" />
       </div>
 
+      <ProductTour
+        kicker="النظام خطوة بخطوة //"
+        steps={[
+          { ...lawModules[0], screen: <LawThubut /> },
+          { ...lawModules[1], screen: <LawBooking /> },
+          { ...lawModules[2], screen: <LawClients /> },
+          { ...lawModules[3], screen: <LawStaff /> },
+          { ...lawModules[4], screen: <LawContracts /> },
+          { ...lawModules[5], screen: <LawCases /> },
+          { ...lawModules[6], screen: <LawVideo /> },
+          { ...lawModules[7], screen: <LawMarketing /> },
+        ]}
+      />
+
       <Reveal className="px-8 py-16 text-center md:px-16">
-        <p className="text-kicker text-lime">ماذا نقدّم للمحامي //</p>
-        <h3 className="mt-5 font-display text-poster text-snow">
-          المكتب يعمل…
-          <br />
-          والنظام يتولّى الباقي.
-        </h3>
-        <p className="mx-auto mt-5 max-w-xl text-pretty leading-loose text-mist">
-          موقع، حجوزات، عملاء، موظفون، عقود، قضايا، وجلسات فيديو من داخل موقعك. بالذكاء الاصطناعي — وبهيبة المهنة.
-        </p>
-      </Reveal>
-
-      <div className="grid gap-px bg-hair sm:grid-cols-2">
-        {lawModules.map((m) => (
-          <article key={m.n} className="bg-ink px-8 py-10 md:px-12">
-            <p className="font-ui text-xs tracking-widest text-lime">{m.n}</p>
-            <h4 className="mt-3 font-display text-2xl text-snow">{m.title}</h4>
-            <p className="mt-3 max-w-md text-pretty leading-loose text-mist">{m.body}</p>
-          </article>
-        ))}
-      </div>
-
-      <Reveal className="px-8 py-20 text-center md:px-16">
         <p className="text-kicker text-lime">الضمان الذهبي //</p>
         <h3 className="mt-5 font-display text-poster text-snow">
           ثلاثون يومًا.
@@ -312,9 +303,6 @@ export function Lawyers() {
         </h3>
         <p className="mx-auto mt-6 max-w-lg text-pretty leading-loose text-mist">
           نضمن لك ضمانًا ذهبيًا ٣٠ يومًا. إن لم تستفد من النظام، لا تدفع شيئًا. فلسفتنا ليست الربح العالي — نقف معك خطوة بخطوة، ونكبر سوا.
-        </p>
-        <p dir="ltr" className="mt-3 font-slab text-sm text-mist">
-          Step by step. We grow with you.
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
           <a
@@ -378,31 +366,17 @@ export function AiUse() {
         <LimeWave className="absolute inset-x-0 bottom-0 z-20 h-14 opacity-80 md:h-20" />
       </div>
 
-      <AiDesk />
+      <ProductTour
+        kicker="النظام خطوة بخطوة //"
+        steps={[
+          { n: "01", title: "يرد بلهجتك وبأسلوبك", body: "نجدية، قصيمية، حجازية. يتعلّم نبرتك، ويفاوت الرد من عميل لعميل.", screen: <AiInbox /> },
+          { n: "02", title: "يوجّه المحادثات", body: "يرد هو، أو يحوّل لك، أو يقفل الموضوع. التوجيه شغل، مو زر.", screen: <AiRoute /> },
+          { n: "03", title: "يدير المنصات والنشر", body: "تيك توك وباقي القنوات: الجدولة، النشر، والردود من شاشة واحدة.", screen: <AiPublish /> },
+          { n: "04", title: "ينوب عن آخر السلسلة", body: "مو إدارة فلسفية. يخلّص شغل الموظف في نهاية الخط.", screen: <AiClose /> },
+        ]}
+      />
 
       <Reveal className="px-8 py-16 text-center md:px-16">
-        <p className="text-kicker text-lime">وش يسوي //</p>
-        <h3 className="mt-5 font-display text-poster text-snow">
-          يرد. يوجّه. ينشر.
-          <br />
-          ويدير المنظومة.
-        </h3>
-        <p className="mx-auto mt-5 max-w-xl text-pretty leading-loose text-mist">
-          يتحمل اللهجات، يرد بأسلوبك، يفاوت بين العملاء، يوجّه المحادثة، ويدير التيك توك والمنصات. إدارة فعلية — تنوب عن نهاية الموظفين.
-        </p>
-      </Reveal>
-
-      <div className="grid gap-px bg-hair sm:grid-cols-2">
-        {aiModules.map((m) => (
-          <article key={m.n} className="bg-ink px-8 py-10 md:px-12">
-            <p className="font-ui text-xs tracking-widest text-lime">{m.n}</p>
-            <h4 className="mt-3 font-display text-2xl text-snow">{m.title}</h4>
-            <p className="mt-3 max-w-md text-pretty leading-loose text-mist">{m.body}</p>
-          </article>
-        ))}
-      </div>
-
-      <Reveal className="px-8 py-20 text-center md:px-16">
         <p className="text-kicker text-lime">الضمان الذهبي //</p>
         <h3 className="mt-5 font-display text-poster text-snow">
           ثلاثون يومًا.

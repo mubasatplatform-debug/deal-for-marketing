@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { AppBar } from "@/components/product-tour";
 
 const threads = [
   { name: "أبو فهد", preview: "الطلب وصل ولا باقي؟", state: "يرد الآن", on: true },
@@ -13,103 +13,107 @@ const messages = [
   { me: true, text: "أي تأخير أكلمك أنا قبل ما يوصلك. ارتاح." },
 ];
 
-const posts = [
-  { ch: "تيك توك", title: "قصة اليوم — المستودع", state: "مجدول ٦:٣٠" },
-  { ch: "سناب", title: "عرض الجمعة", state: "نُشر" },
-  { ch: "منصة X", title: "تنويه الدوام", state: "قيدك أنت" },
-];
-
-const cols = [
-  { name: "وارد", items: ["استفسار سعر", "موعد جديد"] },
-  { name: "يرد النظام", items: ["تتبع شحنة", "تأكيد حجز"] },
-  { name: "يحتاجك", items: ["شكوى فاتورة"] },
-  { name: "أُغلق", items: ["طلب مكتمل"] },
-];
-
-function Screen({ kicker, title, children }: { kicker: string; title: string; children: ReactNode }) {
+export function AiInbox() {
   return (
-    <figure className="flex min-h-80 flex-col overflow-hidden border border-ink/10 bg-snow text-ink">
-      <figcaption className="flex items-center justify-between border-b border-ink/10 px-4 py-3">
-        <span className="font-display text-base text-ink">{title}</span>
-        <span className="font-ui text-micro tracking-widest text-lime">{kicker}</span>
-      </figcaption>
-      <div className="flex-1 p-4">{children}</div>
-    </figure>
+    <div className="bg-snow text-ink">
+      <AppBar title="الوارد" crumb="لهجة · أسلوبك · عميل بعميل" />
+      <div className="grid md:grid-cols-[14rem_1fr]">
+        <ul className="border-b border-ink/10 md:border-l md:border-b-0">
+          {threads.map((t) => (
+            <li key={t.name} className={`flex items-center justify-between px-4 py-3 ${t.on ? "bg-lime/25" : ""}`}>
+              <div>
+                <p className="font-display text-sm">{t.name}</p>
+                <p className="text-xs text-ink/45">{t.preview}</p>
+              </div>
+              <span className="font-display text-xs text-ink/40">{t.state}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="space-y-2 p-5">
+          {messages.map((m) => (
+            <p
+              key={m.text}
+              className={`max-w-[92%] px-3 py-2 text-sm leading-relaxed ${m.me ? "mr-auto bg-lime" : "bg-ink/5"}`}
+            >
+              {m.text}
+            </p>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
-export function AiDesk() {
+export function AiRoute() {
+  const cols = [
+    { name: "وارد", items: ["استفسار سعر", "موعد جديد"] },
+    { name: "يرد النظام", items: ["تتبع شحنة", "تأكيد حجز"] },
+    { name: "يحتاجك", items: ["شكوى فاتورة"] },
+    { name: "أُغلق", items: ["طلب مكتمل"] },
+  ];
   return (
     <div className="bg-snow text-ink">
-      <div className="px-8 py-14 text-center md:px-16">
-        <p className="text-kicker text-lime">الواجهة //</p>
-        <h3 className="mt-4 font-display text-poster text-ink">
-          هذا شكل الشغل.
-          <br />
-          مو عرض.
-        </h3>
-        <p className="mx-auto mt-4 max-w-lg text-pretty leading-loose text-ink/60">
-          شاشة بيضاء عشان تتقرا. النظام يرد، يوجّه، وينشر — وأنت تشوفه وهو يشتغل.
-        </p>
-      </div>
-
-      <div className="grid gap-px bg-ink/10 md:grid-cols-3">
-        <Screen kicker="01" title="الوارد والرد">
-          <ul className="space-y-2">
-            {threads.map((t) => (
-              <li
-                key={t.name}
-                className={`flex items-center justify-between px-3 py-2 ${t.on ? "bg-lime/20" : "bg-ink/5"}`}
-              >
-                <div className="text-right">
-                  <p className="font-display text-sm text-ink">{t.name}</p>
-                  <p className="text-xs text-ink/50">{t.preview}</p>
-                </div>
-                <span className={`font-ui text-micro ${t.on ? "text-ink" : "text-ink/40"}`}>{t.state}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4 space-y-2">
-            {messages.map((m) => (
-              <p
-                key={m.text}
-                className={`max-w-[90%] px-3 py-2 text-sm leading-relaxed ${m.me ? "mr-auto bg-lime text-ink" : "bg-ink/5 text-ink"}`}
-              >
-                {m.text}
+      <AppBar title="توجيه المحادثات" crumb="يرد · يحوّل · يقفل" />
+      <div className="grid grid-cols-2 gap-2 p-4 md:grid-cols-4">
+        {cols.map((c) => (
+          <div key={c.name} className="bg-ink/5 p-3">
+            <p className="font-display text-xs text-lime">{c.name}</p>
+            {c.items.map((it) => (
+              <p key={it} className="mt-2 bg-snow px-2 py-3 font-display text-sm">
+                {it}
               </p>
             ))}
           </div>
-        </Screen>
+        ))}
+      </div>
+    </div>
+  );
+}
 
-        <Screen kicker="02" title="توجيه المحادثات">
-          <div className="grid grid-cols-2 gap-2">
-            {cols.map((c) => (
-              <div key={c.name} className="bg-ink/5 p-2">
-                <p className="mb-2 font-ui text-micro tracking-widest text-lime">{c.name}</p>
-                {c.items.map((it) => (
-                  <p key={it} className="mb-1 bg-snow px-2 py-2 text-xs text-ink">
-                    {it}
-                  </p>
-                ))}
-              </div>
-            ))}
+export function AiPublish() {
+  const posts = [
+    { ch: "تيك توك", title: "قصة اليوم — المستودع", state: "مجدول ٦:٣٠" },
+    { ch: "سناب", title: "عرض الجمعة", state: "نُشر" },
+    { ch: "منصة X", title: "تنويه الدوام", state: "قيدك أنت" },
+  ];
+  return (
+    <div className="bg-snow text-ink">
+      <AppBar title="المنصات والنشر" crumb="تيك توك وباقي القنوات" />
+      <ul className="p-4">
+        {posts.map((p) => (
+          <li key={p.title} className="flex items-center justify-between border-b border-ink/10 py-3">
+            <div>
+              <p className="font-display text-xs text-ink/40">{p.ch}</p>
+              <p className="font-display">{p.title}</p>
+            </div>
+            <span className="font-display text-sm text-lime">{p.state}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="px-4 pb-5">
+        <p className="bg-lime px-4 py-3 text-center font-display">انشر</p>
+      </div>
+    </div>
+  );
+}
+
+export function AiClose() {
+  const rows = [
+    ["ردود أُنجزت اليوم", "٨٤"],
+    ["حُوِّل للمحامي", "٦"],
+    ["منشورات نزلت", "٣"],
+    ["ما يحتاجك الآن", "١"],
+  ];
+  return (
+    <div className="bg-snow text-ink">
+      <AppBar title="آخر السلسلة" crumb="ينوب عن الموظف — شغل منتهي" />
+      <div className="grid grid-cols-2 gap-px bg-ink/10">
+        {rows.map(([k, v]) => (
+          <div key={k} className="bg-snow p-6">
+            <p className="font-display text-3xl text-ink">{v}</p>
+            <p className="mt-2 font-display text-sm text-ink/50">{k}</p>
           </div>
-        </Screen>
-
-        <Screen kicker="03" title="المنصات والنشر">
-          <ul className="space-y-2">
-            {posts.map((p) => (
-              <li key={p.title} className="flex items-center justify-between bg-ink/5 px-3 py-3">
-                <div className="text-right">
-                  <p className="font-ui text-micro text-ink/40">{p.ch}</p>
-                  <p className="font-display text-sm text-ink">{p.title}</p>
-                </div>
-                <span className="font-ui text-micro text-lime">{p.state}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-6 bg-lime px-4 py-3 text-center font-display text-ink">انشر</p>
-        </Screen>
+        ))}
       </div>
     </div>
   );
