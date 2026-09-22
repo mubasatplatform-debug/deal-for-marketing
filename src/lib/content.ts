@@ -121,5 +121,5 @@ export const clients = ["NORAH", "QIDDIYA", "DIRIYAH", "STC", "ROSHN", "NEOM"] a
 export const heroSlides = [
   { src: "/video/hero.mp4", poster: "/images/hero.jpg" },
   { src: "/video/about.mp4", poster: "/images/about.jpg" },
-  { src: "/video/chairman.mp4", poster: "/images/chairman-v4.jpg" },
+  { src: "/video/chairman.mp4", poster: "/images/chairman-now.jpg" },
 ] as const;

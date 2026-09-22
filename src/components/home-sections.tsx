@@ -445,9 +445,9 @@ export function Leadership() {
         <div className="relative mx-auto size-64 md:size-80">
           <span className="lime-pulse absolute inset-0 rounded-full bg-lime" />
           <img
-            src="/images/chairman-v4.jpg"
+            src="/images/chairman-now.jpg"
             alt="خالد العنزي، رئيس مجلس إدارة ديل"
-            className="absolute inset-3 rounded-full object-cover"
+            className="absolute inset-3 rounded-full object-cover object-[center_18%]"
           />
         </div>
         <h3 className="mt-8 font-display text-2xl text-snow">خالد العنزي</h3>
