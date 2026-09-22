@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
   About,
+  AiUse,
   AmgFilm,
   Clients,
   Footer,
@@ -25,6 +26,7 @@ function Home() {
         <Story />
         <Instant />
         <Lawyers />
+        <AiUse />
         <AmgFilm />
         <Services />
         <About />

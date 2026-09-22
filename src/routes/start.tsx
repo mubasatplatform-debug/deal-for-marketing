@@ -4,7 +4,7 @@ import { services } from "@/lib/content";
 
 export const Route = createFileRoute("/start")({ component: Start });
 
-const professions = new Set(["law"]);
+const professions = new Set(["law", "ai"]);
 
 function Start() {
   const professional = services.filter((s) => professions.has(s.slug));
