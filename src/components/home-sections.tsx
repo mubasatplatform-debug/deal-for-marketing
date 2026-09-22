@@ -3,7 +3,7 @@ import { ArrowLink } from "@/components/arrow-link";
 import { LimeWave } from "@/components/lime-wave";
 import { Reveal } from "@/components/reveal";
 import { SocialRow } from "@/components/site-chrome";
-import { clients, crmAtlas, heroSlides, lawAtlas, payAtlas, phone, quotes, services, works } from "@/lib/content";
+import { agency, clients, crmAtlas, heroSlides, lawAtlas, payAtlas, phone, quotes, systems, works } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
 function LiveVideo({
@@ -177,10 +177,28 @@ export function Story() {
         <p className="mt-4 font-display text-poster text-snow">
           المثالي في بناء صورة مؤثرة وإدارة حضورك الإعلامي.
         </p>
-        <ArrowLink href="#instant" className="mt-10">
-          الحل اللحظي
+        <ArrowLink href="#systems" className="mt-10">
+          الأنظمة
         </ArrowLink>
       </Reveal>
+    </section>
+  );
+}
+
+export function Systems() {
+  return (
+    <section id="systems" className="border-y border-hair bg-ink">
+      {systems.map((s) => (
+        <a
+          key={s.href}
+          href={s.href}
+          className="flex flex-col gap-2 border-b border-hair px-8 py-8 last:border-b-0 md:flex-row md:items-baseline md:justify-between md:gap-8 md:px-16"
+        >
+          <span className="font-display text-sm text-lime">{s.n}</span>
+          <span className="flex-1 font-display text-2xl text-snow md:text-3xl">{s.title}</span>
+          <span className="max-w-md font-display text-sm leading-relaxed text-mist">{s.line}</span>
+        </a>
+      ))}
     </section>
   );
 }
@@ -232,23 +250,11 @@ export function Instant() {
           لحظــي.
         </h2>
         <p className="mx-auto mt-6 max-w-xl text-pretty leading-loose text-mist">
-          غرفة عمليات: واتساب وكول سنتر. الذكاء يدير الخط بالكامل. أنت لا تدخل إلا إذا احتاجك.
+          غرفة عمليات: واتساب وكول سنتر. الذكاء يدير الخط. CRM هنا معناها: ذاكرة البيع — كل عميل ملف واحد.
         </p>
         <a href={`tel:${phone.tel}`} className="mt-8 inline-block font-ui text-3xl font-semibold text-lime md:text-4xl" dir="ltr">
           {phone.display}
         </a>
-      </Reveal>
-
-      <Reveal className="border-y border-hair px-8 py-14 text-center md:px-16">
-        <p className="text-kicker text-lime">CRM // ماذا يعني هنا؟</p>
-        <h3 className="mt-5 font-display text-poster text-snow">
-          ذاكرة البيع.
-          <br />
-          لا دفتر، ولا شات ضائع.
-        </h3>
-        <p className="mx-auto mt-6 max-w-xl text-pretty leading-loose text-mist">
-          كل عميل: واتسابه، مكالمته، طلبه، فاتورته — في ملف واحد. الذكاء يرد بأسلوبك، يوزّع الخط، ويقفل ما اكتمل.
-        </p>
       </Reveal>
 
       <Atlas items={crmAtlas} />
@@ -277,40 +283,17 @@ export function Lawyers() {
       </div>
 
       <Reveal className="px-8 py-14 text-center md:px-16">
-        <p className="text-kicker text-lime">الأنشطة المهنية // 01</p>
+        <p className="text-kicker text-lime">الأنشطة المهنية // 02</p>
         <h2 className="mt-5 font-display text-poster text-snow">للمحاميـــن.</h2>
         <p className="mx-auto mt-6 max-w-xl text-pretty leading-loose text-mist">
-          أبو فيصل من أهل المهنة، لا من هواة التقنية. بنى منصة كهذه قبل أن يطلبها السوق. ديل لا تجرّب على مكتبك — تسلّم نظامًا اكتمل اختباره.
-        </p>
-      </Reveal>
-
-      <Reveal className="border-y border-hair px-8 py-14 text-center md:px-16">
-        <p className="text-kicker text-lime">CRM // ماذا يعني؟</p>
-        <h3 className="mt-5 font-display text-poster text-snow">
-          ليس اختصارًا غامضًا.
-          <br />
-          هو ملف العميل الحي.
-        </h3>
-        <p className="mx-auto mt-6 max-w-xl text-pretty leading-loose text-mist">
-          من أول رسالة إلى آخر جلسة: العقود، المواعيد، القضية، والرد — في مكان واحد. إذا تغيّر الموظف، السياق لا يضيع. وإذا سألت «وين المعاملة؟» فالجواب على الشاشة، لا في الدرج.
+          أبو فيصل من أهل المهنة. بنى منصة كهذه قبل أن يطلبها السوق. الملف، ناجز، والفيديو — نظام واحد.
         </p>
       </Reveal>
 
       <Atlas items={lawAtlas} />
 
       <Reveal className="px-8 py-16 text-center md:px-16">
-        <p className="text-kicker text-lime">القيمة //</p>
-        <h3 className="mt-5 font-display text-poster text-snow">
-          المكتب يعمل
-          <br />
-          كعقل واحد.
-        </h3>
-        <p className="mx-auto mt-6 max-w-xl text-pretty leading-loose text-mist">
-          ظاهر للعميل، منضبط للموظفين، يحلّل العقد، يجهّز القضية ويرفع إلى ناجز، ويفتح جلسة الفيديو من داخل الموقع. هذا هو النظام كاملًا — لا مجموعة برامج متفرّقة.
-        </p>
-        <ArrowLink href="/start/law" className="mt-10">
-          اطلب هذا الحل
-        </ArrowLink>
+        <ArrowLink href="/start/law">اطلب هذا الحل</ArrowLink>
       </Reveal>
     </section>
   );
@@ -333,7 +316,7 @@ export function AiUse() {
       </div>
 
       <Reveal className="px-8 py-14 text-center md:px-16">
-        <p className="text-kicker text-lime">الأنشطة المهنية // 02</p>
+        <p className="text-kicker text-lime">الأنشطة المهنية // 03</p>
         <h2 className="mt-5 font-display text-poster text-snow">
           مو روبوت.
           <br />
@@ -378,22 +361,38 @@ export function Pay() {
   );
 }
 
+export function Pledge() {
+  return (
+    <section className="border-y border-hair bg-ink px-8 py-20 text-center md:px-16">
+      <p className="text-kicker text-lime">الضمان الذهبي //</p>
+      <h2 className="mt-5 font-display text-poster text-snow">
+        ثلاثون يومًا.
+        <br />
+        إن لم تستفد… لا تدفع.
+      </h2>
+      <p className="mx-auto mt-6 max-w-lg text-pretty leading-loose text-mist">
+        شرط الشغل. لا شعار.
+      </p>
+    </section>
+  );
+}
+
 export function Services() {
   const [i, setI] = useState(0);
-  const s = services[i];
+  const s = agency[i];
 
   return (
     <section id="services" className="bg-ink pb-8">
       <Reveal kind="clip-in" className="relative">
         <img
-          src={i === 0 ? "/images/instant.jpg" : "/images/service.jpg"}
+          src="/images/service.jpg"
           alt=""
-          className={cn("h-72 w-full object-cover md:h-[28rem]", i !== 0 && "grayscale")}
+          className="h-72 w-full object-cover grayscale md:h-[28rem]"
         />
         <button
           type="button"
           aria-label="الخدمة التالية"
-          onClick={() => setI((n) => (n + 1) % services.length)}
+          onClick={() => setI((n) => (n + 1) % agency.length)}
           className="absolute right-0 bottom-0 flex size-16 items-center justify-center bg-lime text-ink md:size-20"
         >
           <svg viewBox="0 0 24 24" className="size-8" fill="none" stroke="currentColor" strokeWidth="1.7">
@@ -406,17 +405,17 @@ export function Services() {
       <Reveal className="px-8 pt-10 text-center md:px-16">
         <div className="flex items-baseline justify-center gap-4">
           <h2 className="font-display text-2xl text-snow md:text-4xl">{s.title}</h2>
-          <span className="font-ui text-sm tracking-widest text-lime">{s.n}</span>
+          <span className="font-display text-sm text-lime">{String(i + 1).padStart(2, "0")}</span>
         </div>
         <p className="mx-auto mt-5 max-w-lg text-pretty text-base leading-loose text-mist">{s.body}</p>
         <div className="mt-8 flex justify-center gap-2">
-          {services.map((item, idx) => (
+          {agency.map((item, idx) => (
             <button
-              key={item.n}
+              key={item.slug}
               type="button"
               aria-label={item.title}
               onClick={() => setI(idx)}
-              className={cn("h-1 w-6 transition-colors", idx === i ? "bg-lime" : "bg-hair")}
+              className={cn("h-1 w-6", idx === i ? "bg-lime" : "bg-hair")}
             />
           ))}
         </div>

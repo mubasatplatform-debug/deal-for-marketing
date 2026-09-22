@@ -9,9 +9,11 @@ import {
   Lawyers,
   Leadership,
   Pay,
+  Pledge,
   Quote,
   Services,
   Story,
+  Systems,
   Works,
 } from "@/components/home-sections";
 import { SiteChrome } from "@/components/site-chrome";
@@ -24,10 +26,12 @@ function Home() {
       <main>
         <Hero />
         <Story />
+        <Systems />
         <Instant />
         <Lawyers />
         <AiUse />
         <Pay />
+        <Pledge />
         <Services />
         <About />
         <Works />
