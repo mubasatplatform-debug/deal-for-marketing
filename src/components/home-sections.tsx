@@ -3,7 +3,7 @@ import { ArrowLink } from "@/components/arrow-link";
 import { LimeWave } from "@/components/lime-wave";
 import { Reveal } from "@/components/reveal";
 import { SocialRow } from "@/components/site-chrome";
-import { clients, heroSlides, lawShots, phone, quotes, services, works } from "@/lib/content";
+import { clients, heroSlides, lawAtlas, phone, quotes, services, works } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
 function LiveVideo({
@@ -236,50 +236,6 @@ export function Instant() {
   );
 }
 
-function ShotCycle({
-  items,
-}: {
-  items: readonly { image: string; n: string; title: string }[];
-}) {
-  const [i, setI] = useState(0);
-  const s = items[i];
-  return (
-    <div>
-      <Reveal kind="clip-in" className="relative">
-        <img src={s.image} alt={s.title} className="h-72 w-full object-cover md:h-[28rem]" />
-        <button
-          type="button"
-          aria-label="التالي"
-          onClick={() => setI((n) => (n + 1) % items.length)}
-          className="absolute right-0 bottom-0 flex size-16 items-center justify-center bg-lime text-ink md:size-20"
-        >
-          <svg viewBox="0 0 24 24" className="size-8" fill="none" stroke="currentColor" strokeWidth="1.7">
-            <path d="M4 14l5-5 4 4 7-8" />
-            <path d="M14 5h6v6" />
-          </svg>
-        </button>
-      </Reveal>
-      <Reveal className="px-8 pt-10 text-center md:px-16">
-        <div className="flex items-baseline justify-center gap-4">
-          <h3 className="font-display text-2xl text-snow md:text-4xl">{s.title}</h3>
-          <span className="font-display text-sm text-lime">{s.n}</span>
-        </div>
-        <div className="mt-8 flex justify-center gap-2">
-          {items.map((item, idx) => (
-            <button
-              key={item.n}
-              type="button"
-              aria-label={item.title}
-              onClick={() => setI(idx)}
-              className={cn("h-1 w-6", idx === i ? "bg-lime" : "bg-hair")}
-            />
-          ))}
-        </div>
-      </Reveal>
-    </div>
-  );
-}
-
 export function Lawyers() {
   return (
     <section id="law" className="bg-ink">
@@ -292,24 +248,59 @@ export function Lawyers() {
           />
         </div>
         <Reveal kind="clip-in" className="relative min-h-[22rem] overflow-hidden md:min-h-[34rem]">
-          <img src="/images/law-phone.jpg" alt="واجهة مكتب المحامي" className="absolute inset-0 h-full w-full object-cover" />
+          <img src="/images/law-crm.jpg" alt="ملف العميل — CRM المكتب القانوني" className="absolute inset-0 h-full w-full object-cover" />
         </Reveal>
       </div>
 
       <Reveal className="px-8 py-14 text-center md:px-16">
         <p className="text-kicker text-lime">الأنشطة المهنية // 01</p>
-        <h2 className="mt-5 font-display text-poster text-snow">
-          للمحاميـــن.
-        </h2>
+        <h2 className="mt-5 font-display text-poster text-snow">للمحاميـــن.</h2>
         <p className="mx-auto mt-6 max-w-xl text-pretty leading-loose text-mist">
-          موقع وصفحة ثبوت، حجوزات، عملاء، موظفين، عقود، قضايا، وجلسات فيديو من داخل موقعك. نظام واحد للمكتب.
+          أبو فيصل من أهل المهنة، لا من هواة التقنية. بنى منصة كهذه قبل أن يطلبها السوق. ديل لا تجرّب على مكتبك — تسلّم نظامًا اكتمل اختباره.
         </p>
-        <ArrowLink href="/start/law" className="mt-8">
+      </Reveal>
+
+      <Reveal className="border-y border-hair px-8 py-14 text-center md:px-16">
+        <p className="text-kicker text-lime">CRM // ماذا يعني؟</p>
+        <h3 className="mt-5 font-display text-poster text-snow">
+          ليس اختصارًا غامضًا.
+          <br />
+          هو ملف العميل الحي.
+        </h3>
+        <p className="mx-auto mt-6 max-w-xl text-pretty leading-loose text-mist">
+          من أول رسالة إلى آخر جلسة: العقود، المواعيد، القضية، والرد — في مكان واحد. إذا تغيّر الموظف، السياق لا يضيع. وإذا سألت «وين المعاملة؟» فالجواب على الشاشة، لا في الدرج.
+        </p>
+      </Reveal>
+
+      <div>
+        {lawAtlas.map((item) => (
+          <article key={item.n} className="work-card">
+            <Reveal kind="clip-in">
+              <img src={item.image} alt={item.title} className="h-72 w-full object-cover md:h-[30rem]" />
+            </Reveal>
+            <div className="relative bg-card px-8 py-10 text-center">
+              <span className="absolute top-6 left-6 font-display text-xs text-lime">{item.n}</span>
+              <h3 className="font-display text-2xl text-snow md:text-3xl">{item.title}</h3>
+              <p className="mx-auto mt-4 max-w-lg text-pretty leading-loose text-mist">{item.body}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <Reveal className="px-8 py-16 text-center md:px-16">
+        <p className="text-kicker text-lime">القيمة //</p>
+        <h3 className="mt-5 font-display text-poster text-snow">
+          المكتب يعمل
+          <br />
+          كعقل واحد.
+        </h3>
+        <p className="mx-auto mt-6 max-w-xl text-pretty leading-loose text-mist">
+          ظاهر للعميل، منضبط للموظفين، يحلّل العقد، يجهّز القضية ويرفع إلى ناجز، ويفتح جلسة الفيديو من داخل الموقع. هذا هو النظام كاملًا — لا مجموعة برامج متفرّقة.
+        </p>
+        <ArrowLink href="/start/law" className="mt-10">
           اطلب هذا الحل
         </ArrowLink>
       </Reveal>
-
-      <ShotCycle items={lawShots} />
     </section>
   );
 }
