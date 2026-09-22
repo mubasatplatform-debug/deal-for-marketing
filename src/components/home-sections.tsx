@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { AiDesk } from "@/components/ai-desk";
 import { ArrowLink } from "@/components/arrow-link";
 import { LimeWave } from "@/components/lime-wave";
 import { Reveal } from "@/components/reveal";
@@ -355,7 +356,7 @@ export function AiUse() {
         </p>
 
         <p dir="ltr" className="absolute top-20 left-5 z-20 font-ui text-micro tracking-[0.28em] text-snow/70 md:left-10">
-          CINEMA · AI
+          CINEMA · SAUDI
         </p>
         <p dir="ltr" className="absolute top-20 right-5 z-20 font-ui text-micro tracking-[0.28em] text-lime md:right-10">
           LIVE
@@ -365,30 +366,29 @@ export function AiUse() {
           <Reveal>
             <p className="text-kicker text-lime">الأنشطة المهنية // 02</p>
             <h2 className="mt-3 max-w-2xl font-display text-poster text-snow md:text-6xl">
-              استخدام
+              مو روبوت.
               <br />
-              الذكاء الاصطناعي.
+              نظام سعودي.
             </h2>
             <p className="mt-4 max-w-md font-display text-xl text-snow/90">
-              لا نبيع أداة. نُدخل الذكاء داخل عملك.
-            </p>
-            <p dir="ltr" className="mt-2 font-slab text-sm text-mist">
-              AI that works inside the business.
+              ولدنا. من عيالنا. يشتغل مكان الموظف في آخر الخط.
             </p>
           </Reveal>
         </div>
         <LimeWave className="absolute inset-x-0 bottom-0 z-20 h-14 opacity-80 md:h-20" />
       </div>
 
+      <AiDesk />
+
       <Reveal className="px-8 py-16 text-center md:px-16">
-        <p className="text-kicker text-lime">كيف نستخدمه //</p>
+        <p className="text-kicker text-lime">وش يسوي //</p>
         <h3 className="mt-5 font-display text-poster text-snow">
-          الذكاء يعمل…
+          يرد. يوجّه. ينشر.
           <br />
-          وأنت تقود.
+          ويدير المنظومة.
         </h3>
         <p className="mx-auto mt-5 max-w-xl text-pretty leading-loose text-mist">
-          مساعد، أتمتة، قراءة ملفات، وقرارات من البيانات. بهوية علامتك، وبفريقك — خطوة بخطوة.
+          يتحمل اللهجات، يرد بأسلوبك، يفاوت بين العملاء، يوجّه المحادثة، ويدير التيك توك والمنصات. إدارة فعلية — تنوب عن نهاية الموظفين.
         </p>
       </Reveal>
 
@@ -410,7 +410,7 @@ export function AiUse() {
           إن لم تستفد… لا تدفع.
         </h3>
         <p className="mx-auto mt-6 max-w-lg text-pretty leading-loose text-mist">
-          نقف معك حتى يصير الاستخدام عادة. إن لم تستفد خلال ٣٠ يومًا، لا تدفع شيئًا.
+          نضمن لك ٣٠ يومًا. إن ما استفدت، لا تدفع. مو كلام تسويق — هذا شرط الشغل.
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
           <a
