@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteChrome } from "@/components/site-chrome";
 import { SignedIn } from "@/lib/auth/gates";
-import { phone as dealPhone, serviceBySlug } from "@/lib/content";
+import { mobile, phone as dealPhone, serviceBySlug } from "@/lib/content";
 import { LINE_DRAFT_KEY } from "@/lib/line";
 import { normalizePhone } from "@/lib/phone";
 import { createRequest, LEAD_ERRORS } from "@/lib/requests";
@@ -16,7 +16,11 @@ export const Route = createFileRoute("/start/$slug")({
   head: ({ params }) => {
     const service = serviceBySlug(params.slug);
     return service
-      ? pageHead({ title: service.title, description: service.body, path: `/start/${service.slug}` })
+      ? pageHead({
+          title: service.title,
+          description: service.body,
+          path: `/start/${service.slug}`,
+        })
       : pageHead({ noindex: true });
   },
   component: StartService,
@@ -128,6 +132,14 @@ function StartService() {
               للاستعجال:{" "}
               <a href={`tel:${dealPhone.tel}`} className="text-lime" dir="ltr">
                 {dealPhone.display}
+              </a>{" "}
+              ·{" "}
+              <a
+                href={`https://wa.me/${mobile.wa}?text=${encodeURIComponent(`طلب رقم ${sentId} — ${service.title}`)}`}
+                className="text-lime"
+              >
+                واتساب{" "}
+                <span dir="ltr">{mobile.display}</span>
               </a>
             </p>
             <SignedIn>

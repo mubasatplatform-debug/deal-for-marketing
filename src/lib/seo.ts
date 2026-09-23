@@ -1,4 +1,4 @@
-import { phone } from "@/lib/content";
+import { mobile, phone } from "@/lib/content";
 
 /** Public origin used for canonical links, the sitemap and JSON-LD. */
 export const SITE_URL = "https://dealadv.sa";
@@ -34,6 +34,22 @@ export const organizationJsonLd = {
   image: `${SITE_URL}/og.jpg`,
   email: "info@dealadv.sa",
   telephone: phone.tel,
+  contactPoint: [
+    {
+      "@type": "ContactPoint",
+      telephone: phone.tel,
+      contactType: "customer service",
+      areaServed: "SA",
+      availableLanguage: "ar",
+    },
+    {
+      "@type": "ContactPoint",
+      telephone: mobile.tel,
+      contactType: "sales",
+      areaServed: "SA",
+      availableLanguage: "ar",
+    },
+  ],
   address: {
     "@type": "PostalAddress",
     addressLocality: "بريدة",

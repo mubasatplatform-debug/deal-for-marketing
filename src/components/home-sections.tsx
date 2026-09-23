@@ -4,7 +4,7 @@ import { ArrowLink } from "@/components/arrow-link";
 import { LimeWave } from "@/components/lime-wave";
 import { Reveal } from "@/components/reveal";
 import { SocialRow } from "@/components/site-chrome";
-import { agency, clients, phone, quotes, systems, works } from "@/lib/content";
+import { agency, clients, mobile, phone, quotes, systems, works } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
 /** Responsive variants generated under /public/images as `<name>-<w>.avif|webp`, JPEG fallback `<name>.jpg`. */
@@ -690,6 +690,11 @@ export function Footer() {
             <p className="text-sm text-dim">هاتف</p>
             <a href={`tel:${phone.tel}`} className="mt-2 inline-flex items-center gap-2 text-lg text-snow" dir="ltr">
               {phone.display}
+              <span className="text-lime">•</span>
+            </a>
+            <p className="mt-5 text-sm text-dim">جوال وواتساب</p>
+            <a href={`tel:${mobile.tel}`} className="mt-2 inline-flex items-center gap-2 text-lg text-snow" dir="ltr">
+              {mobile.display}
               <span className="text-lime">•</span>
             </a>
             <a href={phone.wa} className="mt-2 block text-sm text-lime">

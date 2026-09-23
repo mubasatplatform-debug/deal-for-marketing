@@ -1,7 +1,15 @@
+/** Landline for calls. WhatsApp runs on the mobile line (`mobile`). */
 export const phone = {
   display: "0165107138",
   tel: "+966165107138",
-  wa: "https://wa.me/966165107138",
+  wa: "https://wa.me/966571920000",
+} as const;
+
+export const mobile = {
+  display: "0571920000",
+  tel: "+966571920000",
+  /** Digits only, for wa.me links (`https://wa.me/${mobile.wa}?text=…`). */
+  wa: "966571920000",
 } as const;
 
 export const nav = [

@@ -1,4 +1,4 @@
-import { phone } from "@/lib/content";
+import { mobile, phone } from "@/lib/content";
 
 export function SiteFooter() {
   return (
@@ -11,6 +11,14 @@ export function SiteFooter() {
             className="block font-ui text-lg text-snow hover:text-lime"
           >
             {phone.display}
+          </a>
+          <a
+            href={phone.wa}
+            dir="ltr"
+            aria-label={`واتساب ${mobile.display}`}
+            className="block font-ui text-lg text-snow hover:text-lime"
+          >
+            {mobile.display} <span className="font-dash text-sm text-lime">واتساب</span>
           </a>
           <a
             href="mailto:info@dealadv.sa"

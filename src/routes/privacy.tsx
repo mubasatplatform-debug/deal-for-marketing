@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteChrome } from "@/components/site-chrome";
-import { phone } from "@/lib/content";
+import { mobile, phone } from "@/lib/content";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/privacy")({
@@ -85,6 +85,10 @@ function Privacy() {
             ·{" "}
             <a href={`tel:${phone.tel}`} className="text-lime" dir="ltr">
               {phone.display}
+            </a>{" "}
+            ·{" "}
+            <a href={phone.wa} className="text-lime" dir="ltr">
+              {mobile.display}
             </a>
           </p>
           <Link to="/start" className="inline-flex font-display text-sm text-lime">
