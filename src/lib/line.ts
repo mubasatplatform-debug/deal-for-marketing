@@ -101,9 +101,7 @@ const inputSchema = z.object({
 const LINE_IP_LIMIT_PER_HOUR = 40;
 const LINE_DAILY_MODEL_CAP = Number(process.env.LINE_DAILY_CAP) || 1500;
 
-const catalog = services
-  .map((s) => `${s.slug} — ${s.title}: ${s.body}`)
-  .join("\n");
+const catalog = services.map((s) => `${s.slug} — ${s.title}: ${s.body}`).join("\n");
 
 const SYSTEM = `أنت خط ديل — خدمة العملاء والكول سنتر لوكالة ديل DEAL (القصيم، بريدة).
 
@@ -234,7 +232,8 @@ function localRoute(messages: LineMessage[]): LineTurn {
 
   if (!owner && /سدد|فاتور|دفع|يطلبني/.test(last)) {
     return emptyTurn({
-      reply: "راجعت ملفك الحين. الفاتورة ٤١٢ واصلة، وما عليك شيء قائم. إذا وصلك تذكير ثاني كلّمني وأقفله.",
+      reply:
+        "راجعت ملفك الحين. الفاتورة ٤١٢ واصلة، وما عليك شيء قائم. إذا وصلك تذكير ثاني كلّمني وأقفله.",
       dialect,
       dialect_label: dialectLabels[dialect],
       intent: "مراجعة سداد",
@@ -251,7 +250,8 @@ function localRoute(messages: LineMessage[]): LineTurn {
 
   if (!owner && /وصل|طلب|شحن|٣٨١٢/.test(last)) {
     return emptyTurn({
-      reply: "طلبك ٣٨١٢ شحنته طلعت اليوم قبل العصر. إذا ما وصلك قبل المغرب أكلمك أنا. رقمك على الملف، ارتاح.",
+      reply:
+        "طلبك ٣٨١٢ شحنته طلعت اليوم قبل العصر. إذا ما وصلك قبل المغرب أكلمك أنا. رقمك على الملف، ارتاح.",
       dialect,
       dialect_label: dialectLabels[dialect],
       intent: "تتبع طلب",
@@ -400,6 +400,47 @@ async function callClaude(messages: LineMessage[]): Promise<string | null> {
   return text && text.type === "text" ? text.text : null;
 }
 
+/**
+ * Claude through Vercel AI Gateway — needs no Anthropic key. On a Vercel
+ * deployment the gateway authenticates with the project's own OIDC token
+ * (billed to the Vercel team's AI Gateway credits); AI_GATEWAY_API_KEY
+ * works anywhere. Anthropic-only request fields (betas, fallbacks) are not
+ * sent through the gateway.
+ */
+async function callClaudeGateway(messages: LineMessage[], apiKey: string): Promise<string | null> {
+  const { default: Anthropic } = await import("@anthropic-ai/sdk");
+  const client = new Anthropic({
+    apiKey,
+    baseURL: "https://ai-gateway.vercel.sh",
+    timeout: 28_000,
+    maxRetries: 1,
+  });
+  const response = await client.messages.create({
+    model: "anthropic/claude-opus-5",
+    max_tokens: 2000,
+    output_config: {
+      effort: "low",
+      format: { type: "json_schema", schema: turnJsonSchema },
+    },
+    system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
+    messages,
+  });
+  if (response.stop_reason === "refusal") return null;
+  const text = response.content.find((b) => b.type === "text");
+  return text && text.type === "text" ? text.text : null;
+}
+
+/** The deployment's Vercel OIDC token, or null when not running on Vercel. */
+async function vercelOidcToken(): Promise<string | null> {
+  if (!process.env.VERCEL) return null;
+  try {
+    const { getVercelOidcToken } = await import("@vercel/oidc");
+    return (await getVercelOidcToken()) || null;
+  } catch {
+    return null;
+  }
+}
+
 /** xAI Grok — secondary engine, kept for deploys that only carry XAI_API_KEY. */
 async function callXai(messages: LineMessage[], apiKey: string): Promise<string> {
   const res = await fetch("https://api.x.ai/v1/chat/completions", {
@@ -428,57 +469,74 @@ async function callXai(messages: LineMessage[], apiKey: string): Promise<string>
 }
 
 /** The first configured engine: Claude, then xAI; null means local router only. */
-function modelEngine(): ((messages: LineMessage[]) => Promise<string | null>) | null {
+/**
+ * The first available engine, most direct first:
+ * 1. ANTHROPIC_API_KEY → Claude on the Anthropic API (with refusal fallbacks);
+ * 2. AI_GATEWAY_API_KEY → Claude through Vercel AI Gateway;
+ * 3. XAI_API_KEY → xAI (the Grok platform injects this on its deploys);
+ * 4. on the team's own Vercel deploy → Claude through AI Gateway via OIDC;
+ * null → the local router answers.
+ */
+async function modelEngine(): Promise<
+  ((messages: LineMessage[]) => Promise<string | null>) | null
+> {
   if (process.env.ANTHROPIC_API_KEY?.trim()) return callClaude;
+  const gatewayKey = process.env.AI_GATEWAY_API_KEY?.trim();
+  if (gatewayKey) return (messages) => callClaudeGateway(messages, gatewayKey);
   const xaiKey = process.env.XAI_API_KEY?.trim();
   if (xaiKey) return (messages) => callXai(messages, xaiKey);
+  const oidc = await vercelOidcToken();
+  if (oidc) return (messages) => callClaudeGateway(messages, oidc);
   return null;
 }
 
 export const routeLine = createServerFn({ method: "POST" })
   .validator((input: unknown) => inputSchema.parse(input))
-  .handler(async ({ data }): Promise<{ ok: true; turn: LineTurn } | { ok: false; error: string }> => {
-    const userTurns = data.messages.filter((m) => m.role === "user").length;
-    if (userTurns > LINE_MAX_TURNS) {
-      return { ok: false, error: "بلغت حد الجلسة. حوّل الملف لطلب أو ابدأ من جديد." };
-    }
-    const last = data.messages[data.messages.length - 1];
-    if (!last || last.role !== "user") {
-      return { ok: false, error: "أرسل رسالة أولاً." };
-    }
-
-    // Unauthenticated and spends the owner's model quota, so: same-site only,
-    // throttled per visitor, and capped per day (then the local router answers).
-    const { assertSameSiteRequest } = await import("@/lib/auth/isolation.server");
-    const { clientIp, recentHits, takeHit, RateLimitError } = await import("@/lib/rate-limit.server");
-    assertSameSiteRequest();
-    try {
-      await takeHit(`line:${clientIp()}`, LINE_IP_LIMIT_PER_HOUR, 3600);
-    } catch (err) {
-      if (err instanceof RateLimitError) {
-        return { ok: false, error: "الخط مزدحم منك. جرّب بعد ساعة أو اتصل بنا مباشرة." };
+  .handler(
+    async ({ data }): Promise<{ ok: true; turn: LineTurn } | { ok: false; error: string }> => {
+      const userTurns = data.messages.filter((m) => m.role === "user").length;
+      if (userTurns > LINE_MAX_TURNS) {
+        return { ok: false, error: "بلغت حد الجلسة. حوّل الملف لطلب أو ابدأ من جديد." };
       }
-      throw err;
-    }
+      const last = data.messages[data.messages.length - 1];
+      if (!last || last.role !== "user") {
+        return { ok: false, error: "أرسل رسالة أولاً." };
+      }
 
-    const engine = modelEngine();
-    if (!engine || (await recentHits("line:model", 86400)) >= LINE_DAILY_MODEL_CAP) {
-      return { ok: true, turn: localRoute(data.messages) };
-    }
-    await takeHit("line:model", Number.MAX_SAFE_INTEGER, 86400);
-
-    try {
-      const raw = await engine(data.messages);
-      if (!raw) return { ok: true, turn: localRoute(data.messages) };
-      const turn = parseTurn(raw);
-      if (!turn.dialect_label) turn.dialect_label = dialectLabels[turn.dialect];
-      if (!turn.route_label) turn.route_label = routeLabels[turn.route];
-      return { ok: true, turn };
-    } catch {
+      // Unauthenticated and spends the owner's model quota, so: same-site only,
+      // throttled per visitor, and capped per day (then the local router answers).
+      const { assertSameSiteRequest } = await import("@/lib/auth/isolation.server");
+      const { clientIp, recentHits, takeHit, RateLimitError } =
+        await import("@/lib/rate-limit.server");
+      assertSameSiteRequest();
       try {
-        return { ok: true, turn: localRoute(data.messages) };
-      } catch {
-        return { ok: false, error: "الخط مشغول لحظة. أعد الإرسال." };
+        await takeHit(`line:${clientIp()}`, LINE_IP_LIMIT_PER_HOUR, 3600);
+      } catch (err) {
+        if (err instanceof RateLimitError) {
+          return { ok: false, error: "الخط مزدحم منك. جرّب بعد ساعة أو اتصل بنا مباشرة." };
+        }
+        throw err;
       }
-    }
-  });
+
+      const engine = await modelEngine();
+      if (!engine || (await recentHits("line:model", 86400)) >= LINE_DAILY_MODEL_CAP) {
+        return { ok: true, turn: localRoute(data.messages) };
+      }
+      await takeHit("line:model", Number.MAX_SAFE_INTEGER, 86400);
+
+      try {
+        const raw = await engine(data.messages);
+        if (!raw) return { ok: true, turn: localRoute(data.messages) };
+        const turn = parseTurn(raw);
+        if (!turn.dialect_label) turn.dialect_label = dialectLabels[turn.dialect];
+        if (!turn.route_label) turn.route_label = routeLabels[turn.route];
+        return { ok: true, turn };
+      } catch {
+        try {
+          return { ok: true, turn: localRoute(data.messages) };
+        } catch {
+          return { ok: false, error: "الخط مشغول لحظة. أعد الإرسال." };
+        }
+      }
+    },
+  );
