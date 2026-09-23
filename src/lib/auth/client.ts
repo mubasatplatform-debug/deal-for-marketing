@@ -40,6 +40,27 @@ export const authEnabled = import.meta.env.VITE_AUTH_ENABLED !== "false";
 /** The upstream providers to render sign-in buttons for. */
 export { GROK_PROVIDERS };
 
+/**
+ * Email/password mode (`VITE_SIGNIN_MODE=password`): off-platform deploys sign
+ * in against this app's own Better Auth instead of the Grok broker.
+ */
+export { emailAndPasswordEnabled as passwordSignIn } from "./email-password";
+
+/** Sign in with email + password; resolves to an Arabic error message or null. */
+export async function signInWithPassword(email: string, password: string): Promise<string | null> {
+  const { error } = await authClient.signIn.email({ email, password });
+  return error ? "البريد أو كلمة المرور غير صحيحة." : null;
+}
+
+/** Create an account with email + password; resolves to an Arabic error message or null. */
+export async function signUpWithPassword(name: string, email: string, password: string): Promise<string | null> {
+  const { error } = await authClient.signUp.email({ name, email, password });
+  if (!error) return null;
+  if (error.status === 422 || /exist/i.test(error.message ?? "")) return "هذا البريد مسجّل مسبقًا — سجّل الدخول.";
+  if (/password/i.test(error.message ?? "")) return "كلمة المرور قصيرة — ٨ أحرف على الأقل.";
+  return "تعذر إنشاء الحساب، حاول مرة أخرى.";
+}
+
 // ── Live-preview bearer token ────────────────────────────────────────────────
 // The embedded preview iframe has partitioned cookies, so we keep the session's
 // bearer token in sessionStorage and attach it to every Better Auth request (and

@@ -21,9 +21,12 @@ export type AdminRequestRow = {
 export const ADMIN_FORBIDDEN = "Forbidden";
 
 /**
- * Staff are the signed-in users whose **Google** account email is listed in
- * `ADMIN_EMAILS` (comma separated). X accounts are never admins: the broker
- * gives them synthetic, unverified emails that anyone could collide with.
+ * Staff are the signed-in users whose account email is listed in
+ * `ADMIN_EMAILS` (comma separated), through a **Google** sign-in or an
+ * email/password account (off-platform deploys; the owner's account is
+ * created at deploy time so nobody else can register that email first).
+ * X accounts are never admins: the broker gives them synthetic, unverified
+ * emails that anyone could collide with.
  */
 async function assertAdmin(userId: string): Promise<void> {
   const allowed = (process.env.ADMIN_EMAILS ?? "")
@@ -35,7 +38,7 @@ async function assertAdmin(userId: string): Promise<void> {
   const rows = await sql<{ email: string }>`
     select u.email from "user" u
     join "account" a on a."userId" = u.id
-    where u.id = ${userId} and a."providerId" = 'grok-google'
+    where u.id = ${userId} and a."providerId" in ('grok-google', 'credential')
     limit 1
   `;
   const email = rows[0]?.email?.toLowerCase();
