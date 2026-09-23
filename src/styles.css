@@ -28,6 +28,12 @@
   --color-mist: #c6c6c6;
   --color-dim: #8d8d8d;
   --color-lime: #c2cf30;
+  /* The identity's second green: DEAL wordmark, script line and filled mark
+     on the lime band (brand board). pine-deep/pine-soft are its dark-UI
+     surfaces and tints — never introduce another green. */
+  --color-pine: #24484c;
+  --color-pine-deep: #102628;
+  --color-pine-soft: #3d6a6e;
   --color-card: #141414;
   --color-hair: #2a2a2a;
   --font-display: "deal-font", "Cairo", sans-serif;

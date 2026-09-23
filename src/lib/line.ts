@@ -336,6 +336,71 @@ function localRoute(messages: LineMessage[]): LineTurn {
   });
 }
 
+/** JSON Schema of one Deal Line turn, for Claude structured outputs. */
+const turnJsonSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: [
+    "reply",
+    "dialect",
+    "dialect_label",
+    "intent",
+    "route",
+    "route_label",
+    "service_slug",
+    "company",
+    "brief_so_far",
+    "next_need",
+    "ready",
+    "confidence",
+    "stack",
+  ],
+  properties: {
+    reply: { type: "string" },
+    dialect: { type: "string", enum: [...dialects] },
+    dialect_label: { type: "string" },
+    intent: { type: "string" },
+    route: { type: "string", enum: [...routes] },
+    route_label: { type: "string" },
+    service_slug: { type: "string", enum: [...serviceSlugs] },
+    company: { type: "string" },
+    brief_so_far: { type: "string" },
+    next_need: { type: "string" },
+    ready: { type: "boolean" },
+    confidence: { type: "integer" },
+    stack: { type: "array", items: { type: "string" } },
+  },
+} as const;
+
+/**
+ * Claude (Anthropic) — the primary engine. Structured outputs guarantee the
+ * turn JSON; `fallbacks: "default"` lets the API re-run a declined request on
+ * Anthropic's recommended fallback model instead of returning a refusal.
+ * Returns null when the whole chain refuses, so the caller can fall back.
+ */
+async function callClaude(messages: LineMessage[]): Promise<string | null> {
+  const { default: Anthropic } = await import("@anthropic-ai/sdk");
+  const client = new Anthropic({ timeout: 28_000, maxRetries: 1 });
+  const response = await client.beta.messages.create({
+    model: "claude-opus-5",
+    // A turn is a short JSON object; the cap bounds spend on an open endpoint.
+    max_tokens: 2000,
+    betas: ["server-side-fallback-2026-07-01"],
+    fallbacks: "default",
+    // Chat is latency-sensitive and each turn is routine: keep thinking light.
+    output_config: {
+      effort: "low",
+      format: { type: "json_schema", schema: turnJsonSchema },
+    },
+    system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
+    messages,
+  });
+  if (response.stop_reason === "refusal") return null;
+  const text = response.content.find((b) => b.type === "text");
+  return text && text.type === "text" ? text.text : null;
+}
+
+/** xAI Grok — secondary engine, kept for deploys that only carry XAI_API_KEY. */
 async function callXai(messages: LineMessage[], apiKey: string): Promise<string> {
   const res = await fetch("https://api.x.ai/v1/chat/completions", {
     method: "POST",
@@ -360,6 +425,14 @@ async function callXai(messages: LineMessage[], apiKey: string): Promise<string>
     choices?: { message?: { content?: string } }[];
   };
   return body.choices?.[0]?.message?.content ?? "";
+}
+
+/** The first configured engine: Claude, then xAI; null means local router only. */
+function modelEngine(): ((messages: LineMessage[]) => Promise<string | null>) | null {
+  if (process.env.ANTHROPIC_API_KEY?.trim()) return callClaude;
+  const xaiKey = process.env.XAI_API_KEY?.trim();
+  if (xaiKey) return (messages) => callXai(messages, xaiKey);
+  return null;
 }
 
 export const routeLine = createServerFn({ method: "POST" })
@@ -388,14 +461,15 @@ export const routeLine = createServerFn({ method: "POST" })
       throw err;
     }
 
-    const apiKey = process.env.XAI_API_KEY;
-    if (!apiKey || (await recentHits("line:model", 86400)) >= LINE_DAILY_MODEL_CAP) {
+    const engine = modelEngine();
+    if (!engine || (await recentHits("line:model", 86400)) >= LINE_DAILY_MODEL_CAP) {
       return { ok: true, turn: localRoute(data.messages) };
     }
     await takeHit("line:model", Number.MAX_SAFE_INTEGER, 86400);
 
     try {
-      const raw = await callXai(data.messages, apiKey);
+      const raw = await engine(data.messages);
+      if (!raw) return { ok: true, turn: localRoute(data.messages) };
       const turn = parseTurn(raw);
       if (!turn.dialect_label) turn.dialect_label = dialectLabels[turn.dialect];
       if (!turn.route_label) turn.route_label = routeLabels[turn.route];
