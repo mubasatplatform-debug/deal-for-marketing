@@ -693,14 +693,6 @@ export async function bookSlotCore(
   return r?.id && r.lawyer_id ? { id: r.id, lawyerId: r.lawyer_id } : null;
 }
 
-/** An existing client of the office with this phone (bookings link to them). */
-export async function clientByPhoneCore(sql: SqlTag, workspaceId: string, phone: string): Promise<string | null> {
-  const [r] = await sql<{ id: string }>`
-    select id from law_clients where workspace_id = ${workspaceId} and phone = ${phone} order by created_at limit 1
-  `;
-  return r?.id ?? null;
-}
-
 /** Emails of the office's owners/admins (+ the assigned lawyer) for new-booking notices. */
 export async function officeNotifyEmailsCore(sql: SqlTag, workspaceId: string, lawyerId: string | null) {
   const rows = await sql<{ email: string }>`
@@ -741,7 +733,9 @@ export async function meetByHashCore(sql: SqlTag, tokenHash: string): Promise<Me
   if (!/^[0-9a-f]{64}$/.test(tokenHash)) return null;
   const [r] = await sql<MeetRow>`
     select a.id, a.workspace_id, w.name as office_name, w.slug as office_slug, w.plan as office_plan, a.kind,
-           a.mode, a.status, a.title, coalesce(c.name, a.lead_name) as client_name, a.lawyer_id,
+           a.mode, a.status, a.title,
+           -- An online booking shows only what the booker typed, never office data.
+           case when a.source = 'booking' then a.lead_name else coalesce(c.name, a.lead_name) end as client_name, a.lawyer_id,
            coalesce(nullif(u.name, ''), split_part(u.email, '@', 1)) as lawyer_name, a.starts_at, a.ends_at,
            a.location, a.external_url, a.video_room, a.meet_nonce, a.client_admitted_at
     from law_appointments a

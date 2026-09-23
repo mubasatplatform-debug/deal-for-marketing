@@ -398,6 +398,9 @@ test("booking: slots are reserved atomically and never double-booked", async () 
   const existing = await createClientCore(sql, owner, client("أحمد القحطاني", { phone: "0501234567" }));
   const converted = await convertLeadCore(sql, owner, one!.id);
   assert.equal(converted.clientId, existing.id);
+  // The public meeting page of an online booking never reveals the office's
+  // record of that client, only the name the booker typed.
+  assert.equal((await meetByHashCore(sql, hashMeetToken("t1")))?.client_name, "أحمد");
   await pg.close();
 });
 

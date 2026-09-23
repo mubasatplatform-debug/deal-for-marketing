@@ -176,8 +176,7 @@ export const createBooking = createServerFn({ method: "POST" })
     }
     if (data.fillMs < MIN_FILL_MS) throw new Error(PUBLIC_ERRORS.tooFast);
     await throttle("book", 5, 3600);
-    const { publicOfficeCore, busyCore, availabilityOf, bookSlotCore, clientByPhoneCore, officeNotifyEmailsCore } =
-      await core();
+    const { publicOfficeCore, busyCore, availabilityOf, bookSlotCore, officeNotifyEmailsCore } = await core();
     const { isOfferedStart, freeLawyers } = await import("./slots");
     const { newConsultIdentity, mailClient, mailOfficeRequested } = await import("./consult.server");
     const { takeHit, RateLimitError } = await import("@/lib/rate-limit.server");
@@ -218,7 +217,6 @@ export const createBooking = createServerFn({ method: "POST" })
     const candidates = [...free].sort((a, b) => load(a) - load(b));
     if (candidates.length === 0) throw new Error(PUBLIC_ERRORS.slot);
 
-    const clientId = data.phone ? await clientByPhoneCore(sql, office.id, data.phone) : null;
     const ident = newConsultIdentity(data.mode);
     const booked = await bookSlotCore(sql, {
       id: ident.id,
@@ -232,7 +230,10 @@ export const createBooking = createServerFn({ method: "POST" })
       name: data.name,
       phone: data.phone!,
       email: data.email,
-      clientId,
+      // Never linked to an existing client by phone here: an anonymous visitor
+      // could otherwise probe the office's client list through the meet page.
+      // Staff link or convert the booking after reviewing it.
+      clientId: null,
       room: ident.room,
       nonce: ident.nonce,
       tokenHash: ident.tokenHash,
