@@ -7,27 +7,127 @@ import { SocialRow } from "@/components/site-chrome";
 import { agency, clients, phone, quotes, systems, works } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
+/** Responsive variants generated under /public/images as `<name>-<w>.avif|webp`, JPEG fallback `<name>.jpg`. */
+type Media = { widths: readonly number[]; width: number; height: number };
+
+const SHOT = { widths: [800, 1600, 2400], width: 2400, height: 1380 } as const;
+const WIDE = { widths: [800, 1600], width: 1600, height: 900 } as const;
+const FOUR_THREE = { widths: [800, 1600], width: 1600, height: 1200 } as const;
+
+const media: Record<string, Media> = {
+  hero: { widths: [720, 1008], width: 1008, height: 1792 },
+  "chairman-now": { widths: [400, 800], width: 800, height: 800 },
+  "ops-inbox": SHOT,
+  "desk-home": SHOT,
+  "ops-ai": SHOT,
+  "pay-home": SHOT,
+  service: FOUR_THREE,
+  quote: WIDE,
+  about: WIDE,
+  "work-app": { widths: [800, 1200], width: 1200, height: 1600 },
+  "work-beat": FOUR_THREE,
+  "work-desert": WIDE,
+  "work-event": WIDE,
+  "work-luxe": WIDE,
+  "work-shop": FOUR_THREE,
+};
+
+/** `object-cover` boxes render wider than the viewport on short screens, so sizes follow the cover width. */
+const SIZES = {
+  full: "100vw",
+  clip: "110vw",
+  shot: "(min-width: 891px) 100vw, (min-width: 768px) 891px, (min-width: 612px) 100vw, 612px",
+  quote: "(min-width: 1300px) 100vw, 1300px",
+  about: "(min-width: 1200px) 100vw, (min-width: 768px) 1200px, 970px",
+  chairman: "(min-width: 768px) 296px, 232px",
+} as const;
+
+function Pic({
+  src,
+  alt,
+  sizes,
+  className,
+  priority = false,
+}: {
+  src: string;
+  alt: string;
+  sizes: string;
+  className?: string;
+  priority?: boolean;
+}) {
+  const name = src.replace(/^\/images\//, "").replace(/\.jpg$/, "");
+  const m = media[name];
+  const img = (
+    <img
+      src={src}
+      alt={alt}
+      width={m?.width}
+      height={m?.height}
+      loading={priority ? "eager" : "lazy"}
+      decoding={priority ? undefined : "async"}
+      fetchPriority={priority ? "high" : undefined}
+      className={className}
+    />
+  );
+  if (!m) return img;
+  const set = (ext: string) => m.widths.map((w) => `/images/${name}-${w}.${ext} ${w}w`).join(", ");
+  return (
+    <picture>
+      <source type="image/avif" srcSet={set("avif")} sizes={sizes} />
+      <source type="image/webp" srcSet={set("webp")} sizes={sizes} />
+      {img}
+    </picture>
+  );
+}
+
+/** Decorative autoplay loops are skipped for reduced motion and Save-Data; the image underneath stays. */
+function motionAllowed() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+  const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+  return !conn?.saveData;
+}
+
+function afterLoadIdle(cb: () => void) {
+  let idle = 0;
+  let timer = 0;
+  const run = () => {
+    const hasIdle = typeof (window.requestIdleCallback as unknown) === "function";
+    if (hasIdle) idle = window.requestIdleCallback(cb, { timeout: 3000 });
+    else timer = window.setTimeout(cb, 1500);
+  };
+  if (document.readyState === "complete") run();
+  else window.addEventListener("load", run, { once: true });
+  return () => {
+    window.removeEventListener("load", run);
+    if (idle) window.cancelIdleCallback(idle);
+    if (timer) window.clearTimeout(timer);
+  };
+}
+
 function LiveVideo({
   src,
-  poster,
   className,
   eager = false,
 }: {
   src: string;
-  poster: string;
   className?: string;
+  /** Attach after window load + idle instead of when scrolled near. */
   eager?: boolean;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
-  const [on, setOn] = useState(eager);
+  const [on, setOn] = useState(false);
 
   useEffect(() => {
-    if (eager) return;
+    if (!motionAllowed()) return;
+    if (eager) return afterLoadIdle(() => setOn(true));
     const el = ref.current;
     if (!el) return;
     const io = new IntersectionObserver(
       ([e]) => {
-        if (e.isIntersecting) setOn(true);
+        if (e.isIntersecting) {
+          setOn(true);
+          io.disconnect();
+        }
       },
       { rootMargin: "280px" },
     );
@@ -39,12 +139,18 @@ function LiveVideo({
     if (!on) return;
     const v = ref.current;
     if (!v) return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     const play = () => {
-      v.play().catch(() => undefined);
+      if (mq.matches) v.pause();
+      else v.play().catch(() => undefined);
     };
     play();
     v.addEventListener("canplay", play);
-    return () => v.removeEventListener("canplay", play);
+    mq.addEventListener("change", play);
+    return () => {
+      v.removeEventListener("canplay", play);
+      mq.removeEventListener("change", play);
+    };
   }, [src, on]);
 
   return (
@@ -54,8 +160,9 @@ function LiveVideo({
       muted
       loop
       playsInline
-      preload={eager ? "metadata" : "none"}
-      poster={poster}
+      preload="none"
+      aria-hidden="true"
+      tabIndex={-1}
       className={className}
     >
       {on ? <source src={src} type="video/mp4" /> : null}
@@ -86,11 +193,10 @@ function Marquee() {
 
 function Shot({ src, alt }: { src: string; alt: string }) {
   return (
-    <img
+    <Pic
       src={src}
       alt={alt}
-      loading="lazy"
-      decoding="async"
+      sizes={SIZES.shot}
       className="h-[22rem] w-full object-cover object-top md:h-[32rem]"
     />
   );
@@ -99,15 +205,15 @@ function Shot({ src, alt }: { src: string; alt: string }) {
 export function Hero() {
   return (
     <section id="top" className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-ink">
-      <img
+      <Pic
         src="/images/hero.jpg"
         alt=""
-        fetchPriority="high"
+        sizes={SIZES.full}
+        priority
         className="absolute inset-0 h-full w-full object-cover grayscale"
       />
       <LiveVideo
         src="/video/hero.mp4"
-        poster="/images/hero.jpg"
         eager
         className="live-vid absolute inset-0 h-full w-full object-cover grayscale"
       />
@@ -343,11 +449,10 @@ export function Services() {
   return (
     <section id="services" className="bg-ink pb-8">
       <Reveal kind="clip-in" className="relative">
-        <img
+        <Pic
           src="/images/service.jpg"
           alt=""
-          loading="lazy"
-          decoding="async"
+          sizes={SIZES.clip}
           className="h-72 w-full object-cover grayscale md:h-[28rem]"
         />
         <button
@@ -390,9 +495,14 @@ export function Services() {
 export function About() {
   return (
     <section id="about" className="relative isolate mt-10 min-h-[34rem] overflow-hidden md:min-h-[42rem]">
+      <Pic
+        src="/images/about.jpg"
+        alt=""
+        sizes={SIZES.about}
+        className="live-vid absolute inset-0 h-full w-full object-cover grayscale"
+      />
       <LiveVideo
         src="/video/about.mp4"
-        poster="/images/about.jpg"
         className="live-vid absolute inset-0 h-full w-full object-cover grayscale"
       />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_50%,color-mix(in_oklab,var(--color-ink)_48%,transparent)_0%,color-mix(in_oklab,var(--color-ink)_86%,transparent)_68%)]" />
@@ -436,11 +546,10 @@ export function Works() {
         {works.map((w, idx) => (
           <article key={w.title} className="work-card">
             <Reveal kind="clip-in">
-              <img
+              <Pic
                 src={w.image}
                 alt={w.ar}
-                loading="lazy"
-                decoding="async"
+                sizes={SIZES.clip}
                 className="h-72 w-full object-cover grayscale md:h-[30rem]"
               />
             </Reveal>
@@ -500,9 +609,10 @@ export function Leadership() {
       <Reveal className="mx-auto mt-14 max-w-sm">
         <div className="relative mx-auto size-64 md:size-80">
           <span className="absolute inset-0 rounded-full bg-lime" />
-          <img
+          <Pic
             src="/images/chairman-now.jpg"
             alt="خالد العنزي أبو فيصل، رئيس مجلس إدارة ديل"
+            sizes={SIZES.chairman}
             className="absolute inset-3 rounded-full object-cover object-[center_28%]"
           />
         </div>
@@ -529,7 +639,7 @@ export function Quote() {
 
   return (
     <section className="relative isolate overflow-hidden py-24">
-      <img src="/images/quote.jpg" alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover grayscale" />
+      <Pic src="/images/quote.jpg" alt="" sizes={SIZES.quote} className="absolute inset-0 h-full w-full object-cover grayscale" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,color-mix(in_oklab,var(--color-ink)_62%,transparent)_0%,color-mix(in_oklab,var(--color-ink)_90%,transparent)_75%)]" />
       <Reveal className="relative z-10 px-8 pb-28 text-center md:px-16">
         <p className="text-kicker text-lime">كلمة رئيس مجلس الإدارة //</p>
