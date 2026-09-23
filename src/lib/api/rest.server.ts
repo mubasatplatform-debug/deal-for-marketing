@@ -69,15 +69,41 @@ export function notFoundResponse(request: Request): Response {
   );
 }
 
+/**
+ * The body as text, refusing more than `maxBytes` — checked against
+ * Content-Length up front and again while streaming, so a missing or lying
+ * header can not make the server buffer an unbounded body.
+ */
+export async function readBodyCapped(request: Request, maxBytes: number): Promise<string> {
+  const tooLarge = () =>
+    new ApiError(413, "payload_too_large", `Request body is over ${Math.round(maxBytes / 1024)} KB.`);
+  const declared = Number(request.headers.get("content-length") ?? 0);
+  if (declared > maxBytes) throw tooLarge();
+  if (!request.body) return "";
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > maxBytes) {
+      await reader.cancel().catch(() => {});
+      throw tooLarge();
+    }
+    chunks.push(value);
+  }
+  const all = new Uint8Array(size);
+  let at = 0;
+  for (const c of chunks) {
+    all.set(c, at);
+    at += c.byteLength;
+  }
+  return new TextDecoder().decode(all);
+}
+
 async function readJson(request: Request): Promise<unknown> {
-  const length = Number(request.headers.get("content-length") ?? 0);
-  if (length > MAX_BODY_BYTES) {
-    throw new ApiError(413, "payload_too_large", `Request body is over ${MAX_BODY_BYTES / 1024} KB.`);
-  }
-  const text = await request.text();
-  if (text.length > MAX_BODY_BYTES) {
-    throw new ApiError(413, "payload_too_large", `Request body is over ${MAX_BODY_BYTES / 1024} KB.`);
-  }
+  const text = await readBodyCapped(request, MAX_BODY_BYTES);
   if (!text.trim()) throw new ApiError(400, "invalid_json", "Request body is empty; send a JSON object.");
   try {
     return JSON.parse(text);
@@ -112,10 +138,9 @@ async function withKey(
     if (err instanceof ApiError && err.keyId) keyId = err.keyId;
     response = errorResponse(err);
   }
-  if (keyId) {
-    await audit(keyId, request.method, new URL(request.url).pathname, response.status);
-  } else if (response.status === 401) {
-    response.headers.set("WWW-Authenticate", 'Bearer realm="deal-api"');
+  if (keyId) await audit(keyId, request.method, new URL(request.url).pathname, response.status);
+  if (response.status === 401) {
+    response.headers.set("WWW-Authenticate", 'Bearer realm="deal-api", error="invalid_token"');
   }
   return response;
 }

@@ -19,15 +19,16 @@ const databaseUrl =
 export const dbSource: DbSource = databaseUrl ? "neon" : "pglite";
 
 /**
- * A deployed serverless build without `DATABASE_URL` would run on a throwaway
- * in-memory PGLite per instance: every lead and session silently vanishes on
- * the next cold start. Refuse loudly there instead.
+ * A deployed build without `DATABASE_URL` would run on a throwaway in-memory
+ * PGLite: every lead and session silently vanishes on the next cold start
+ * (serverless) or restart/redeploy (a standalone Node host such as Render).
+ * Refuse loudly there instead.
  */
 const pgliteForbidden =
   dbSource === "pglite" &&
   typeof process !== "undefined" &&
-  process.env.VERCEL === "1" &&
-  process.env.NODE_ENV === "production";
+  process.env.NODE_ENV === "production" &&
+  (process.env.VERCEL === "1" || process.env.DEAL_STANDALONE === "1");
 
 /**
  * Minimal shared SQL surface, satisfied by both Neon and PGLite. Both the

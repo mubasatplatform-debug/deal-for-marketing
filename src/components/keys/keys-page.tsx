@@ -22,7 +22,7 @@ import {
   type KeysOverview,
   type TeamUsage,
 } from "@/lib/api/keys";
-import { MAX_ACTIVE_KEYS, type Scope } from "@/lib/api/scopes";
+import { MAX_ACTIVE_KEYS, isKeyActive, type KeyExpiryDays, type Scope } from "@/lib/api/scopes";
 import { cn } from "@/lib/utils";
 import { ConnectCard, SafetyCard } from "./connect-card";
 import { CreateKeyDialog } from "./create-dialog";
@@ -52,8 +52,8 @@ function useOwnKeys(enabled: boolean) {
     if (enabled) load();
   }, [enabled, load]);
 
-  const create = useCallback(async (name: string, scopes: Scope[]) => {
-    const res = await createApiKey({ data: { name, scopes } });
+  const create = useCallback(async (name: string, scopes: Scope[], expiresInDays: KeyExpiryDays) => {
+    const res = await createApiKey({ data: { name, scopes, expiresInDays } });
     setData((d) => (d ? { ...d, keys: [res.key, ...d.keys] } : d));
     setNow(Date.now());
     return res;
@@ -66,9 +66,9 @@ function useOwnKeys(enabled: boolean) {
         ? {
             ...d,
             keys: [
-              ...d.keys.filter((k) => !k.revoked_at && k.id !== key.id),
+              ...d.keys.filter((k) => isKeyActive(k) && k.id !== key.id),
               { ...key, revoked_at },
-              ...d.keys.filter((k) => k.revoked_at && k.id !== key.id),
+              ...d.keys.filter((k) => !isKeyActive(k) && k.id !== key.id),
             ],
           }
         : d,
@@ -132,7 +132,7 @@ function LoadError({ onRetry }: { onRetry: () => void }) {
 export function ClientKeysPage({ user, onSignOut }: { user: ShellUser; onSignOut?: () => void }) {
   const keys = useOwnKeys(true);
   const [creating, setCreating] = useState(false);
-  const activeCount = keys.data?.keys.filter((k) => !k.revoked_at).length ?? 0;
+  const activeCount = keys.data?.keys.filter((k) => isKeyActive(k)).length ?? 0;
   const atLimit = activeCount >= MAX_ACTIVE_KEYS;
 
   const nav: NavItem[] = [
@@ -218,7 +218,7 @@ export function AdminKeysPage({
     loadUsage();
   };
   const loading = keys.state === "loading" || usageState === "loading";
-  const activeCount = keys.data?.keys.filter((k) => !k.revoked_at).length ?? 0;
+  const activeCount = keys.data?.keys.filter((k) => isKeyActive(k)).length ?? 0;
 
   const nav: NavItem[] = [
     { href: "/admin#overview", label: "نظرة عامة", icon: LayoutGrid },
@@ -293,8 +293,8 @@ export function AdminKeysPage({
       {creating && keys.data ? (
         <CreateKeyDialog
           grantable={keys.data.grantable}
-          onCreate={async (name, scopes) => {
-            const res = await keys.create(name, scopes);
+          onCreate={async (name, scopes, expiresInDays) => {
+            const res = await keys.create(name, scopes, expiresInDays);
             loadUsage();
             return res;
           }}

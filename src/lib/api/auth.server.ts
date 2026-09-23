@@ -23,12 +23,58 @@ export const RATE_WINDOW_SECONDS = 60;
 export const WRITE_LIMIT = 20;
 export const WRITE_WINDOW_SECONDS = 3600;
 
+/** Failed authentications (bad/unknown/revoked keys) per client IP per window. */
+export const AUTH_FAIL_LIMIT = 30;
+export const AUTH_FAIL_WINDOW_SECONDS = 300;
+
 const unauthorized = (message: string) => new ApiError(401, "unauthorized", message);
 
+/**
+ * Callers (HMAC of the IP, see `visitorId`; the raw address is never stored)
+ * that recently tripped the failed-auth limit, kept per instance so a
+ * blocked caller is turned away before any database work. The authoritative
+ * count lives in `rate_hits` (shared across instances).
+ */
+const blockedIps = new Map<string, number>();
+
+function blockedFor(ip: string): number {
+  const until = blockedIps.get(ip);
+  if (!until) return 0;
+  const left = Math.ceil((until - Date.now()) / 1000);
+  if (left <= 0) blockedIps.delete(ip);
+  return Math.max(0, left);
+}
+
+const tooManyFailures = (retryAfter: number) =>
+  new ApiError(429, "rate_limited", `Too many failed authentication attempts. Retry after ${retryAfter} seconds.`, {
+    retryAfter,
+  });
+
+/** Count one failed authentication for this IP; throws 429 once over the limit. */
+async function recordAuthFailure(ip: string, err: ApiError): Promise<never> {
+  try {
+    await takeRateHit(`api-authfail:${ip}`, AUTH_FAIL_LIMIT, AUTH_FAIL_WINDOW_SECONDS);
+  } catch (limitErr) {
+    if (limitErr instanceof ApiError && limitErr.status === 429) {
+      if (blockedIps.size > 10_000) blockedIps.clear();
+      blockedIps.set(ip, Date.now() + (limitErr.retryAfter ?? AUTH_FAIL_WINDOW_SECONDS) * 1000);
+      throw tooManyFailures(limitErr.retryAfter ?? AUTH_FAIL_WINDOW_SECONDS);
+    }
+    throw limitErr;
+  }
+  throw err;
+}
+
 export async function authenticate(request: Request): Promise<ApiCaller> {
+  const { visitorId } = await import("@/lib/rate-limit.server");
+  const ip = visitorId();
+  const wait = blockedFor(ip);
+  if (wait) throw tooManyFailures(wait);
+
   const header = request.headers.get("authorization");
   const secret = bearerFromHeader(header);
   if (!secret) {
+    // No credentials at all is a client bug, not a guess: not counted.
     throw unauthorized(
       header
         ? 'Malformed Authorization header. Send "Authorization: Bearer deal_live_…".'
@@ -36,20 +82,36 @@ export async function authenticate(request: Request): Promise<ApiCaller> {
     );
   }
   if (!isWellFormedKey(secret)) {
-    throw unauthorized("Invalid API key. Check that you copied the whole deal_live_… value.");
+    return recordAuthFailure(
+      ip,
+      unauthorized("Invalid API key. Check that you copied the whole deal_live_… value."),
+    );
   }
 
+  // Lookup is by the SHA-256 of the full secret through a unique index: the
+  // database never sees the secret, and no secret comparison happens in code
+  // (so there is nothing to time). The key has 256 bits of entropy.
   const sql = await getSql();
   const rows = await sql<{
     id: number;
     user_id: string;
     scopes: string[];
-    revoked_at: string | null;
-  }>`select id, user_id, scopes, revoked_at from api_keys where key_hash = ${hashApiKey(secret)} limit 1`;
+    revoked_at: string | Date | null;
+    expires_at: string | Date | null;
+  }>`select id, user_id, scopes, revoked_at, expires_at from api_keys where key_hash = ${hashApiKey(secret)} limit 1`;
   const key = rows[0];
-  if (!key) throw unauthorized("Invalid API key. It may have been deleted; create a new one.");
-  if (key.revoked_at) {
-    throw unauthorized("This API key was revoked. Create a new key at /client/keys.");
+  if (!key) {
+    return recordAuthFailure(ip, unauthorized("Invalid API key. It may have been deleted; create a new one."));
+  }
+  const dead = key.revoked_at
+    ? unauthorized("This API key was revoked. Create a new key at /client/keys.")
+    : key.expires_at && new Date(key.expires_at).getTime() <= Date.now()
+      ? unauthorized("This API key has expired. Create a new key at /client/keys.")
+      : null;
+  if (dead) {
+    // Attributed to the key so the team sees a leaked, revoked key being tried.
+    dead.keyId = key.id;
+    return recordAuthFailure(ip, dead);
   }
 
   const wantsAdmin = key.scopes.some((s) => (ADMIN_SCOPES as readonly string[]).includes(s));

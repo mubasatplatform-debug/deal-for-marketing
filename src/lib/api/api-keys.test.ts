@@ -10,6 +10,7 @@ import {
   effectiveScopes,
   grantableScopes,
   hasScope,
+  isKeyActive,
   normalizeRequestedScopes,
 } from "./scopes.ts";
 import {
@@ -123,4 +124,13 @@ test("hasScope is exact — no prefix or wildcard matching", () => {
   assert.ok(!hasScope(["requests:read"], "admin:requests:read"));
   assert.ok(!hasScope(["admin:requests:read"], "requests:read"));
   assert.ok(!hasScope([], "services:read"));
+});
+
+test("revoked or expired keys are not active", () => {
+  const now = Date.parse("2026-01-10T00:00:00Z");
+  assert.ok(isKeyActive({ revoked_at: null, expires_at: null }, now));
+  assert.ok(isKeyActive({ revoked_at: null, expires_at: "2026-01-11T00:00:00Z" }, now));
+  assert.ok(!isKeyActive({ revoked_at: null, expires_at: "2026-01-10T00:00:00Z" }, now));
+  assert.ok(!isKeyActive({ revoked_at: null, expires_at: new Date(now - 1) }, now));
+  assert.ok(!isKeyActive({ revoked_at: "2026-01-01T00:00:00Z", expires_at: null }, now));
 });

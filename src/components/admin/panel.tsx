@@ -27,21 +27,21 @@ import {
   Segmented,
   Skeleton,
 } from "@/components/dash/ui";
-import type { AdminRequestRow } from "@/lib/admin";
+import type { AdminRequestRow, AdminTotals } from "@/lib/admin";
 import { cn } from "@/lib/utils";
 import { LeadsChart, ServiceBars } from "./charts";
 import { CustomersList } from "./customers";
 import {
   STATUS_ORDER,
   aggregateCustomers,
-  byService,
-  computeStats,
   countOf,
   dailySeries,
   downloadCsv,
   formatLongDay,
   matchesQuery,
   requestsWord,
+  selectRows,
+  statsFromTotals,
   statusLabel,
 } from "./format";
 import { AdminKpi } from "./kpi";
@@ -53,28 +53,47 @@ export type AdminPanelState = "loading" | "error" | "ready";
 type Filter = "all" | (typeof STATUS_ORDER)[number];
 
 const PAGE = 15;
+const EMPTY_TOTALS: AdminTotals = {
+  total: 0,
+  byStatus: {},
+  unnotified: 0,
+  thisWeek: 0,
+  lastWeek: 0,
+  byService: [],
+  daily: [],
+};
+const num = (n: number) => n.toLocaleString("en-US");
 const SECTIONS = ["overview", "requests", "customers"] as const;
 
 export type AdminPanelProps = {
   user: { name: string; email?: string | null };
   state: AdminPanelState;
+  /** The most recent requests; capped server-side, so possibly not all of them. */
   rows: AdminRequestRow[];
-  /** When the rows were loaded; relative dates and weekly windows count from here. */
+  /** Whole-table figures (KPIs, charts); `null` until the first load. */
+  totals: AdminTotals | null;
+  /** When the rows were loaded; relative dates count from here. */
   now: number;
   onRetry: () => void;
   /** Persist a status change. Reject to roll the optimistic update back. */
   onStatusChange: (id: number, status: string) => Promise<void>;
+  /** Every request, uncapped — used for CSV export when `rows` is truncated. */
+  onLoadAll: () => Promise<AdminRequestRow[]>;
   onSignOut?: () => void;
+  signingOut?: boolean;
 };
 
 export function AdminPanel({
   user,
   state,
   rows: sourceRows,
+  totals: sourceTotals,
   now,
   onRetry,
   onStatusChange,
+  onLoadAll,
   onSignOut,
+  signingOut,
 }: AdminPanelProps) {
   const [overrides, setOverrides] = useState<Record<number, string>>({});
   const [pending, setPending] = useState<number | null>(null);
@@ -84,19 +103,28 @@ export function AdminPanel({
   const [limit, setLimit] = useState(PAGE);
   const [openId, setOpenId] = useState<number | null>(null);
   const [section, setSection] = useState<(typeof SECTIONS)[number]>("overview");
+  const [exporting, setExporting] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const rows = useMemo(
-    () =>
-      sourceRows.map((r) =>
+  const applyOverrides = useCallback(
+    (list: AdminRequestRow[]) =>
+      list.map((r) =>
         overrides[r.id] && overrides[r.id] !== r.status ? { ...r, status: overrides[r.id] } : r,
       ),
-    [sourceRows, overrides],
+    [overrides],
   );
+  const rows = useMemo(() => applyOverrides(sourceRows), [applyOverrides, sourceRows]);
 
-  const stats = useMemo(() => computeStats(rows, now), [rows, now]);
-  const series = useMemo(() => dailySeries(rows, now), [rows, now]);
-  const services = useMemo(() => byService(rows), [rows]);
+  // KPIs and charts come from SQL totals over the whole table; the row list
+  // is only the most recent slice.
+  const totals = sourceTotals ?? EMPTY_TOTALS;
+  const truncated = totals.total > sourceRows.length;
+  const stats = useMemo(
+    () => statsFromTotals(totals, sourceRows, overrides),
+    [totals, sourceRows, overrides],
+  );
+  const series = useMemo(() => dailySeries(totals.daily), [totals.daily]);
+  const services = totals.byService;
   const customers = useMemo(() => aggregateCustomers(rows), [rows]);
   const last30 = series.reduce((s, d) => s + d.count, 0);
 
@@ -106,15 +134,25 @@ export function AdminPanel({
     for (const r of searched) c[r.status] = (c[r.status] ?? 0) + 1;
     return c;
   }, [searched]);
-  const filtered = useMemo(() => {
-    const list = filter === "all" ? searched : searched.filter((r) => r.status === filter);
-    const dir = sort === "desc" ? -1 : 1;
-    return [...list].sort(
-      (a, b) =>
-        dir * (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) ||
-        dir * (a.id - b.id),
-    );
-  }, [searched, filter, sort]);
+  const filtered = useMemo(
+    () => selectRows(searched, "", filter, sort),
+    [searched, filter, sort],
+  );
+
+  // A truncated list would export a truncated CSV: fetch every request and
+  // apply the same search, filter and sort first.
+  const exportCsv = useCallback(async () => {
+    if (!truncated) return downloadCsv(filtered, new Date(now));
+    setExporting(true);
+    try {
+      const all = selectRows(applyOverrides(await onLoadAll()), query, filter, sort);
+      downloadCsv(all, new Date(now));
+    } catch {
+      toast.error("تعذر تصدير الطلبات", { description: "تحقق من الاتصال ثم حاول مرة أخرى." });
+    } finally {
+      setExporting(false);
+    }
+  }, [truncated, filtered, now, onLoadAll, applyOverrides, query, filter, sort]);
 
   const open = openId === null ? null : (rows.find((r) => r.id === openId) ?? null);
 
@@ -198,6 +236,7 @@ export function AdminPanel({
       nav={nav}
       user={user}
       onSignOut={onSignOut}
+      signingOut={signingOut}
       title="لوحة الفريق"
       subtitle={
         state === "ready"
@@ -338,18 +377,24 @@ export function AdminPanel({
                 description={
                   loading
                     ? "جارٍ التحميل…"
-                    : filtered.length === rows.length
-                      ? countOf(rows.length, requestsWord)
-                      : `${countOf(filtered.length, requestsWord)} من ${rows.length.toLocaleString("en-US")}`
+                    : truncated
+                      ? filtered.length === rows.length
+                        ? `أحدث ${countOf(rows.length, requestsWord)} من أصل ${num(stats.total)}`
+                        : `${countOf(filtered.length, requestsWord)} من أحدث ${num(rows.length)} (من أصل ${num(stats.total)})`
+                      : filtered.length === rows.length
+                        ? countOf(rows.length, requestsWord)
+                        : `${countOf(filtered.length, requestsWord)} من ${num(rows.length)}`
                 }
                 actions={
                   <Button
                     size="sm"
                     icon={Download}
-                    disabled={loading || filtered.length === 0}
-                    onClick={() => downloadCsv(filtered, new Date(now))}
+                    disabled={loading || exporting || filtered.length === 0}
+                    onClick={() => void exportCsv()}
+                    title={truncated ? "يصدّر كل الطلبات المطابقة، لا الأحدث فقط" : undefined}
+                    className={cn(exporting && "[&_svg]:animate-pulse")}
                   >
-                    تصدير CSV
+                    {exporting ? "جارٍ التصدير…" : "تصدير CSV"}
                   </Button>
                 }
               />
@@ -471,7 +516,7 @@ export function AdminPanel({
                 description={
                   loading
                     ? "جارٍ التحميل…"
-                    : `${countOf(customers.length, { zero: "لا عملاء", one: "عميل واحد", two: "عميلان", few: "عملاء", many: "عميلًا", other: "عميل" })} · مجمّعون برقم الجوال`
+                    : `${countOf(customers.length, { zero: "لا عملاء", one: "عميل واحد", two: "عميلان", few: "عملاء", many: "عميلًا", other: "عميل" })} · مجمّعون برقم الجوال${truncated ? ` · من أحدث ${num(rows.length)} طلب` : ""}`
                 }
                 className="pb-4"
               />

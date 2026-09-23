@@ -7,9 +7,15 @@ import { Card } from "@/components/dash/ui";
 export function AdminForbidden({
   email,
   onSignOut,
+  signingOut = false,
+  signOutFailed = false,
 }: {
   email?: string | null;
   onSignOut?: () => void;
+  /** A sign-out is in flight: the button waits instead of firing twice. */
+  signingOut?: boolean;
+  /** The last sign-out failed: say so, the button retries. */
+  signOutFailed?: boolean;
 }) {
   return (
     <div className="grid min-h-dvh place-items-center bg-paper px-4 py-16 font-dash text-pine-deep">
@@ -39,8 +45,14 @@ export function AdminForbidden({
               الذهاب إلى مشاريعي
             </a>
             {onSignOut ? (
-              <button type="button" onClick={onSignOut} className={buttonClass("secondary")}>
-                الدخول بحساب آخر
+              <button
+                type="button"
+                onClick={onSignOut}
+                disabled={signingOut}
+                aria-busy={signingOut || undefined}
+                className={buttonClass("secondary")}
+              >
+                {signingOut ? "جارٍ تسجيل الخروج…" : "الدخول بحساب آخر"}
               </button>
             ) : (
               <a href="/" className={buttonClass("secondary")}>
@@ -48,6 +60,11 @@ export function AdminForbidden({
               </a>
             )}
           </div>
+          {signOutFailed ? (
+            <p role="alert" className="mt-4 text-sm text-red-700">
+              تعذر تسجيل الخروج. تحقق من الاتصال ثم حاول مرة أخرى.
+            </p>
+          ) : null}
         </Card>
       </div>
     </div>

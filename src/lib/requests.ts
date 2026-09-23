@@ -5,7 +5,7 @@ import { getSql } from "@/lib/db";
 import { serviceBySlug } from "@/lib/content";
 import { normalizePhone } from "@/lib/phone";
 
-/** Seconds a human needs at minimum to fill the form; faster is a bot. */
+/** Milliseconds a human needs at minimum to fill the form. */
 const MIN_FILL_MS = 2500;
 
 export const leadSchema = z.object({
@@ -17,12 +17,22 @@ export const leadSchema = z.object({
   consent: z.literal(true),
   /** Honeypot: hidden from people, filled by naive bots. */
   website: z.string().max(200).optional(),
-  /** Client `Date.now()` when the form mounted. */
-  startedAt: z.number().int(),
+  /**
+   * @deprecated Ignored. The old absolute browser timestamp, kept only so
+   * `leadSchema.omit({ startedAt: true })` in api/ops.server.ts still
+   * type-checks; drop both together. The form sends `fillMs` instead.
+   */
+  startedAt: z.number().int().optional(),
   source: z.enum(["form", "line"]).default("form"),
 });
 
-export type LeadInput = z.input<typeof leadSchema>;
+/** What the public form submits: the lead plus how long it took to fill. */
+const leadFormSchema = leadSchema.extend({
+  /** Milliseconds from form mount to submit, from the browser's monotonic clock. */
+  fillMs: z.number().int().min(0),
+});
+
+export type LeadInput = z.input<typeof leadFormSchema>;
 
 export type RequestRow = {
   id: number;
@@ -39,6 +49,7 @@ export const LEAD_ERRORS = {
   phone: "رقم الجوال غير صحيح",
   service: "خدمة غير موجودة",
   busy: "وصلنا عدد كبير من الطلبات منك، حاول بعد ساعة أو اتصل بنا مباشرة.",
+  tooFast: "أُرسل النموذج أسرع من المعتاد. راجع بياناتك ثم أرسل الطلب مرة أخرى.",
 } as const;
 
 export const listMyRequests = createServerFn({ method: "GET" })
@@ -60,24 +71,31 @@ export const listMyRequests = createServerFn({ method: "GET" })
  */
 export const createRequest = createServerFn({ method: "POST" })
   .middleware([optionalAuthMiddleware])
-  .validator((input: unknown) => leadSchema.parse(input))
+  .validator((input: unknown) => leadFormSchema.parse(input))
   .handler(async ({ context, data }) => {
-    // Bots that fill the honeypot or submit instantly get a fake success, so
-    // they learn nothing; no row is written.
-    if (data.website || Date.now() - data.startedAt < MIN_FILL_MS) return { id: 0 };
+    // Only bots fill the hidden honeypot: fake success, so they learn nothing;
+    // no row is written.
+    if (data.website) return { id: 0 };
+    // Instant submits are likely bots, but autofill can be fast too: refuse
+    // with a real message so a person can simply send again.
+    if (data.fillMs < MIN_FILL_MS) throw new Error(LEAD_ERRORS.tooFast);
 
     const service = serviceBySlug(data.slug);
     if (!service) throw new Error(LEAD_ERRORS.service);
     const phone = normalizePhone(data.phone);
     if (!phone) throw new Error(LEAD_ERRORS.phone);
 
-    const { clientIp, takeHit, RateLimitError } = await import("@/lib/rate-limit.server");
+    const { visitorId, takeHit, RateLimitError } = await import("@/lib/rate-limit.server");
     try {
-      await takeHit(`lead:${clientIp()}`, 5, 3600);
+      await takeHit(`lead:${visitorId()}`, 5, 3600);
     } catch (err) {
       if (err instanceof RateLimitError) throw new Error(LEAD_ERRORS.busy);
       throw err;
     }
+
+    // Retention (privacy policy): drop requests past two years, at most daily.
+    const { pruneExpiredRequests } = await import("@/lib/retention.server");
+    await pruneExpiredRequests();
 
     const sql = await getSql();
     const rows = await sql<{ id: number }>`

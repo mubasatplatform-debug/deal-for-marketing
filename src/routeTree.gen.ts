@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ClientRouteImport } from './routes/client'
+import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as LineRouteImport } from './routes/line'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -45,6 +46,11 @@ const AdminRoute = AdminRouteImport.update({
 const ClientRoute = ClientRouteImport.update({
   id: '/client',
   path: '/client',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevelopersRoute = DevelopersRouteImport.update({
+  id: '/developers',
+  path: '/developers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LineRoute = LineRouteImport.update({
@@ -147,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/client': typeof ClientRoute
+  '/developers': typeof DevelopersRoute
   '/line': typeof LineRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
@@ -171,6 +178,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/client': typeof ClientRoute
+  '/developers': typeof DevelopersRoute
   '/line': typeof LineRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
@@ -195,6 +203,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/client': typeof ClientRoute
+  '/developers': typeof DevelopersRoute
   '/line': typeof LineRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
@@ -221,6 +230,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/client'
+    | '/developers'
     | '/line'
     | '/login'
     | '/privacy'
@@ -245,6 +255,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/client'
+    | '/developers'
     | '/line'
     | '/login'
     | '/privacy'
@@ -268,6 +279,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/client'
+    | '/developers'
     | '/line'
     | '/login'
     | '/privacy'
@@ -293,6 +305,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   ClientRoute: typeof ClientRoute
+  DevelopersRoute: typeof DevelopersRoute
   LineRoute: typeof LineRoute
   LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -331,6 +344,13 @@ declare module '@tanstack/react-router' {
       path: '/client'
       fullPath: '/client'
       preLoaderRoute: typeof ClientRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/developers': {
+      id: '/developers'
+      path: '/developers'
+      fullPath: '/developers'
+      preLoaderRoute: typeof DevelopersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/line': {
@@ -508,6 +528,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   ClientRoute: ClientRoute,
+  DevelopersRoute: DevelopersRoute,
   LineRoute: LineRoute,
   LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,

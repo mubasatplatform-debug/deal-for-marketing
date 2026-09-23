@@ -1,0 +1,43 @@
+# Render Blueprint for the standalone (off-platform) deploy of DEAL FOR MARKETING.
+# https://render.com/docs/blueprint-spec
+#
+# DEAL_STANDALONE=1 builds the nitro `node-server` preset (.output/server) without
+# the Grok platform middleware, and makes `npm start` refuse to boot without
+# DATABASE_URL (no silent in-memory PGLite). `npm start` applies migrations
+# (scripts/migrate.mjs) before starting the server.
+#
+# No secrets here: every `sync: false` key is entered in the Render dashboard.
+services:
+  - type: web
+    name: deal-for-marketing
+    runtime: node
+    region: frankfurt
+    plan: free
+    branch: main
+    buildCommand: npm ci --include=dev --ignore-scripts && npm run build:standalone
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Needed at build time (preset, head tags) and at runtime (DB guard).
+      - key: DEAL_STANDALONE
+        value: "1"
+      # Email + password sign-in: the Grok Google / X broker only accepts
+      # Grok-hosted callbacks.
+      - key: VITE_SIGNIN_MODE
+        value: password
+      # Postgres connection string (Neon, Render Postgres, ...). Required.
+      - key: DATABASE_URL
+        sync: false
+      - key: BETTER_AUTH_SECRET
+        generateValue: true
+      # Public origin of this service, e.g. https://deal.mubasat.net
+      - key: BETTER_AUTH_URL
+        sync: false
+      - key: ADMIN_EMAILS
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: LEADS_WEBHOOK_URL
+        sync: false

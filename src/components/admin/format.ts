@@ -1,5 +1,5 @@
 import type { Tone } from "@/components/dash/ui";
-import type { AdminRequestRow } from "@/lib/admin";
+import type { AdminRequestRow, AdminTotals } from "@/lib/admin";
 import { requestStatus } from "@/lib/content";
 
 /** Gregorian calendar, Latin digits — the product's one date locale. */
@@ -166,59 +166,59 @@ export function downloadCsv(rows: AdminRequestRow[], now = new Date()) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-const DAY = 86_400_000;
-
-export function startOfDay(t: number): number {
-  const d = new Date(t);
-  d.setHours(0, 0, 0, 0);
-  return d.getTime();
-}
-
-export function computeStats(rows: AdminRequestRow[], now: number) {
-  const weekAgo = now - 7 * DAY;
-  const twoWeeksAgo = now - 14 * DAY;
-  let thisWeek = 0;
-  let lastWeek = 0;
-  let delivered = 0;
-  let unnotified = 0;
-  let fresh = 0;
+/**
+ * Dashboard figures from the server's whole-table totals, with optimistic
+ * status changes (`overrides`, keyed by request id) applied on top so the KPIs
+ * move the moment a status is changed.
+ */
+export function statsFromTotals(
+  totals: AdminTotals,
+  rows: AdminRequestRow[],
+  overrides: Record<number, string>,
+) {
+  const byStatus = { ...totals.byStatus };
   for (const r of rows) {
-    const t = new Date(r.created_at).getTime();
-    if (t >= weekAgo) thisWeek++;
-    else if (t >= twoWeeksAgo) lastWeek++;
-    if (r.status === "delivered") delivered++;
-    if (r.status === "new") fresh++;
-    if (!r.notified_at) unnotified++;
+    const next = overrides[r.id];
+    if (!next || next === r.status) continue;
+    byStatus[r.status] = (byStatus[r.status] ?? 0) - 1;
+    byStatus[next] = (byStatus[next] ?? 0) + 1;
   }
+  const delivered = byStatus.delivered ?? 0;
   return {
-    total: rows.length,
-    fresh,
-    thisWeek,
-    lastWeek,
+    total: totals.total,
+    fresh: byStatus.new ?? 0,
+    thisWeek: totals.thisWeek,
+    lastWeek: totals.lastWeek,
     delivered,
-    unnotified,
-    rate: rows.length ? Math.round((delivered / rows.length) * 100) : 0,
+    unnotified: totals.unnotified,
+    rate: totals.total ? Math.round((delivered / totals.total) * 100) : 0,
   };
 }
 
-export function dailySeries(rows: AdminRequestRow[], now: number, days = 30) {
-  const today = startOfDay(now);
-  const first = today - (days - 1) * DAY;
-  const buckets = Array.from({ length: days }, (_, i) => ({ t: first + i * DAY, count: 0 }));
-  for (const r of rows) {
-    const t = startOfDay(new Date(r.created_at).getTime());
-    const i = Math.round((t - first) / DAY);
-    if (i >= 0 && i < days) buckets[i].count++;
-  }
-  return buckets;
+/** The server's zero-filled 'YYYY-MM-DD' days as local-midnight chart points. */
+export function dailySeries(daily: AdminTotals["daily"]) {
+  return daily.map(({ day, count }) => {
+    const [y, m, d] = day.split("-").map(Number);
+    return { t: new Date(y, m - 1, d).getTime(), count };
+  });
 }
 
-export function byService(rows: AdminRequestRow[]) {
-  const map = new Map<string, number>();
-  for (const r of rows) map.set(r.service_title, (map.get(r.service_title) ?? 0) + 1);
-  return [...map.entries()]
-    .map(([title, count]) => ({ title, count }))
-    .sort((a, b) => b.count - a.count || a.title.localeCompare(b.title, "ar"));
+/** Search + status filter + date sort, as the requests table shows them. */
+export function selectRows(
+  rows: AdminRequestRow[],
+  query: string,
+  filter: string,
+  sort: "asc" | "desc",
+): AdminRequestRow[] {
+  const list = rows.filter(
+    (r) => matchesQuery(r, query) && (filter === "all" || r.status === filter),
+  );
+  const dir = sort === "desc" ? -1 : 1;
+  return list.sort(
+    (a, b) =>
+      dir * (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) ||
+      dir * (a.id - b.id),
+  );
 }
 
 export type Customer = {

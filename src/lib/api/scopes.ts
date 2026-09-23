@@ -70,8 +70,27 @@ export const ADMIN_SCOPES: readonly Scope[] = SCOPE_INFO.filter((s) => s.admin).
   (s) => s.scope,
 );
 
-/** Most keys one user may hold at a time (revoked keys do not count). */
+/** Most keys one user may hold at a time (revoked and expired keys do not count). */
 export const MAX_ACTIVE_KEYS = 10;
+
+/** Lifetimes offered for a new key, in days; `null` = until revoked. */
+export const KEY_EXPIRY_OPTIONS = [
+  { days: 30, label: "30 يومًا" },
+  { days: 90, label: "90 يومًا" },
+  { days: 365, label: "سنة" },
+  { days: null, label: "بلا انتهاء" },
+] as const;
+export type KeyExpiryDays = (typeof KEY_EXPIRY_OPTIONS)[number]["days"];
+export const DEFAULT_KEY_EXPIRY_DAYS: KeyExpiryDays = 90;
+
+/** Is the key usable at `now`: not revoked and not past its expiry. */
+export function isKeyActive(
+  k: { revoked_at: string | Date | null; expires_at: string | Date | null },
+  now: number = Date.now(),
+): boolean {
+  if (k.revoked_at) return false;
+  return !k.expires_at || new Date(k.expires_at).getTime() > now;
+}
 
 export function isScope(value: unknown): value is Scope {
   return typeof value === "string" && (SCOPES as readonly string[]).includes(value);

@@ -43,7 +43,8 @@ function StartService() {
   const [sentId, setSentId] = useState<number | null>(null);
   const [fromLine, setFromLine] = useState(false);
   const [fieldErr, setFieldErr] = useState<"name" | "phone" | "brief" | "consent" | null>(null);
-  const startedAt = useRef(0);
+  /** `performance.now()` at mount: monotonic, so a skewed device clock cannot matter. */
+  const mountedAt = useRef(0);
   const doneRef = useRef<HTMLDivElement>(null);
 
   // Move focus to the confirmation so keyboard and screen-reader users land on it.
@@ -54,7 +55,7 @@ function StartService() {
   }, [sentId]);
 
   useEffect(() => {
-    startedAt.current = Date.now();
+    mountedAt.current = performance.now();
   }, []);
 
   useEffect(() => {
@@ -119,7 +120,7 @@ function StartService() {
           brief,
           consent,
           website,
-          startedAt: startedAt.current,
+          fillMs: Math.round(performance.now() - mountedAt.current),
           source: fromLine ? "line" : "form",
         },
       });

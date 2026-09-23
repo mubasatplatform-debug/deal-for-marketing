@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { KeyRound, Plus, Trash2 } from "lucide-react";
 import { Button, Card, CardHeader, EmptyState, Num, Pill, Skeleton } from "@/components/dash/ui";
-import { formatAbsolute, formatRelative } from "@/components/admin/format";
+import { formatAbsolute, formatRelative, formatShortDate } from "@/components/admin/format";
 import type { ApiKeyRow } from "@/lib/api/keys";
-import { MAX_ACTIVE_KEYS } from "@/lib/api/scopes";
+import { MAX_ACTIVE_KEYS, isKeyActive } from "@/lib/api/scopes";
 import { cn } from "@/lib/utils";
 import { ScopeCode } from "./create-dialog";
 import { Dialog } from "./dialog";
@@ -29,7 +29,7 @@ export function KeyList({
   title?: string;
 }) {
   const [confirm, setConfirm] = useState<ApiKeyRow | null>(null);
-  const active = keys.filter((k) => !k.revoked_at);
+  const active = keys.filter((k) => isKeyActive(k, now));
   const atLimit = active.length >= MAX_ACTIVE_KEYS;
 
   return (
@@ -93,8 +93,13 @@ export function KeyList({
   );
 }
 
+/** Days left before `iso`, rounded up. */
+const daysUntil = (iso: string, now: number) => Math.ceil((new Date(iso).getTime() - now) / 86_400_000);
+
 function KeyItem({ k, now, onRevoke }: { k: ApiKeyRow; now: number; onRevoke: () => void }) {
-  const revoked = !!k.revoked_at;
+  const expired = !k.revoked_at && !isKeyActive(k, now);
+  const revoked = !!k.revoked_at || expired;
+  const expiresSoon = !revoked && k.expires_at ? daysUntil(k.expires_at, now) <= 7 : false;
   return (
     <li
       className={cn(
@@ -105,9 +110,17 @@ function KeyItem({ k, now, onRevoke }: { k: ApiKeyRow; now: number; onRevoke: ()
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <p className={cn("truncate text-sm font-bold", revoked ? "text-slate" : "text-pine-deep")}>{k.name}</p>
-          {revoked ? (
+          {k.revoked_at ? (
             <Pill tone="danger" dot={false}>
               ملغى
+            </Pill>
+          ) : expired ? (
+            <Pill tone="neutral" dot={false}>
+              منتهي
+            </Pill>
+          ) : expiresSoon ? (
+            <Pill tone="lime" dot={false}>
+              ينتهي قريبًا
             </Pill>
           ) : null}
         </div>
@@ -131,8 +144,8 @@ function KeyItem({ k, now, onRevoke }: { k: ApiKeyRow; now: number; onRevoke: ()
         <div className="flex gap-1.5">
           <dt className="text-slate">آخر استخدام:</dt>
           <dd className="font-semibold text-pine-deep">
-            {revoked ? (
-              <span title={formatAbsolute(new Date(k.revoked_at!))}>أُلغي {formatRelative(new Date(k.revoked_at!), now)}</span>
+            {k.revoked_at ? (
+              <span title={formatAbsolute(new Date(k.revoked_at))}>أُلغي {formatRelative(new Date(k.revoked_at), now)}</span>
             ) : (
               <span title={k.last_used_at ? formatAbsolute(new Date(k.last_used_at)) : undefined}>
                 {lastUsedText(k.last_used_at, now)}
@@ -144,6 +157,23 @@ function KeyItem({ k, now, onRevoke }: { k: ApiKeyRow; now: number; onRevoke: ()
           <dt className="text-slate">استدعاءات 7 أيام:</dt>
           <dd>
             <Num className="font-semibold text-pine-deep">{k.calls_7d}</Num>
+          </dd>
+        </div>
+        <div className="col-span-2 flex gap-1.5 md:col-span-1">
+          <dt className="text-slate">{expired ? "انتهى:" : "الصلاحية:"}</dt>
+          <dd
+            className={cn("font-semibold", expiresSoon ? "text-lime-600" : "text-pine-deep")}
+            title={k.expires_at ? formatAbsolute(new Date(k.expires_at)) : undefined}
+          >
+            {k.expires_at ? (
+              expired ? (
+                formatShortDate(new Date(k.expires_at))
+              ) : (
+                <>حتى {formatShortDate(new Date(k.expires_at))}</>
+              )
+            ) : (
+              "حتى تلغيه"
+            )}
           </dd>
         </div>
       </dl>

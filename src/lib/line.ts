@@ -506,11 +506,11 @@ export const routeLine = createServerFn({ method: "POST" })
       // Unauthenticated and spends the owner's model quota, so: same-site only,
       // throttled per visitor, and capped per day (then the local router answers).
       const { assertSameSiteRequest } = await import("@/lib/auth/isolation.server");
-      const { clientIp, recentHits, takeHit, RateLimitError } =
+      const { visitorId, tryHit, takeHit, RateLimitError } =
         await import("@/lib/rate-limit.server");
       assertSameSiteRequest();
       try {
-        await takeHit(`line:${clientIp()}`, LINE_IP_LIMIT_PER_HOUR, 3600);
+        await takeHit(`line:${visitorId()}`, LINE_IP_LIMIT_PER_HOUR, 3600);
       } catch (err) {
         if (err instanceof RateLimitError) {
           return { ok: false, error: "الخط مزدحم منك. جرّب بعد ساعة أو اتصل بنا مباشرة." };
@@ -519,10 +519,10 @@ export const routeLine = createServerFn({ method: "POST" })
       }
 
       const engine = await modelEngine();
-      if (!engine || (await recentHits("line:model", 86400)) >= LINE_DAILY_MODEL_CAP) {
+      // Reserve a paid call atomically; past the daily cap the local router answers.
+      if (!engine || !(await tryHit("line:model", LINE_DAILY_MODEL_CAP, 86400))) {
         return { ok: true, turn: localRoute(data.messages) };
       }
-      await takeHit("line:model", Number.MAX_SAFE_INTEGER, 86400);
 
       try {
         const raw = await engine(data.messages);

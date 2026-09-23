@@ -1,13 +1,20 @@
 import { useId, useState, type FormEvent } from "react";
 import { AlertTriangle, Check, Copy, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/dash/ui";
-import { SCOPE_INFO, type Scope } from "@/lib/api/scopes";
+import {
+  DEFAULT_KEY_EXPIRY_DAYS,
+  KEY_EXPIRY_OPTIONS,
+  SCOPE_INFO,
+  type KeyExpiryDays,
+  type Scope,
+} from "@/lib/api/scopes";
 import type { ApiKeyRow } from "@/lib/api/keys";
 import { cn } from "@/lib/utils";
 import { Dialog } from "./dialog";
 import { useCopy } from "./use-copy";
 
 type Created = { key: ApiKeyRow; secret: string };
+type OnCreate = (name: string, scopes: Scope[], expiresInDays: KeyExpiryDays) => Promise<Created>;
 
 const DEFAULT_SCOPES: Scope[] = ["services:read", "requests:read"];
 
@@ -22,7 +29,7 @@ export function CreateKeyDialog({
   onClose,
 }: {
   grantable: Scope[];
-  onCreate: (name: string, scopes: Scope[]) => Promise<Created>;
+  onCreate: OnCreate;
   onClose: () => void;
 }) {
   const [created, setCreated] = useState<Created | null>(null);
@@ -37,7 +44,7 @@ function FormStep({
   onClose,
 }: {
   grantable: Scope[];
-  onCreate: (name: string, scopes: Scope[]) => Promise<Created>;
+  onCreate: OnCreate;
   onCreated: (c: Created) => void;
   onClose: () => void;
 }) {
@@ -46,6 +53,7 @@ function FormStep({
   const [scopes, setScopes] = useState<Set<Scope>>(
     () => new Set(DEFAULT_SCOPES.filter((s) => grantable.includes(s))),
   );
+  const [expiry, setExpiry] = useState<KeyExpiryDays>(DEFAULT_KEY_EXPIRY_DAYS);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,7 +76,7 @@ function FormStep({
     setBusy(true);
     setError(null);
     try {
-      onCreated(await onCreate(name.trim(), [...scopes]));
+      onCreated(await onCreate(name.trim(), [...scopes], expiry));
     } catch (err) {
       setError(err instanceof Error && err.message ? err.message : "تعذّر إنشاء المفتاح. حاول مرة أخرى.");
       setBusy(false);
@@ -118,6 +126,36 @@ function FormStep({
             onToggle={toggle}
           />
         ) : null}
+
+        <fieldset>
+          <legend className="text-[13px] font-bold">
+            مدة الصلاحية
+            <span className="ms-2 text-xs font-normal text-slate">بعدها يتوقف المفتاح تلقائيًا.</span>
+          </legend>
+          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {KEY_EXPIRY_OPTIONS.map((o) => {
+              const on = expiry === o.days;
+              return (
+                <label
+                  key={String(o.days)}
+                  className={cn(
+                    "flex h-10 cursor-pointer items-center justify-center rounded-xl border px-2 text-[13px] font-semibold transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-pine/30",
+                    on ? "border-pine bg-pine text-white" : "border-line text-pine-deep hover:border-line-strong",
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name={`${formId}-expiry`}
+                    checked={on}
+                    onChange={() => setExpiry(o.days)}
+                    className="sr-only"
+                  />
+                  {o.label}
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
 
         {error ? (
           <p role="alert" className="flex items-start gap-2 rounded-xl bg-red-50 px-3.5 py-2.5 text-[13px] text-red-700">

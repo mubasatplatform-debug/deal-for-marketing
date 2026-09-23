@@ -3,9 +3,10 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { services } from "@/lib/content";
-import { audit, authenticate, type ApiCaller } from "./auth.server";
+import { RATE_LIMIT, RATE_WINDOW_SECONDS, audit, authenticate, takeRateHit, type ApiCaller } from "./auth.server";
 import { ApiError } from "./errors";
 import * as ops from "./ops.server";
+import { readBodyCapped } from "./rest.server";
 import { hasScope, type Scope } from "./scopes";
 
 /**
@@ -27,8 +28,14 @@ const CORS: Record<string, string> = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers":
     "Authorization, Content-Type, Accept, Mcp-Protocol-Version, Mcp-Session-Id",
+  "Access-Control-Expose-Headers": "Mcp-Session-Id, WWW-Authenticate, Retry-After",
   "Access-Control-Max-Age": "600",
 };
+
+/** One JSON-RPC message (or a small batch) is a few KB at most. */
+const MAX_BODY_BYTES = 64 * 1024;
+/** Legacy (2025-03-26) clients may batch; each extra message costs a rate-limit hit. */
+const MAX_BATCH = 20;
 
 function rpcError(status: number, code: number, message: string, headers: Record<string, string> = {}) {
   return new Response(JSON.stringify({ jsonrpc: "2.0", error: { code, message }, id: null }), {
@@ -265,13 +272,28 @@ function buildServer(caller: ApiCaller): McpServer {
   return server;
 }
 
-/** Streamable HTTP clients must accept both; some generic clients omit it. */
-function withAcceptHeader(request: Request): Request {
-  const accept = request.headers.get("accept") ?? "";
-  if (accept.includes("application/json") && accept.includes("text/event-stream")) return request;
+/**
+ * The request the SDK transport sees: same URL and headers, no body (it gets
+ * the already-parsed body instead). Streamable HTTP clients must accept both
+ * JSON and SSE; some generic clients omit that, so the header is filled in —
+ * the answer is always plain JSON here.
+ */
+function forTransport(request: Request): Request {
   const headers = new Headers(request.headers);
-  headers.set("accept", "application/json, text/event-stream");
-  return new Request(request, { headers });
+  const accept = headers.get("accept") ?? "";
+  if (!(accept.includes("application/json") && accept.includes("text/event-stream"))) {
+    headers.set("accept", "application/json, text/event-stream");
+  }
+  headers.delete("content-length");
+  return new Request(request.url, { method: "POST", headers });
+}
+
+/** Headers for an auth or limit failure answered before the transport runs. */
+function failureHeaders(err: ApiError): Record<string, string> {
+  return {
+    ...(err.status === 401 ? { "WWW-Authenticate": 'Bearer realm="deal-mcp", error="invalid_token"' } : {}),
+    ...(err.retryAfter ? { "Retry-After": String(err.retryAfter) } : {}),
+  };
 }
 
 export async function handleMcp(request: Request): Promise<Response> {
@@ -287,14 +309,39 @@ export async function handleMcp(request: Request): Promise<Response> {
     caller = await authenticate(request);
   } catch (err) {
     if (err instanceof ApiError) {
-      if (err.keyId) await audit(err.keyId, "MCP", "(rate limited)", err.status);
-      return rpcError(err.status, -32001, err.message, {
-        ...(err.status === 401 ? { "WWW-Authenticate": 'Bearer realm="deal-mcp"' } : {}),
-        ...(err.retryAfter ? { "Retry-After": String(err.retryAfter) } : {}),
-      });
+      if (err.keyId) await audit(err.keyId, "MCP", `(${err.code})`, err.status);
+      return rpcError(err.status, -32001, err.message, failureHeaders(err));
     }
     console.error("[mcp] auth failed:", err);
     return rpcError(500, -32603, "Internal error.");
+  }
+
+  let body: unknown;
+  try {
+    const text = await readBodyCapped(request, MAX_BODY_BYTES);
+    body = JSON.parse(text);
+  } catch (err) {
+    if (err instanceof ApiError) return rpcError(err.status, -32600, err.message);
+    return rpcError(400, -32700, "Parse error: the body must be one JSON-RPC message.");
+  }
+
+  // Every message in a batch is charged against the key's limit (the first
+  // one was charged by authenticate), so batching can not multiply the rate.
+  if (Array.isArray(body)) {
+    if (body.length === 0 || body.length > MAX_BATCH) {
+      return rpcError(400, -32600, `Invalid request: send one message, or a batch of at most ${MAX_BATCH}.`);
+    }
+    try {
+      for (let i = 1; i < body.length; i += 1) {
+        await takeRateHit(`api:${caller.keyId}`, RATE_LIMIT, RATE_WINDOW_SECONDS);
+      }
+    } catch (err) {
+      if (err instanceof ApiError) {
+        await audit(caller.keyId, "MCP", `(${err.code})`, err.status);
+        return rpcError(err.status, -32001, err.message, failureHeaders(err));
+      }
+      throw err;
+    }
   }
 
   const server = buildServer(caller);
@@ -304,7 +351,7 @@ export async function handleMcp(request: Request): Promise<Response> {
   });
   try {
     await server.connect(transport);
-    const response = await transport.handleRequest(withAcceptHeader(request));
+    const response = await transport.handleRequest(forTransport(request), { parsedBody: body });
     for (const [k, v] of Object.entries(CORS)) response.headers.set(k, v);
     return response;
   } finally {
