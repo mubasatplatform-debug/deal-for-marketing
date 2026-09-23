@@ -32,7 +32,7 @@ export const organizationJsonLd = {
   url: `${SITE_URL}/`,
   logo: `${SITE_URL}/images/logo-deal.png`,
   image: `${SITE_URL}/og.jpg`,
-  email: "info@dealadv.sa",
+  email: "info@mubasat.net",
   telephone: phone.tel,
   contactPoint: [
     {

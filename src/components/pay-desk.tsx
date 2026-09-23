@@ -431,7 +431,7 @@ function PayLink() {
         <div className="mt-5 flex items-center gap-3 rounded-xl bg-paper px-4 py-3 text-[13px]">
           <Link2 className="size-4 text-pine" />
           <span dir="ltr" className="font-ui text-slate">
-            pay.dealadv.sa/<span className="text-pine-deep">oud/412</span>
+            pay.deal.mubasat.net/<span className="text-pine-deep">oud/412</span>
           </span>
           <span className="ms-auto inline-flex items-center gap-1.5 text-xs font-semibold text-pine">
             <Copy className="size-3.5" />
@@ -452,7 +452,7 @@ function PayLink() {
             <div className="flex items-center justify-center gap-1.5 bg-paper py-2.5 text-[11px] text-slate">
               <Lock className="size-3" />
               <span dir="ltr" className="font-ui">
-                pay.dealadv.sa
+                pay.deal.mubasat.net
               </span>
             </div>
             <div className="px-5 pt-5 pb-6">

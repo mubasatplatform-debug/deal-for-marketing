@@ -129,7 +129,7 @@ export function SiteFooter() {
                 </a>
               </li>
               <li>
-                <a href="mailto:info@dealadv.sa" className="group flex min-h-11 items-center gap-3">
+                <a href="mailto:info@mubasat.net" className="group flex min-h-11 items-center gap-3">
                   <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/5 text-lime">
                     <Mail className="size-[18px]" aria-hidden="true" />
                   </span>
@@ -139,7 +139,7 @@ export function SiteFooter() {
                       dir="ltr"
                       className="block font-ui text-[15px] font-semibold text-snow group-hover:text-lime"
                     >
-                      info@dealadv.sa
+                      info@mubasat.net
                     </span>
                   </span>
                 </a>
