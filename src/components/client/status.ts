@@ -5,7 +5,7 @@ import type { Tone } from "@/components/dash/ui";
 export const STEPS = ["new", "review", "production", "delivered"] as const;
 export type Step = (typeof STEPS)[number];
 
-export const TEAM_EMAIL = "info@dealadv.sa";
+export const TEAM_EMAIL = "info@mubasat.net";
 
 /** Index of a status on the stepper; unknown values sit on the first step. */
 export function stepIndex(status: string): number {

@@ -59,7 +59,7 @@ const sections: { title: string; body: string[] }[] = [
   {
     title: "حقوقك",
     body: [
-      "لك حق العلم بمعالجة بياناتك، والوصول إليها، وطلب تصحيحها أو إتلافها، وسحب موافقتك في أي وقت. راسلنا على info@dealadv.sa أو اتصل على الرقم أدناه، ونرد خلال ٣٠ يومًا. ولك حق تقديم شكوى إلى الهيئة السعودية للبيانات والذكاء الاصطناعي (سدايا).",
+      "لك حق العلم بمعالجة بياناتك، والوصول إليها، وطلب تصحيحها أو إتلافها، وسحب موافقتك في أي وقت. راسلنا على info@mubasat.net أو اتصل على الرقم أدناه، ونرد خلال ٣٠ يومًا. ولك حق تقديم شكوى إلى الهيئة السعودية للبيانات والذكاء الاصطناعي (سدايا).",
     ],
   },
 ];
@@ -116,8 +116,8 @@ function Privacy() {
               <div>
                 <p className="font-bold text-pine-deep">للتواصل بخصوص بياناتك</p>
                 <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[15px]">
-                  <a href="mailto:info@dealadv.sa" className="inline-flex min-h-11 items-center font-semibold text-pine underline-offset-4 hover:underline" dir="ltr">
-                    info@dealadv.sa
+                  <a href="mailto:info@mubasat.net" className="inline-flex min-h-11 items-center font-semibold text-pine underline-offset-4 hover:underline" dir="ltr">
+                    info@mubasat.net
                   </a>
                   <a href={`tel:${phone.tel}`} className="inline-flex min-h-11 items-center font-ui font-bold text-pine" dir="ltr">
                     {phone.display}
