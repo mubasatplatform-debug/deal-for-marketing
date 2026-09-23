@@ -54,7 +54,7 @@ export function FileSheet({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end bg-ink/75 backdrop-blur-[2px] motion-safe:animate-[file-in_0.25s_ease-out_both] md:hidden"
+      className="on-dark fixed inset-0 z-50 flex items-end bg-pine-deep/60 backdrop-blur-[2px] motion-safe:animate-[file-in_0.25s_ease-out_both] md:hidden"
       onClick={onClose}
     >
       <div

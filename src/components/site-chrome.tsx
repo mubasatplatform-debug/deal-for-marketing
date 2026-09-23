@@ -1,8 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { Instagram, Youtube } from "lucide-react";
+import { ArrowUp, ChevronLeft, Instagram, Menu, Phone, X, Youtube } from "lucide-react";
 import { DealLogo } from "@/components/logo";
 import { SiteFooter } from "@/components/site-footer";
+import { siteButton, wrap } from "@/components/site-classes";
 import { nav } from "@/lib/content";
 import { cn } from "@/lib/utils";
 import { authEnabled, signOut } from "@/lib/auth/client";
@@ -34,19 +35,28 @@ export function useChrome() {
   return v;
 }
 
-/**
- * `footer` defaults to showing the compact SiteFooter on every page except the
- * home page ("/"), which renders its own full footer.
- */
-export function SiteChrome({ children, footer }: { children: ReactNode; footer?: boolean }) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const showFooter = footer ?? pathname !== "/";
+/** Desktop navigation: the home sections plus the Line demo, in page order. */
+const primaryNav = [
+  { href: "/#systems", label: "الأنظمة" },
+  { href: "/#services", label: "خدماتنا" },
+  { href: "/line", label: "خط ديل" },
+  { href: "/#works", label: "أعمالنا" },
+  { href: "/#about", label: "من نحن" },
+  { href: "/#contact", label: "تواصل معنا" },
+] as const;
+
+/** `footer` defaults to showing the SiteFooter; the full-height /line app turns it off. */
+export function SiteChrome({ children, footer = true }: { children: ReactNode; footer?: boolean }) {
   const [menu, setMenu] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
+  const [scrolled, setScrolled] = useState(false);
   const [showTop, setShowTop] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setShowTop(window.scrollY > 420);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 8);
+      setShowTop(window.scrollY > 900);
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -64,58 +74,70 @@ export function SiteChrome({ children, footer }: { children: ReactNode; footer?:
   return (
     <ChromeCtx.Provider value={value}>
       <header
-        dir="ltr"
-        className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-hair/60 bg-ink px-5 md:h-18 md:px-8"
+        className={cn(
+          "fixed inset-x-0 top-0 z-40 border-b bg-paper/90 backdrop-blur-md transition-[border-color,box-shadow] duration-200",
+          scrolled ? "border-line shadow-[0_1px_0_rgba(16,38,40,0.04),0_8px_24px_-18px_rgba(16,38,40,0.3)]" : "border-transparent",
+        )}
       >
-        <button
-          ref={trigger}
-          type="button"
-          aria-label="القائمة"
-          aria-expanded={menu}
-          aria-controls={MENU_ID}
-          onClick={value.open}
-          className="flex size-11 items-center justify-center text-snow touch-manipulation"
-        >
-          <span className="flex w-6 flex-col gap-1.5">
-            <span className="h-px w-full bg-snow" />
-            <span className="h-px w-full bg-snow" />
-            <span className="h-px w-full bg-snow" />
-          </span>
-        </button>
-        <div className="flex items-center gap-2 md:gap-4">
-          <a
-            href="/start"
-            className="hidden h-10 items-center bg-lime px-5 font-display text-sm text-ink transition-opacity hover:opacity-90 md:inline-flex"
-          >
-            اطلب خدمتك
-          </a>
-          <AuthSlot />
-          <DealLogo className="ms-1 md:ms-2" />
+        <div className={cn(wrap, "flex h-16 items-center gap-3 md:h-[72px]")}>
+          <DealLogo />
+          <nav aria-label="أقسام الموقع" className="ms-6 hidden items-center gap-0.5 lg:flex">
+            {primaryNav.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="inline-flex h-11 items-center rounded-lg px-3 text-[15px] font-semibold text-pine-deep/75 transition-colors hover:bg-pine-50 hover:text-pine-deep"
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+          <div className="ms-auto flex items-center gap-2">
+            <a
+              href={`tel:${phone.tel}`}
+              className="hidden h-11 items-center gap-2 rounded-lg px-3 text-sm font-bold text-pine-deep hover:bg-pine-50 xl:inline-flex"
+            >
+              <Phone className="size-4 text-pine" aria-hidden="true" />
+              <span dir="ltr" className="font-ui">
+                {phone.display}
+              </span>
+            </a>
+            <span className="hidden sm:inline-flex">
+              <AuthSlot />
+            </span>
+            <a href="/start" className={cn(siteButton("primary"), "h-11 px-4 text-sm sm:px-5")}>
+              اطلب خدمتك
+            </a>
+            <button
+              ref={trigger}
+              type="button"
+              aria-label="القائمة"
+              aria-expanded={menu}
+              aria-controls={MENU_ID}
+              onClick={value.open}
+              className="grid size-11 place-items-center rounded-xl border border-line bg-surface text-pine-deep touch-manipulation lg:hidden"
+            >
+              <Menu className="size-5" aria-hidden="true" />
+            </button>
+          </div>
         </div>
       </header>
-
-      <span
-        aria-hidden="true"
-        className="edge-tick pointer-events-none fixed top-24 end-3 z-40 h-16 w-px bg-lime/80 md:end-5"
-      />
 
       <button
         type="button"
         aria-label="العودة للأعلى"
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         className={cn(
-          "fixed bottom-24 end-3 z-40 flex size-12 items-center justify-center bg-ink text-lime outline outline-hair transition-opacity duration-300 focus-visible:outline-2 focus-visible:outline-lime md:end-5",
+          "fixed bottom-24 end-4 z-30 grid size-11 place-items-center rounded-full border border-line bg-surface text-pine-deep shadow-[var(--shadow-card)] transition-opacity duration-300 hover:border-pine md:end-6",
           showTop ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       >
-        <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.6">
-          <path d="M12 19V5M5 12l7-7 7 7" />
-        </svg>
+        <ArrowUp className="size-5" aria-hidden="true" />
       </button>
 
       <MenuOverlay />
       {children}
-      {showFooter ? <SiteFooter /> : null}
+      {footer ? <SiteFooter /> : null}
     </ChromeCtx.Provider>
   );
 }
@@ -125,11 +147,11 @@ function AuthSlot() {
   const pathname = useRouterState({ select: (st) => st.location.pathname });
   // Same footprint in every state, so the header never shifts while the session resolves.
   const base =
-    "inline-flex h-10 min-w-[4.5rem] items-center justify-center gap-2 border px-3 font-display text-sm transition-colors";
-  if (isPending) return <span aria-hidden="true" className={cn(base, "border-hair")} />;
+    "inline-flex h-11 min-w-[4.5rem] items-center justify-center gap-2 rounded-xl border px-3 text-sm font-bold transition-colors";
+  if (isPending) return <span aria-hidden="true" className={cn(base, "border-line bg-surface")} />;
   if (!user) {
     return (
-      <a href={loginHref(pathname)} className={cn(base, "border-hair text-snow hover:border-lime hover:text-lime")}>
+      <a href={loginHref(pathname)} className={cn(base, "border-line bg-surface text-pine-deep hover:border-pine")}>
         دخول
       </a>
     );
@@ -139,9 +161,9 @@ function AuthSlot() {
     <a
       href="/client"
       aria-current={pathname === "/client" ? "page" : undefined}
-      className={cn(base, "border-lime/60 text-lime hover:border-lime")}
+      className={cn(base, "border-line bg-surface text-pine-deep hover:border-pine")}
     >
-      <span aria-hidden="true" className="grid size-6 place-items-center bg-lime font-ui text-xs font-bold text-ink">
+      <span aria-hidden="true" className="grid size-6 place-items-center rounded-full bg-pine font-ui text-xs font-bold text-lime">
         {initial}
       </span>
       {ACCOUNT_LABEL}
@@ -183,59 +205,56 @@ function MenuOverlay() {
         aria-label="إغلاق القائمة"
         tabIndex={menu ? 0 : -1}
         onClick={close}
-        className="menu-scrim absolute inset-0 bg-ink/70"
+        className="menu-scrim absolute inset-0 bg-pine-deep/45"
       />
       <div
         id={MENU_ID}
         role="dialog"
         aria-modal="true"
         aria-label="القائمة"
-        className="menu-panel absolute inset-y-0 left-0 flex w-[min(20rem,86vw)] flex-col bg-ink">
-        <div dir="ltr" className="flex shrink-0 items-center justify-between px-4 pt-[max(0.75rem,env(safe-area-inset-top))]">
+        className="menu-panel absolute inset-y-0 left-0 flex w-[min(22rem,88vw)] flex-col bg-paper"
+      >
+        <div className="flex shrink-0 items-center justify-between border-b border-line px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3">
+          <DealLogo onClick={close} />
           <button
             type="button"
             aria-label="إغلاق القائمة"
             onClick={close}
-            className="flex size-11 items-center justify-center text-lime touch-manipulation"
+            className="grid size-11 place-items-center rounded-xl border border-line bg-surface text-pine-deep touch-manipulation"
           >
-            <svg viewBox="0 0 24 24" className="size-7" fill="none" stroke="currentColor" strokeWidth="1.6">
-              <path d="M6 6l12 12M18 6 6 18" />
-            </svg>
+            <X className="size-5" aria-hidden="true" />
           </button>
-          <DealLogo onClick={close} />
         </div>
 
-        <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-3 pt-6 pb-4 text-start">
+        <nav aria-label="القائمة الرئيسية" className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-3 py-3">
           {links.map((item, idx) => (
             <a
               key={item.href}
               ref={idx === 0 ? nav0 : undefined}
               href={item.href}
               onClick={close}
-              className="menu-link flex min-h-12 w-full items-center justify-end px-3 font-display text-xl font-semibold text-snow active:bg-lime active:text-ink"
+              className="menu-link flex min-h-13 w-full items-center justify-between gap-3 rounded-xl px-3 text-[17px] font-bold text-pine-deep hover:bg-pine-50 active:bg-pine-100"
             >
               {item.label}
+              <ChevronLeft className="size-4 text-slate" aria-hidden="true" />
             </a>
           ))}
           <a
             href="/#services"
             onClick={close}
-            className="menu-link flex min-h-12 w-full items-center justify-end px-3 font-display text-xl font-semibold text-snow active:bg-lime active:text-ink"
+            className="menu-link flex min-h-13 w-full items-center justify-between gap-3 rounded-xl px-3 text-[17px] font-bold text-pine-deep hover:bg-pine-50 active:bg-pine-100"
           >
             خدماتنا
+            <ChevronLeft className="size-4 text-slate" aria-hidden="true" />
           </a>
         </nav>
 
-        <div className="shrink-0 space-y-3 border-t border-hair px-6 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] text-start">
+        <div className="shrink-0 space-y-3 border-t border-line bg-surface px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           {isPending ? (
-            <span aria-hidden="true" className="block h-12 bg-hair/60" />
+            <span aria-hidden="true" className="block h-12 rounded-xl bg-pine-50" />
           ) : user ? (
             <div className="flex items-center gap-2">
-              <a
-                href="/client"
-                onClick={close}
-                className="flex h-12 flex-1 items-center justify-center bg-lime font-display text-ink"
-              >
+              <a href="/client" onClick={close} className={cn(siteButton("dark"), "flex-1")}>
                 {ACCOUNT_LABEL}
               </a>
               {authEnabled ? (
@@ -246,30 +265,35 @@ function MenuOverlay() {
                     setSigningOut(true);
                     void signOut("/").catch(() => setSigningOut(false));
                   }}
-                  className="h-12 border border-hair px-4 font-display text-sm text-mist hover:text-snow disabled:opacity-60"
+                  className={cn(siteButton("secondary"), "text-sm disabled:opacity-60")}
                 >
                   {signingOut ? "جارٍ الخروج…" : "تسجيل الخروج"}
                 </button>
               ) : null}
             </div>
           ) : (
-            <a
-              href={loginHref(pathname)}
-              onClick={close}
-              className="flex h-12 items-center justify-center border border-lime font-display text-lime"
-            >
+            <a href={loginHref(pathname)} onClick={close} className={cn(siteButton("secondary"), "w-full")}>
               دخول / حساب جديد
             </a>
           )}
-          <div className="flex items-center justify-between gap-3 text-sm">
-            <a href={`tel:${phone.tel}`} className="inline-flex min-h-11 items-center gap-2 text-mist hover:text-lime">
-              اتصال
-              <span dir="ltr" className="font-ui text-snow">
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <a
+              href={`tel:${phone.tel}`}
+              className="flex min-h-12 flex-col justify-center rounded-xl border border-line px-3 py-1.5 hover:border-pine"
+            >
+              <span className="text-xs font-semibold text-slate">اتصال</span>
+              <span dir="ltr" className="text-end font-ui font-bold text-pine-deep">
                 {phone.display}
               </span>
             </a>
-            <a href={`https://wa.me/${mobile.wa}`} className="inline-flex min-h-11 items-center text-lime hover:opacity-80">
-              واتساب
+            <a
+              href={`https://wa.me/${mobile.wa}`}
+              className="flex min-h-12 flex-col justify-center rounded-xl border border-line px-3 py-1.5 hover:border-pine"
+            >
+              <span className="text-xs font-semibold text-slate">واتساب</span>
+              <span dir="ltr" className="text-end font-ui font-bold text-pine-deep">
+                {mobile.display}
+              </span>
             </a>
           </div>
         </div>
@@ -286,16 +310,20 @@ export function XMark({ className }: { className?: string }) {
   );
 }
 
-export function SocialRow({ className }: { className?: string }) {
+export function SocialRow({ className, dark }: { className?: string; dark?: boolean }) {
+  const item = cn(
+    "grid size-11 place-items-center rounded-xl border transition-colors",
+    dark ? "border-white/15 text-snow/80 hover:border-lime hover:text-lime" : "border-line text-pine hover:border-pine",
+  );
   return (
-    <div className={cn("flex items-center gap-5 text-mist", className)}>
-      <a href="https://youtube.com" aria-label="YouTube" className="inline-flex size-11 items-center justify-center hover:text-lime">
-        <Youtube className="size-5" strokeWidth={1.4} />
+    <div className={cn("flex items-center gap-2", className)}>
+      <a href="https://youtube.com" aria-label="YouTube" className={item}>
+        <Youtube className="size-5" strokeWidth={1.6} />
       </a>
-      <a href="https://instagram.com" aria-label="Instagram" className="inline-flex size-11 items-center justify-center hover:text-lime">
-        <Instagram className="size-5" strokeWidth={1.4} />
+      <a href="https://instagram.com" aria-label="Instagram" className={item}>
+        <Instagram className="size-5" strokeWidth={1.6} />
       </a>
-      <a href="https://x.com/deal_adv_sa" aria-label="X" className="inline-flex size-11 items-center justify-center hover:text-lime">
+      <a href="https://x.com/deal_adv_sa" aria-label="X" className={item}>
         <XMark className="size-4" />
       </a>
     </div>

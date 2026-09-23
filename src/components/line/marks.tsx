@@ -14,7 +14,7 @@ export function BrandMark({ className }: { className?: string }) {
   return (
     <span
       aria-hidden="true"
-      className={cn("relative flex size-10 shrink-0 items-center justify-center bg-lime text-pine", className)}
+      className={cn("relative flex size-10 shrink-0 items-center justify-center rounded-xl bg-pine text-lime", className)}
     >
       <svg viewBox="0 0 24 24" className="size-6" focusable="false">
         <polygon points="4,2 22,12 4,22" fill="none" stroke="currentColor" strokeWidth="1.6" />
@@ -29,7 +29,7 @@ export function LineAvatar({ className }: { className?: string }) {
   return (
     <span
       aria-hidden="true"
-      className={cn("flex size-8 shrink-0 items-center justify-center border border-pine-soft bg-pine text-lime", className)}
+      className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg bg-pine text-lime", className)}
     >
       <PlayMark className="h-3" />
     </span>
@@ -39,8 +39,8 @@ export function LineAvatar({ className }: { className?: string }) {
 export function LiveDot({ className }: { className?: string }) {
   return (
     <span aria-hidden="true" className={cn("relative flex size-2", className)}>
-      <span className="absolute inset-0 bg-lime opacity-60 motion-safe:animate-ping" />
-      <span className="relative size-2 bg-lime" />
+      <span className="absolute inset-0 rounded-full bg-lime opacity-60 motion-safe:animate-ping" />
+      <span className="relative size-2 rounded-full bg-lime ring-1 ring-pine/30" />
     </span>
   );
 }
