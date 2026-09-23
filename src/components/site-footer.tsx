@@ -9,6 +9,7 @@ const siteLinks = [
   { href: "/#systems", label: "الأنظمة" },
   { href: "/#services", label: "خدماتنا" },
   { href: "/line", label: "خط ديل" },
+  { href: "/law", label: "مكتب المحامي" },
   { href: "/#works", label: "أعمالنا" },
   { href: "/#about", label: "من نحن" },
   { href: "/client", label: "حسابي" },

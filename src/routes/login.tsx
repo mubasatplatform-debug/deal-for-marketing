@@ -34,6 +34,7 @@ function destinationLabel(path: string): string {
   if (path.startsWith("/start")) return "طلب الخدمة";
   if (path.startsWith("/line")) return "خط ديل";
   if (path.startsWith("/admin")) return "لوحة الإدارة";
+  if (path.startsWith("/app")) return "مكتبك";
   return "الصفحة التي كنت فيها";
 }
 

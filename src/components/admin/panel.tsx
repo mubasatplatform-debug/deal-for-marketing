@@ -10,6 +10,7 @@ import {
   LayoutGrid,
   MessagesSquare,
   RotateCw,
+  Scale,
   Search,
   SearchX,
   TrendingDown,
@@ -346,6 +347,7 @@ export function AdminPanel({
       },
     },
     { href: "#customers", label: "العملاء", icon: Users, active: section === "customers" },
+    { href: "/admin/law", label: "مشتركو مكتب المحامي", icon: Scale },
     { href: "/admin/keys", label: "مفاتيح API", icon: KeyRound },
   ];
 

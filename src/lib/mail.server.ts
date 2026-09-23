@@ -85,3 +85,68 @@ export async function sendThreadNotice(input: ThreadNotice): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * POST one fixed-purpose message to the relay. Never throws; returns whether
+ * the relay accepted it.
+ */
+async function postRelay(body: Record<string, unknown>, what: string): Promise<boolean> {
+  const endpoint = process.env.MAIL_RELAY_URL?.trim();
+  const token = process.env.MAIL_RELAY_TOKEN?.trim();
+  if (!endpoint || !token) {
+    console.warn(`[mail] MAIL_RELAY_URL / MAIL_RELAY_TOKEN not set — ${what} not sent`);
+    return false;
+  }
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) console.error(`[mail] ${what}: relay answered ${res.status}`);
+    return res.ok;
+  } catch (err) {
+    console.error(`[mail] ${what}: relay failed:`, err);
+    return false;
+  }
+}
+
+/**
+ * «مكتب المحامي» team invite. Relay contract (action 'invite'):
+ *
+ *   { "action": "invite", "to": "<invitee email>", "workspace": "<office name>",
+ *     "inviter": "<inviter display name>", "role": "<Arabic role label, e.g. محامٍ>",
+ *     "url": "https://<origin>/app/invite/<token>" }
+ *
+ * The URL carries the one-time token; the link is also shown to the inviter
+ * to copy, so a failed send never blocks the invite. Never throws.
+ */
+export function sendWorkspaceInviteEmail(input: {
+  to: string;
+  workspace: string;
+  inviter: string;
+  role: string;
+  url: string;
+}): Promise<boolean> {
+  return postRelay(
+    {
+      action: "invite",
+      to: input.to,
+      workspace: input.workspace,
+      inviter: input.inviter,
+      role: input.role,
+      url: input.url,
+    },
+    "workspace invite email",
+  );
+}
+
+/**
+ * Internal alert to the DEAL owner inbox (the relay picks the recipient).
+ * Relay contract (action 'alert'): { "action": "alert", "subject": "…", "text": "…" }.
+ * Used for "new office signed up" and "manual payment requested". Never throws.
+ */
+export function sendTeamAlert(subject: string, text: string): Promise<boolean> {
+  return postRelay({ action: "alert", subject, text }, "team alert");
+}
