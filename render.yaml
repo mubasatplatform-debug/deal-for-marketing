@@ -35,6 +35,10 @@ services:
       # Public origin of this service, e.g. https://deal.mubasat.net
       - key: BETTER_AUTH_URL
         sync: false
+      # Other addresses allowed to sign in, comma-separated,
+      # e.g. https://deal-for-marketing.onrender.com
+      - key: AUTH_TRUSTED_ORIGINS
+        sync: false
       - key: ADMIN_EMAILS
         sync: false
       - key: ANTHROPIC_API_KEY

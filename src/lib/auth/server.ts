@@ -115,8 +115,14 @@ const baseURL = explicitBaseURL ?? {
 
 // Origins Better Auth accepts on credentialed POSTs (sign-up/sign-in, etc.).
 // Missing entries here surface as FORBIDDEN "Invalid origin".
+// Extra origins for a deploy reachable on more than one address (e.g. the
+// custom domain plus the host's own *.onrender.com URL), comma-separated.
+const extraTrustedOrigins: string[] = (env("AUTH_TRUSTED_ORIGINS") ?? "")
+  .split(",")
+  .map((origin) => origin.trim().replace(/\/+$/, ""))
+  .filter((origin) => /^https?:\/\/[^/\s]+$/.test(origin));
 const trustedOrigins: string[] = explicitBaseURL
-  ? [explicitBaseURL, ...LOCAL_DEV_ORIGINS]
+  ? [explicitBaseURL, ...extraTrustedOrigins, ...LOCAL_DEV_ORIGINS]
   : [
       // Host wildcards (matched against Origin's host)
       ...previewAllowedHosts,
