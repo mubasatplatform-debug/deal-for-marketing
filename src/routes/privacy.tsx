@@ -1,10 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteChrome } from "@/components/site-chrome";
-import { siteButton, wrap } from "@/components/site-classes";
-import { Eyebrow } from "@/components/site-ui";
 import { mobile, phone } from "@/lib/content";
 import { pageHead } from "@/lib/seo";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/privacy")({
   head: () =>
@@ -33,6 +30,7 @@ const sections: { title: string; body: string[]; id?: string }[] = [
       "عند الدخول بحساب Google أو X: الاسم والبريد الإلكتروني وصورة الحساب كما يرسلها مزوّد الدخول، مع بيانات الجلسة (عنوان IP ونوع المتصفح) لحماية الحساب.",
       "عند استخدام «خط ديل»: نص المحادثة التي تكتبها، ويُحفظ مؤقتًا في متصفحك فقط.",
       "مصدر الزيارة الأولى: اسم الحملة أو الموقع الذي أوصلك إلينا (مثل سناب شات أو قوقل) وأول صفحة فتحتها، ونحفظه في متصفحك ٣٠ يومًا ويُرفق بطلبك إن أرسلته، لنعرف أي قنواتنا تجلب الطلبات. لا نستخدم ملفات تعريف ارتباط (cookies) للتتبع ولا أدوات تتبع من جهات أخرى.",
+      "الرسائل والملفات المتبادلة بينك وبين فريق ديل حول طلب ما تُحفظ مع ذلك الطلب، ويراها صاحب الطلب وفريق ديل فقط، وتُحذف معه.",
       "لمنع الإساءة والطلبات الآلية عند إرسال طلب أو استخدام «خط ديل»: بصمة أحادية الاتجاه (hash) لعنوان IP الخاص بك لا يمكن استرجاع العنوان منها، ولا نحفظ العنوان نفسه، وتُحذف تلقائيًا خلال ٢٤ ساعة على الأكثر.",
     ],
   },
@@ -51,6 +49,13 @@ const sections: { title: string; body: string[]; id?: string }[] = [
     ],
   },
   {
+    title: "مدة الاحتفاظ",
+    body: [
+      "نحتفظ بكل طلب خدمة سنتين من تاريخ إرساله، ثم يُحذف تلقائيًا من قاعدة بياناتنا (تجري عملية الحذف مرة يوميًا، فقد يتأخر أيامًا قليلة). ولك أن تطلب حذفه قبل ذلك في أي وقت.",
+      "بصمة عنوان IP المستخدمة لمنع الإساءة تُحذف تلقائيًا خلال ٢٤ ساعة على الأكثر.",
+    ],
+  },
+  {
     // Anchor linked from /law, /law/terms and the law-office app settings.
     id: "law",
     title: "خدمة «مكتب المحامي»",
@@ -59,14 +64,6 @@ const sections: { title: string; body: string[]; id?: string }[] = [
       "بيانات كل مكتب معزولة عن غيره ولا يصل إليها إلا أعضاؤه المدعوون. ولا تُحذف تلقائيًا عند انتهاء الاشتراك؛ يتحول المكتب إلى وضع القراءة فقط حتى يجدد أو يطلب الحذف.",
       "نحفظ لإدارة الاشتراك: اسم المكتب ومدينته ورقم سجله التجاري (إن أُدخل)، وأسماء أعضاء الفريق وبريدهم وصلاحياتهم، وسجل الدعوات وطلبات الدفع وحالتها. ولا نحفظ بيانات البطاقات: الدفع الإلكتروني يتم لدى بوابة الدفع مباشرة.",
       "لطلبات أصحاب البيانات المتعلقة بعملاء مكتب ما، يُرجى التواصل مع المكتب نفسه أولًا بصفته جهة التحكم، وسنساعده في تنفيذها.",
-    ],
-  },
-  {
-    title: "مدة الاحتفاظ",
-    body: [
-      "نحتفظ بكل طلب خدمة سنتين من تاريخ إرساله، ثم يُحذف تلقائيًا من قاعدة بياناتنا (تجري عملية الحذف مرة يوميًا، فقد يتأخر أيامًا قليلة). ولك أن تطلب حذفه قبل ذلك في أي وقت.",
-      "الرسائل والملفات المتبادلة بينك وبين فريق ديل حول طلب ما تُحفظ مع ذلك الطلب، ويراها صاحب الطلب وفريق ديل فقط، وتُحذف معه.",
-      "بصمة عنوان IP المستخدمة لمنع الإساءة تُحذف تلقائيًا خلال ٢٤ ساعة على الأكثر.",
     ],
   },
   {
@@ -80,71 +77,38 @@ const sections: { title: string; body: string[]; id?: string }[] = [
 function Privacy() {
   return (
     <SiteChrome>
-      <main className="bg-paper pt-24 pb-20 md:pt-32 md:pb-28">
-        <div className={cn(wrap, "grid gap-10 lg:grid-cols-12 lg:gap-14")}>
-          <header className="lg:col-span-4">
-            <div className="lg:sticky lg:top-28">
-              <Eyebrow>الخصوصية</Eyebrow>
-              <h1 className="mt-4 font-display text-[2.3rem] leading-[1.25] text-pine-deep md:text-5xl">سياسة الخصوصية</h1>
-              <p className="mt-3 text-sm text-slate">آخر تحديث: {UPDATED}</p>
-              <nav aria-label="أقسام السياسة" className="mt-8 hidden lg:block">
-                <ol className="space-y-1 border-s border-line">
-                  {sections.map((sec, i) => (
-                    <li key={sec.title}>
-                      <a
-                        href={`#${sec.id ?? `p-${i + 1}`}`}
-                        className="-ms-px flex min-h-10 items-center border-s-2 border-transparent ps-4 text-[15px] font-semibold text-slate hover:border-pine hover:text-pine-deep"
-                      >
-                        {sec.title}
-                      </a>
-                    </li>
-                  ))}
-                </ol>
-              </nav>
-            </div>
-          </header>
-
-          <div className="lg:col-span-8">
-            <div className="rounded-3xl bg-surface p-6 ring-1 ring-line md:p-10">
-              <div className="space-y-10">
-                {sections.map((sec, i) => (
-                  <section key={sec.title} id={sec.id ?? `p-${i + 1}`} aria-labelledby={`p-${i + 1}-h`} className="scroll-mt-28">
-                    <h2 id={`p-${i + 1}-h`} className="flex items-center gap-3 font-display text-xl text-pine-deep md:text-2xl">
-                      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-pine-50 font-ui text-sm font-bold text-pine">
-                        {i + 1}
-                      </span>
-                      {sec.title}
-                    </h2>
-                    <div className="mt-4 space-y-3 text-[16px] leading-loose text-slate">
-                      {sec.body.map((para) => (
-                        <p key={para}>{para}</p>
-                      ))}
-                    </div>
-                  </section>
+      <main className="bg-ink px-6 pt-24 pb-20 md:px-16">
+        <p className="text-kicker text-lime">الخصوصية //</p>
+        <h1 className="mt-4 font-display text-poster text-snow">سياسة الخصوصية</h1>
+        <p className="mt-3 text-sm text-dim">آخر تحديث: {UPDATED}</p>
+        <div className="mt-12 max-w-2xl space-y-10">
+          {sections.map((s) => (
+            <section key={s.title} id={s.id} className="scroll-mt-24">
+              <h2 className="font-display text-xl text-snow">{s.title}</h2>
+              <div className="mt-3 space-y-3 text-sm leading-loose text-mist">
+                {s.body.map((p) => (
+                  <p key={p}>{p}</p>
                 ))}
               </div>
-            </div>
-
-            <div className="mt-6 flex flex-col gap-4 rounded-3xl bg-pine-50 p-6 md:flex-row md:items-center md:justify-between md:p-8">
-              <div>
-                <p className="font-bold text-pine-deep">للتواصل بخصوص بياناتك</p>
-                <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[15px]">
-                  <a href="mailto:info@mubasat.net" className="inline-flex min-h-11 items-center font-semibold text-pine underline-offset-4 hover:underline" dir="ltr">
-                    info@mubasat.net
-                  </a>
-                  <a href={`tel:${phone.tel}`} className="inline-flex min-h-11 items-center font-ui font-bold text-pine" dir="ltr">
-                    {phone.display}
-                  </a>
-                  <a href={phone.wa} className="inline-flex min-h-11 items-center font-ui font-bold text-pine" dir="ltr">
-                    {mobile.display}
-                  </a>
-                </p>
-              </div>
-              <Link to="/start" className={siteButton("primary")}>
-                اطلب خدمتك
-              </Link>
-            </div>
-          </div>
+            </section>
+          ))}
+          <p className="text-sm text-mist">
+            للتواصل:{" "}
+            <a href="mailto:info@mubasat.net" className="text-lime">
+              info@mubasat.net
+            </a>{" "}
+            ·{" "}
+            <a href={`tel:${phone.tel}`} className="text-lime" dir="ltr">
+              {phone.display}
+            </a>{" "}
+            ·{" "}
+            <a href={phone.wa} className="text-lime" dir="ltr">
+              {mobile.display}
+            </a>
+          </p>
+          <Link to="/start" className="inline-flex font-display text-sm text-lime">
+            اطلب خدمتك
+          </Link>
         </div>
       </main>
     </SiteChrome>

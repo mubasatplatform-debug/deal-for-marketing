@@ -148,21 +148,21 @@ export function DealLine() {
   const confidence = file ? Math.round(file.confidence) : 0;
 
   return (
-    <div className="flex h-[calc(100dvh-4rem)] flex-col overflow-hidden bg-paper md:h-[calc(100dvh-72px)]">
-      <header className="relative shrink-0 border-b border-line bg-surface px-4 py-3 md:px-10 md:py-4">
+    <div className="flex h-[calc(100dvh-4rem)] flex-col overflow-hidden bg-ink md:h-[calc(100dvh-4.5rem)]">
+      <header className="relative shrink-0 border-b border-hair bg-ink px-4 py-3 md:px-10 md:py-4">
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <BrandMark />
             <div className="min-w-0">
               <div className="flex items-center gap-3">
-                <h1 className="font-display text-lg font-semibold leading-tight text-pine-deep md:text-xl">خط ديل</h1>
-                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-pine">
+                <h1 className="font-display text-lg font-semibold leading-tight text-snow md:text-xl">خط ديل</h1>
+                <span className="inline-flex items-center gap-1.5 font-display text-xs text-lime">
                   <LiveDot />
                   متصل
                 </span>
               </div>
-              <p className="mt-1 flex items-center gap-1.5 text-xs leading-snug text-slate">
-                <span className="shrink-0 rounded border border-pine-soft bg-pine px-1 font-ui text-micro font-bold tracking-[0.14em] text-snow">
+              <p className="mt-1 flex items-center gap-1.5 text-xs leading-snug text-mist">
+                <span className="shrink-0 border border-pine-soft bg-pine px-1 font-ui text-micro font-bold tracking-[0.14em] text-snow">
                   AI
                 </span>
                 <span>تجربة ذكاء اصطناعي — لا تشارك بيانات حساسة</span>
@@ -175,7 +175,7 @@ export function DealLine() {
               type="button"
               onClick={reset}
               aria-label="ابدأ محادثة جديدة"
-              className="inline-flex h-11 shrink-0 items-center gap-2 rounded-xl border border-line bg-surface px-3 text-xs font-bold text-slate transition-colors hover:border-pine hover:text-pine-deep"
+              className="inline-flex h-11 shrink-0 items-center gap-2 border border-hair px-3 font-display text-xs text-mist transition-colors hover:border-lime hover:text-lime"
             >
               <svg viewBox="0 0 16 16" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
                 <path d="M2.5 8a5.5 5.5 0 1 0 1.6-3.9M2.5 2.5v3h3" />
@@ -188,7 +188,7 @@ export function DealLine() {
       </header>
 
       <div className="grid min-h-0 flex-1 md:grid-cols-[minmax(0,1fr)_22rem] lg:grid-cols-[minmax(0,1fr)_25rem]">
-        <section aria-label="المحادثة" className="flex min-h-0 flex-col md:border-e md:border-line">
+        <section aria-label="المحادثة" className="flex min-h-0 flex-col md:border-e md:border-hair">
           <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-6 md:px-10 md:py-10">
             <div className="mx-auto w-full max-w-3xl">
               {empty ? (
@@ -197,9 +197,9 @@ export function DealLine() {
                 <MessageList messages={messages} busy={busy} />
               )}
               {err ? (
-                <div role="alert" className="mt-5 flex items-start gap-3 rounded-2xl border border-lime bg-lime-50 px-4 py-3">
-                  <span aria-hidden="true" className="mt-2 size-1.5 shrink-0 rounded-full bg-lime-600" />
-                  <p className="text-sm leading-relaxed text-pine-deep">{err}</p>
+                <div role="alert" className="mt-5 flex items-start gap-3 border border-lime/50 bg-card px-4 py-3">
+                  <span aria-hidden="true" className="mt-1.5 size-1.5 shrink-0 bg-lime" />
+                  <p className="text-sm leading-relaxed text-snow">{err}</p>
                 </div>
               ) : null}
             </div>
@@ -211,7 +211,7 @@ export function DealLine() {
             aria-haspopup="dialog"
             aria-expanded={fileOpen}
             onClick={() => setFileOpen(true)}
-            className="on-dark flex h-12 w-full shrink-0 items-center gap-3 border-t border-pine bg-pine-deep px-4 text-start md:hidden"
+            className="flex h-12 w-full shrink-0 items-center gap-3 border-t border-pine bg-pine-deep px-4 text-start md:hidden"
           >
             <span className="shrink-0 font-display text-sm font-semibold text-snow">ملف الثبوت</span>
             <span aria-hidden="true" className="h-[3px] min-w-6 flex-1 bg-pine">
@@ -242,7 +242,7 @@ export function DealLine() {
           />
         </section>
 
-        <aside aria-labelledby="line-file-aside" className="on-dark hidden min-h-0 overflow-y-auto bg-pine-deep md:block">
+        <aside aria-labelledby="line-file-aside" className="hidden min-h-0 overflow-y-auto bg-pine-deep md:block">
           <FilePanel file={file} onFile={fileAsRequest} titleId="line-file-aside" />
         </aside>
       </div>

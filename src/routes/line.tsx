@@ -18,7 +18,7 @@ function LinePage() {
   return (
     <SiteChrome footer={false}>
       {/* The chrome's fixed edge tick would sit on top of the Line header; hide it on this page only. */}
-      <main className="bg-paper pt-16 md:pt-[72px] [:root:has(&)_.edge-tick]:hidden">
+      <main className="bg-ink pt-16 md:pt-18 [:root:has(&)_.edge-tick]:hidden">
         <DealLine />
       </main>
     </SiteChrome>

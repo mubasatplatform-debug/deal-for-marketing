@@ -61,7 +61,7 @@
   --text-kicker--line-height: 1.55;
   --text-micro: 0.62rem;
   --text-micro--line-height: 1.4;
-  /* Public site: soft elevation shared by cards and photo frames. */
+  /* Product surfaces (dashboards, booking, meeting pages): soft elevation. */
   --shadow-card: 0 1px 2px rgba(16, 38, 40, 0.05), 0 12px 32px -18px rgba(16, 38, 40, 0.22);
   --shadow-float: 0 2px 4px rgba(16, 38, 40, 0.06), 0 24px 48px -20px rgba(16, 38, 40, 0.35);
 }
@@ -75,10 +75,9 @@
   }
 
   body {
-    /* Public site and dashboards share one light canvas (paper), pine text. */
-    background: var(--color-paper);
-    color: var(--color-pine-deep);
-    font-family: var(--font-dash);
+    background: var(--color-ink);
+    color: var(--color-snow);
+    font-family: var(--font-display);
     font-synthesis: none;
     line-height: 1.7;
     overflow-x: clip;
@@ -101,13 +100,17 @@
 
   ::selection {
     background: var(--color-lime);
-    color: var(--color-pine-deep);
+    color: var(--color-ink);
   }
 
-  /* Pine reads on paper and white; dark bands switch to lime (.on-dark). */
   :focus-visible {
-    outline: 2px solid var(--color-pine);
+    outline: 2px solid var(--color-lime);
     outline-offset: 2px;
+  }
+  /* Light product surfaces (paper) need the pine ring to stay visible. */
+  .bg-paper :focus-visible,
+  .bg-surface :focus-visible {
+    outline-color: var(--color-pine);
   }
   .on-dark :focus-visible {
     outline-color: var(--color-lime);
@@ -226,14 +229,17 @@
 
 .reveal {
   opacity: 0;
-  transform: translateY(24px);
+  transform: translateY(40px);
+  filter: blur(6px);
   transition:
-    opacity 0.7s var(--ease-expo),
-    transform 0.7s var(--ease-expo);
+    opacity 0.85s var(--ease-expo),
+    transform 0.85s var(--ease-expo),
+    filter 0.85s var(--ease-expo);
 }
 .reveal.is-in {
   opacity: 1;
   transform: none;
+  filter: none;
 }
 
 .clip-in {
@@ -274,7 +280,7 @@
   transform: translate3d(0, 0, 0);
   /* Only when open: on the parked (off-screen) panel this 1px edge leaked into
      the viewport as a lime line down the left side of every page. */
-  box-shadow: var(--shadow-float);
+  box-shadow: 1px 0 0 0 rgba(198, 255, 61, 0.35);
 }
 .menu-root.is-open .menu-scrim {
   opacity: 1;
@@ -360,7 +366,8 @@ html.menu-lock body {
   transition: transform 1.2s var(--ease-expo), filter 0.6s ease;
 }
 .work-card:hover img {
-  transform: scale(1.04);
+  transform: scale(1.06);
+  filter: grayscale(0.2) brightness(1.08);
 }
 
 @media (prefers-reduced-motion: reduce) {
