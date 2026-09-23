@@ -61,6 +61,29 @@ export async function signUpWithPassword(name: string, email: string, password: 
   return "تعذر إنشاء الحساب، حاول مرة أخرى.";
 }
 
+/**
+ * Ask for a reset link. Always resolves to null on a well-formed request —
+ * whether or not the email has an account — so the page can't be used to
+ * discover accounts; only a network failure yields a message.
+ */
+export async function requestPasswordReset(email: string): Promise<string | null> {
+  try {
+    await authClient.requestPasswordReset({ email, redirectTo: `${window.location.origin}/reset-password` });
+    return null;
+  } catch {
+    return "تعذر الاتصال، تحقق من الإنترنت وحاول مرة أخرى.";
+  }
+}
+
+/** Set a new password with the token from the emailed link; Arabic error or null. */
+export async function resetPassword(token: string, newPassword: string): Promise<string | null> {
+  const { error } = await authClient.resetPassword({ token, newPassword });
+  if (!error) return null;
+  if (/token/i.test(error.message ?? "") || error.status === 400) return "انتهت صلاحية الرابط أو استُخدم من قبل. اطلب رابطًا جديدًا.";
+  if (/password/i.test(error.message ?? "")) return "كلمة المرور قصيرة — ٨ أحرف على الأقل.";
+  return "تعذر تعيين كلمة المرور، حاول مرة أخرى.";
+}
+
 // ── Live-preview bearer token ────────────────────────────────────────────────
 // The embedded preview iframe has partitioned cookies, so we keep the session's
 // bearer token in sessionStorage and attach it to every Better Auth request (and

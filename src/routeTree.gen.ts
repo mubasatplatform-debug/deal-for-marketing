@@ -13,9 +13,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ClientRouteImport } from './routes/client'
 import { Route as DevelopersRouteImport } from './routes/developers'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LineRouteImport } from './routes/line'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as StartRouteImport } from './routes/start'
 import { Route as AdminKeysRouteImport } from './routes/admin_.keys'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
@@ -53,6 +55,11 @@ const DevelopersRoute = DevelopersRouteImport.update({
   path: '/developers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LineRoute = LineRouteImport.update({
   id: '/line',
   path: '/line',
@@ -66,6 +73,11 @@ const LoginRoute = LoginRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StartRoute = StartRouteImport.update({
@@ -154,9 +166,11 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/client': typeof ClientRoute
   '/developers': typeof DevelopersRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/line': typeof LineRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/start': typeof StartRouteWithChildren
   '/admin/keys': typeof AdminKeysRoute
   '/api/mcp': typeof ApiMcpRoute
@@ -179,9 +193,11 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/client': typeof ClientRoute
   '/developers': typeof DevelopersRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/line': typeof LineRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/admin/keys': typeof AdminKeysRoute
   '/api/mcp': typeof ApiMcpRoute
   '/client/keys': typeof ClientKeysRoute
@@ -204,9 +220,11 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/client': typeof ClientRoute
   '/developers': typeof DevelopersRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/line': typeof LineRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/start': typeof StartRouteWithChildren
   '/admin_/keys': typeof AdminKeysRoute
   '/api/mcp': typeof ApiMcpRoute
@@ -231,9 +249,11 @@ export interface FileRouteTypes {
     | '/admin'
     | '/client'
     | '/developers'
+    | '/forgot-password'
     | '/line'
     | '/login'
     | '/privacy'
+    | '/reset-password'
     | '/start'
     | '/admin/keys'
     | '/api/mcp'
@@ -256,9 +276,11 @@ export interface FileRouteTypes {
     | '/admin'
     | '/client'
     | '/developers'
+    | '/forgot-password'
     | '/line'
     | '/login'
     | '/privacy'
+    | '/reset-password'
     | '/admin/keys'
     | '/api/mcp'
     | '/client/keys'
@@ -280,9 +302,11 @@ export interface FileRouteTypes {
     | '/admin'
     | '/client'
     | '/developers'
+    | '/forgot-password'
     | '/line'
     | '/login'
     | '/privacy'
+    | '/reset-password'
     | '/start'
     | '/admin_/keys'
     | '/api/mcp'
@@ -306,9 +330,11 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   ClientRoute: typeof ClientRoute
   DevelopersRoute: typeof DevelopersRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LineRoute: typeof LineRoute
   LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   StartRoute: typeof StartRouteWithChildren
   AdminKeysRoute: typeof AdminKeysRoute
   ApiMcpRoute: typeof ApiMcpRoute
@@ -353,6 +379,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevelopersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/line': {
       id: '/line'
       path: '/line'
@@ -372,6 +405,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/start': {
@@ -529,9 +569,11 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   ClientRoute: ClientRoute,
   DevelopersRoute: DevelopersRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LineRoute: LineRoute,
   LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   StartRoute: StartRouteWithChildren,
   AdminKeysRoute: AdminKeysRoute,
   ApiMcpRoute: ApiMcpRoute,
