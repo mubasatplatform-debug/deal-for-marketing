@@ -5,4 +5,4 @@ Disallow: /admin
 Disallow: /desk/
 Disallow: /api/
 
-Sitemap: https://dealadv.sa/sitemap.xml
+Sitemap: https://deal.mubasat.net/sitemap.xml
