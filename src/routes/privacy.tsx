@@ -19,7 +19,7 @@ export const Route = createFileRoute("/privacy")({
 
 const UPDATED = "٢٣ سبتمبر ٢٠٢٦";
 
-const sections: { title: string; body: string[] }[] = [
+const sections: { title: string; body: string[]; id?: string }[] = [
   {
     title: "من نحن",
     body: [
@@ -48,6 +48,17 @@ const sections: { title: string; body: string[] }[] = [
       "مزوّدو الاستضافة وقاعدة البيانات الذين يشغّلون الموقع.",
       "«خط ديل» تجربة ذكاء اصطناعي: تُرسل رسائلك إلى مزوّد نموذج لغوي (Anthropic Claude، أو xAI احتياطيًا) لتوليد الرد، وقد تتم المعالجة خارج المملكة. لا تكتب في الخط بيانات حساسة.",
       "أداة إشعار داخلية توصل طلبك لفريق ديل.",
+    ],
+  },
+  {
+    // Anchor linked from /law, /law/terms and the law-office app settings.
+    id: "law",
+    title: "خدمة «مكتب المحامي»",
+    body: [
+      "(مسودة قيد المراجعة القانونية) عند استخدام مكاتب المحاماة لخدمة «مكتب المحامي»، يكون كل مكتب «جهة التحكم» في البيانات الشخصية لعملائه وموظفيه التي يُدخلها، وتكون ديل «جهة معالجة» تعالجها نيابة عنه ووفق تعليماته لتشغيل الخدمة فقط، ولا تستخدمها لأي غرض آخر ولا تبيعها.",
+      "بيانات كل مكتب معزولة عن غيره ولا يصل إليها إلا أعضاؤه المدعوون. ولا تُحذف تلقائيًا عند انتهاء الاشتراك؛ يتحول المكتب إلى وضع القراءة فقط حتى يجدد أو يطلب الحذف.",
+      "نحفظ لإدارة الاشتراك: اسم المكتب ومدينته ورقم سجله التجاري (إن أُدخل)، وأسماء أعضاء الفريق وبريدهم وصلاحياتهم، وسجل الدعوات وطلبات الدفع وحالتها. ولا نحفظ بيانات البطاقات: الدفع الإلكتروني يتم لدى بوابة الدفع مباشرة.",
+      "لطلبات أصحاب البيانات المتعلقة بعملاء مكتب ما، يُرجى التواصل مع المكتب نفسه أولًا بصفته جهة التحكم، وسنساعده في تنفيذها.",
     ],
   },
   {
@@ -81,7 +92,7 @@ function Privacy() {
                   {sections.map((sec, i) => (
                     <li key={sec.title}>
                       <a
-                        href={`#p-${i + 1}`}
+                        href={`#${sec.id ?? `p-${i + 1}`}`}
                         className="-ms-px flex min-h-10 items-center border-s-2 border-transparent ps-4 text-[15px] font-semibold text-slate hover:border-pine hover:text-pine-deep"
                       >
                         {sec.title}
@@ -97,7 +108,7 @@ function Privacy() {
             <div className="rounded-3xl bg-surface p-6 ring-1 ring-line md:p-10">
               <div className="space-y-10">
                 {sections.map((sec, i) => (
-                  <section key={sec.title} id={`p-${i + 1}`} aria-labelledby={`p-${i + 1}-h`} className="scroll-mt-28">
+                  <section key={sec.title} id={sec.id ?? `p-${i + 1}`} aria-labelledby={`p-${i + 1}-h`} className="scroll-mt-28">
                     <h2 id={`p-${i + 1}-h`} className="flex items-center gap-3 font-display text-xl text-pine-deep md:text-2xl">
                       <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-pine-50 font-ui text-sm font-bold text-pine">
                         {i + 1}

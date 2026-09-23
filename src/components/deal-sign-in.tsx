@@ -16,13 +16,24 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 export function DealSignIn({
   callbackURL = "/client",
   initialMode = "in",
+  initialEmail = "",
   onModeChange,
 }: {
   callbackURL?: string;
   initialMode?: SignInMode;
+  /** Prefill the email (e.g. the address an invite was sent to). */
+  initialEmail?: string;
   onModeChange?: (mode: SignInMode) => void;
 }) {
-  if (passwordSignIn) return <PasswordSignIn callbackURL={callbackURL} initialMode={initialMode} onModeChange={onModeChange} />;
+  if (passwordSignIn)
+    return (
+      <PasswordSignIn
+        callbackURL={callbackURL}
+        initialMode={initialMode}
+        initialEmail={initialEmail}
+        onModeChange={onModeChange}
+      />
+    );
   return <ProviderSignIn callbackURL={callbackURL} />;
 }
 
@@ -58,16 +69,18 @@ type Errors = Partial<Record<"name" | "email" | "password", string>>;
 function PasswordSignIn({
   callbackURL,
   initialMode,
+  initialEmail,
   onModeChange,
 }: {
   callbackURL: string;
   initialMode: SignInMode;
+  initialEmail: string;
   onModeChange?: (mode: SignInMode) => void;
 }) {
   const uid = useId();
   const [mode, setModeState] = useState<SignInMode>(initialMode);
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);

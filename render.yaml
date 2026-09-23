@@ -61,3 +61,14 @@ services:
       # file bytes in Postgres.
       - key: BLOB_READ_WRITE_TOKEN
         sync: false
+      # «مكتب المحامي» bank-transfer details and (untested) Moyasar keys
+      - key: LAW_BANK_NAME
+        sync: false
+      - key: LAW_BANK_BENEFICIARY
+        sync: false
+      - key: LAW_BANK_IBAN
+        sync: false
+      - key: MOYASAR_SECRET_KEY
+        sync: false
+      - key: MOYASAR_WEBHOOK_SECRET
+        sync: false

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as ClientRouteImport } from './routes/client'
 import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -20,15 +21,26 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as StartRouteImport } from './routes/start'
 import { Route as AdminKeysRouteImport } from './routes/admin_.keys'
+import { Route as AdminLawRouteImport } from './routes/admin_.law'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
+import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppModuleRouteImport } from './routes/app.$module'
+import { Route as AppBillingRouteImport } from './routes/app.billing'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppTeamRouteImport } from './routes/app.team'
 import { Route as ClientKeysRouteImport } from './routes/client_.keys'
+import { Route as LawIndexRouteImport } from './routes/law.index'
+import { Route as LawSignupRouteImport } from './routes/law.signup'
+import { Route as LawTermsRouteImport } from './routes/law.terms'
 import { Route as StartIndexRouteImport } from './routes/start.index'
 import { Route as StartSlugRouteImport } from './routes/start.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiFilesIdRouteImport } from './routes/api/files.$id'
+import { Route as ApiLawMoyasarRouteImport } from './routes/api/law/moyasar'
 import { Route as ApiV1SplatRouteImport } from './routes/api/v1/$'
 import { Route as ApiV1RequestsRouteImport } from './routes/api/v1/requests'
 import { Route as ApiV1ServicesRouteImport } from './routes/api/v1/services'
+import { Route as AppInviteTokenRouteImport } from './routes/app_.invite.$token'
 import { Route as ClientRequestsIdRouteImport } from './routes/client_.requests.$id'
 import { Route as DeskCrmViewRouteImport } from './routes/desk.crm.$view'
 import { Route as DeskLawViewRouteImport } from './routes/desk.law.$view'
@@ -46,6 +58,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClientRoute = ClientRouteImport.update({
@@ -93,14 +110,59 @@ const AdminKeysRoute = AdminKeysRouteImport.update({
   path: '/admin/keys',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminLawRoute = AdminLawRouteImport.update({
+  id: '/admin_/law',
+  path: '/admin/law',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiMcpRoute = ApiMcpRouteImport.update({
   id: '/api/mcp',
   path: '/api/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppModuleRoute = AppModuleRouteImport.update({
+  id: '/$module',
+  path: '/$module',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBillingRoute = AppBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTeamRoute = AppTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => AppRoute,
+} as any)
 const ClientKeysRoute = ClientKeysRouteImport.update({
   id: '/client_/keys',
   path: '/client/keys',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LawIndexRoute = LawIndexRouteImport.update({
+  id: '/law/',
+  path: '/law/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LawSignupRoute = LawSignupRouteImport.update({
+  id: '/law/signup',
+  path: '/law/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LawTermsRoute = LawTermsRouteImport.update({
+  id: '/law/terms',
+  path: '/law/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StartIndexRoute = StartIndexRouteImport.update({
@@ -123,6 +185,11 @@ const ApiFilesIdRoute = ApiFilesIdRouteImport.update({
   path: '/api/files/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLawMoyasarRoute = ApiLawMoyasarRouteImport.update({
+  id: '/api/law/moyasar',
+  path: '/api/law/moyasar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV1SplatRoute = ApiV1SplatRouteImport.update({
   id: '/api/v1/$',
   path: '/api/v1/$',
@@ -136,6 +203,11 @@ const ApiV1RequestsRoute = ApiV1RequestsRouteImport.update({
 const ApiV1ServicesRoute = ApiV1ServicesRouteImport.update({
   id: '/api/v1/services',
   path: '/api/v1/services',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppInviteTokenRoute = AppInviteTokenRouteImport.update({
+  id: '/app_/invite/$token',
+  path: '/app/invite/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClientRequestsIdRoute = ClientRequestsIdRouteImport.update({
@@ -182,6 +254,7 @@ const ApiV1AdminRequestsIdRoute = ApiV1AdminRequestsIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/app': typeof AppRouteWithChildren
   '/client': typeof ClientRoute
   '/developers': typeof DevelopersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -191,15 +264,26 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/start': typeof StartRouteWithChildren
   '/admin/keys': typeof AdminKeysRoute
+  '/admin/law': typeof AdminLawRoute
   '/api/mcp': typeof ApiMcpRoute
+  '/app/$module': typeof AppModuleRoute
+  '/app/billing': typeof AppBillingRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/team': typeof AppTeamRoute
   '/client/keys': typeof ClientKeysRoute
+  '/law/signup': typeof LawSignupRoute
+  '/law/terms': typeof LawTermsRoute
   '/start/$slug': typeof StartSlugRoute
+  '/app/': typeof AppIndexRoute
+  '/law/': typeof LawIndexRoute
   '/start/': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$id': typeof ApiFilesIdRoute
+  '/api/law/moyasar': typeof ApiLawMoyasarRoute
   '/api/v1/$': typeof ApiV1SplatRoute
   '/api/v1/requests': typeof ApiV1RequestsRouteWithChildren
   '/api/v1/services': typeof ApiV1ServicesRoute
+  '/app/invite/$token': typeof AppInviteTokenRoute
   '/client/requests/$id': typeof ClientRequestsIdRoute
   '/desk/crm/$view': typeof DeskCrmViewRoute
   '/desk/law/$view': typeof DeskLawViewRoute
@@ -220,15 +304,26 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/keys': typeof AdminKeysRoute
+  '/admin/law': typeof AdminLawRoute
   '/api/mcp': typeof ApiMcpRoute
+  '/app/$module': typeof AppModuleRoute
+  '/app/billing': typeof AppBillingRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/team': typeof AppTeamRoute
   '/client/keys': typeof ClientKeysRoute
+  '/law/signup': typeof LawSignupRoute
+  '/law/terms': typeof LawTermsRoute
   '/start/$slug': typeof StartSlugRoute
+  '/app': typeof AppIndexRoute
+  '/law': typeof LawIndexRoute
   '/start': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$id': typeof ApiFilesIdRoute
+  '/api/law/moyasar': typeof ApiLawMoyasarRoute
   '/api/v1/$': typeof ApiV1SplatRoute
   '/api/v1/requests': typeof ApiV1RequestsRouteWithChildren
   '/api/v1/services': typeof ApiV1ServicesRoute
+  '/app/invite/$token': typeof AppInviteTokenRoute
   '/client/requests/$id': typeof ClientRequestsIdRoute
   '/desk/crm/$view': typeof DeskCrmViewRoute
   '/desk/law/$view': typeof DeskLawViewRoute
@@ -242,6 +337,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/app': typeof AppRouteWithChildren
   '/client': typeof ClientRoute
   '/developers': typeof DevelopersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -251,15 +347,26 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/start': typeof StartRouteWithChildren
   '/admin_/keys': typeof AdminKeysRoute
+  '/admin_/law': typeof AdminLawRoute
   '/api/mcp': typeof ApiMcpRoute
+  '/app/$module': typeof AppModuleRoute
+  '/app/billing': typeof AppBillingRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/team': typeof AppTeamRoute
   '/client_/keys': typeof ClientKeysRoute
+  '/law/signup': typeof LawSignupRoute
+  '/law/terms': typeof LawTermsRoute
   '/start/$slug': typeof StartSlugRoute
+  '/app/': typeof AppIndexRoute
+  '/law/': typeof LawIndexRoute
   '/start/': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$id': typeof ApiFilesIdRoute
+  '/api/law/moyasar': typeof ApiLawMoyasarRoute
   '/api/v1/$': typeof ApiV1SplatRoute
   '/api/v1/requests': typeof ApiV1RequestsRouteWithChildren
   '/api/v1/services': typeof ApiV1ServicesRoute
+  '/app_/invite/$token': typeof AppInviteTokenRoute
   '/client_/requests/$id': typeof ClientRequestsIdRoute
   '/desk/crm/$view': typeof DeskCrmViewRoute
   '/desk/law/$view': typeof DeskLawViewRoute
@@ -274,6 +381,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/app'
     | '/client'
     | '/developers'
     | '/forgot-password'
@@ -283,15 +391,26 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/start'
     | '/admin/keys'
+    | '/admin/law'
     | '/api/mcp'
+    | '/app/$module'
+    | '/app/billing'
+    | '/app/settings'
+    | '/app/team'
     | '/client/keys'
+    | '/law/signup'
+    | '/law/terms'
     | '/start/$slug'
+    | '/app/'
+    | '/law/'
     | '/start/'
     | '/api/auth/$'
     | '/api/files/$id'
+    | '/api/law/moyasar'
     | '/api/v1/$'
     | '/api/v1/requests'
     | '/api/v1/services'
+    | '/app/invite/$token'
     | '/client/requests/$id'
     | '/desk/crm/$view'
     | '/desk/law/$view'
@@ -312,15 +431,26 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/admin/keys'
+    | '/admin/law'
     | '/api/mcp'
+    | '/app/$module'
+    | '/app/billing'
+    | '/app/settings'
+    | '/app/team'
     | '/client/keys'
+    | '/law/signup'
+    | '/law/terms'
     | '/start/$slug'
+    | '/app'
+    | '/law'
     | '/start'
     | '/api/auth/$'
     | '/api/files/$id'
+    | '/api/law/moyasar'
     | '/api/v1/$'
     | '/api/v1/requests'
     | '/api/v1/services'
+    | '/app/invite/$token'
     | '/client/requests/$id'
     | '/desk/crm/$view'
     | '/desk/law/$view'
@@ -333,6 +463,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/app'
     | '/client'
     | '/developers'
     | '/forgot-password'
@@ -342,15 +473,26 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/start'
     | '/admin_/keys'
+    | '/admin_/law'
     | '/api/mcp'
+    | '/app/$module'
+    | '/app/billing'
+    | '/app/settings'
+    | '/app/team'
     | '/client_/keys'
+    | '/law/signup'
+    | '/law/terms'
     | '/start/$slug'
+    | '/app/'
+    | '/law/'
     | '/start/'
     | '/api/auth/$'
     | '/api/files/$id'
+    | '/api/law/moyasar'
     | '/api/v1/$'
     | '/api/v1/requests'
     | '/api/v1/services'
+    | '/app_/invite/$token'
     | '/client_/requests/$id'
     | '/desk/crm/$view'
     | '/desk/law/$view'
@@ -364,6 +506,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  AppRoute: typeof AppRouteWithChildren
   ClientRoute: typeof ClientRoute
   DevelopersRoute: typeof DevelopersRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
@@ -373,13 +516,19 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   StartRoute: typeof StartRouteWithChildren
   AdminKeysRoute: typeof AdminKeysRoute
+  AdminLawRoute: typeof AdminLawRoute
   ApiMcpRoute: typeof ApiMcpRoute
   ClientKeysRoute: typeof ClientKeysRoute
+  LawSignupRoute: typeof LawSignupRoute
+  LawTermsRoute: typeof LawTermsRoute
+  LawIndexRoute: typeof LawIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiFilesIdRoute: typeof ApiFilesIdRoute
+  ApiLawMoyasarRoute: typeof ApiLawMoyasarRoute
   ApiV1SplatRoute: typeof ApiV1SplatRoute
   ApiV1RequestsRoute: typeof ApiV1RequestsRouteWithChildren
   ApiV1ServicesRoute: typeof ApiV1ServicesRoute
+  AppInviteTokenRoute: typeof AppInviteTokenRoute
   ClientRequestsIdRoute: typeof ClientRequestsIdRoute
   DeskCrmViewRoute: typeof DeskCrmViewRoute
   DeskLawViewRoute: typeof DeskLawViewRoute
@@ -402,6 +551,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/client': {
@@ -467,6 +623,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminKeysRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/law': {
+      id: '/admin_/law'
+      path: '/admin/law'
+      fullPath: '/admin/law'
+      preLoaderRoute: typeof AdminLawRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/mcp': {
       id: '/api/mcp'
       path: '/api/mcp'
@@ -474,11 +637,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMcpRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/$module': {
+      id: '/app/$module'
+      path: '/$module'
+      fullPath: '/app/$module'
+      preLoaderRoute: typeof AppModuleRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/billing': {
+      id: '/app/billing'
+      path: '/billing'
+      fullPath: '/app/billing'
+      preLoaderRoute: typeof AppBillingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/team': {
+      id: '/app/team'
+      path: '/team'
+      fullPath: '/app/team'
+      preLoaderRoute: typeof AppTeamRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/client_/keys': {
       id: '/client_/keys'
       path: '/client/keys'
       fullPath: '/client/keys'
       preLoaderRoute: typeof ClientKeysRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/law/': {
+      id: '/law/'
+      path: '/law'
+      fullPath: '/law/'
+      preLoaderRoute: typeof LawIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/law/signup': {
+      id: '/law/signup'
+      path: '/law/signup'
+      fullPath: '/law/signup'
+      preLoaderRoute: typeof LawSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/law/terms': {
+      id: '/law/terms'
+      path: '/law/terms'
+      fullPath: '/law/terms'
+      preLoaderRoute: typeof LawTermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/start/': {
@@ -509,6 +728,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiFilesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/law/moyasar': {
+      id: '/api/law/moyasar'
+      path: '/api/law/moyasar'
+      fullPath: '/api/law/moyasar'
+      preLoaderRoute: typeof ApiLawMoyasarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/$': {
       id: '/api/v1/$'
       path: '/api/v1/$'
@@ -528,6 +754,13 @@ declare module '@tanstack/react-router' {
       path: '/api/v1/services'
       fullPath: '/api/v1/services'
       preLoaderRoute: typeof ApiV1ServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app_/invite/$token': {
+      id: '/app_/invite/$token'
+      path: '/app/invite/$token'
+      fullPath: '/app/invite/$token'
+      preLoaderRoute: typeof AppInviteTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/client_/requests/$id': {
@@ -589,6 +822,24 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AppRouteChildren {
+  AppModuleRoute: typeof AppModuleRoute
+  AppBillingRoute: typeof AppBillingRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppTeamRoute: typeof AppTeamRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppModuleRoute: AppModuleRoute,
+  AppBillingRoute: AppBillingRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppTeamRoute: AppTeamRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 interface StartRouteChildren {
   StartSlugRoute: typeof StartSlugRoute
   StartIndexRoute: typeof StartIndexRoute
@@ -627,6 +878,7 @@ const ApiV1AdminRequestsRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  AppRoute: AppRouteWithChildren,
   ClientRoute: ClientRoute,
   DevelopersRoute: DevelopersRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
@@ -636,13 +888,19 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   StartRoute: StartRouteWithChildren,
   AdminKeysRoute: AdminKeysRoute,
+  AdminLawRoute: AdminLawRoute,
   ApiMcpRoute: ApiMcpRoute,
   ClientKeysRoute: ClientKeysRoute,
+  LawSignupRoute: LawSignupRoute,
+  LawTermsRoute: LawTermsRoute,
+  LawIndexRoute: LawIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiFilesIdRoute: ApiFilesIdRoute,
+  ApiLawMoyasarRoute: ApiLawMoyasarRoute,
   ApiV1SplatRoute: ApiV1SplatRoute,
   ApiV1RequestsRoute: ApiV1RequestsRouteWithChildren,
   ApiV1ServicesRoute: ApiV1ServicesRoute,
+  AppInviteTokenRoute: AppInviteTokenRoute,
   ClientRequestsIdRoute: ClientRequestsIdRoute,
   DeskCrmViewRoute: DeskCrmViewRoute,
   DeskLawViewRoute: DeskLawViewRoute,

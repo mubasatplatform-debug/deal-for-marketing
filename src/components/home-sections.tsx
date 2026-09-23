@@ -530,6 +530,14 @@ function SystemFeature({ row, flip }: { row: SystemRow; flip: boolean }) {
             اطلب هذا الحل
             <ArrowLeft className="size-4" aria-hidden="true" />
           </a>
+          {row.slug === "law" ? (
+            <a
+              href="/law"
+              className="inline-flex min-h-11 items-center gap-2 px-2 text-[15px] font-bold text-pine hover:underline"
+            >
+              جرّبه ١٤ يومًا مجانًا
+            </a>
+          ) : null}
           {row.line ? (
             <a
               href="/line"

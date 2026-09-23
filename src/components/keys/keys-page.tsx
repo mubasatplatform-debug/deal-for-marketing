@@ -8,6 +8,7 @@ import {
   LayoutGrid,
   Plus,
   RotateCw,
+  Scale,
   Users,
 } from "lucide-react";
 import { Toaster, toast } from "sonner";
@@ -224,6 +225,7 @@ export function AdminKeysPage({
     { href: "/admin#overview", label: "نظرة عامة", icon: LayoutGrid },
     { href: "/admin#requests", label: "الطلبات", icon: Inbox },
     { href: "/admin#customers", label: "العملاء", icon: Users },
+    { href: "/admin/law", label: "مشتركو مكتب المحامي", icon: Scale },
     { href: "/admin/keys", label: "مفاتيح API", icon: KeyRound, active: true },
     { href: "/developers", label: "دليل المطوّرين", icon: BookOpen },
   ];
