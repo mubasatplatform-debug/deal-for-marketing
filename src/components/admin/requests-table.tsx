@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, BellOff, BellRing, ChevronLeft } from "lucide-react";
+import { ArrowDown, ArrowUp, BellOff, BellRing, ChevronLeft, UserRound } from "lucide-react";
 import { Avatar, Num, Pill, Skeleton } from "@/components/dash/ui";
 import type { AdminRequestRow } from "@/lib/admin";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ import {
   statusLabel,
   statusTone,
 } from "./format";
+import { SourcePill } from "./source";
 
 export type SortDir = "desc" | "asc";
 
@@ -42,15 +43,40 @@ function Customer({ r }: { r: AdminRequestRow }) {
   );
 }
 
+function Assignee({ r, me }: { r: AdminRequestRow; me: string }) {
+  if (!r.assignee_id) {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-slate/80">
+        <span className="grid size-6 place-items-center rounded-full border border-dashed border-line-strong">
+          <UserRound className="size-3" />
+        </span>
+        غير مسند
+      </span>
+    );
+  }
+  const name = r.assignee_name ?? "عضو سابق";
+  return (
+    <span className="flex min-w-0 items-center gap-1.5" title={`المسؤول: ${name}`}>
+      <Avatar name={name} className="size-6 text-[10px]" />
+      <span className="truncate text-[13px] font-semibold text-pine-deep">
+        {r.assignee_id === me ? "أنت" : name}
+      </span>
+    </span>
+  );
+}
+
 export function RequestsTable({
   rows,
   now,
+  me,
   sort,
   onSort,
   onOpen,
 }: {
   rows: AdminRequestRow[];
   now: number;
+  /** Signed-in team member's id, shown as "أنت" in the assignee column. */
+  me: string;
   sort: SortDir;
   onSort: () => void;
   onOpen: (id: number) => void;
@@ -62,12 +88,13 @@ export function RequestsTable({
       <div className="hidden md:block">
         <table className="w-full table-fixed border-collapse text-start">
           <colgroup>
-            <col className="w-[26%]" />
             <col className="w-[24%]" />
-            <col className="w-[17%]" />
-            <col className="w-[13%]" />
-            <col className="w-[13%]" />
-            <col className="w-[7%]" />
+            <col className="w-[21%]" />
+            <col className="hidden w-[15%] xl:table-column" />
+            <col className="w-[15%]" />
+            <col className="w-[12%]" />
+            <col className="w-[11%]" />
+            <col className="w-[6%]" />
           </colgroup>
           <thead>
             <tr className="border-y border-line bg-paper/60 text-[12px] font-semibold text-slate">
@@ -77,8 +104,11 @@ export function RequestsTable({
               <th scope="col" className="text-start font-semibold">
                 العميل
               </th>
-              <th scope="col" className="text-start font-semibold">
+              <th scope="col" className="hidden text-start font-semibold xl:table-cell">
                 التواصل
+              </th>
+              <th scope="col" className="text-start font-semibold">
+                المسؤول
               </th>
               <th scope="col" className="text-start font-semibold">
                 الحالة
@@ -126,13 +156,16 @@ export function RequestsTable({
                       <span className="block truncate text-[13px] font-semibold text-pine-deep">
                         {r.service_title}
                       </span>
-                      <Num className="text-xs text-slate">#{r.id}</Num>
+                      <span className="mt-1 flex items-center gap-2">
+                        <Num className="text-xs text-slate">#{r.id}</Num>
+                        <SourcePill source={r.source} />
+                      </span>
                     </button>
                   </td>
                   <td className="py-3.5 pe-4">
                     <Customer r={r} />
                   </td>
-                  <td className="py-3.5">
+                  <td className="hidden py-3.5 xl:table-cell">
                     {r.phone ? (
                       <Num className="text-[13px] whitespace-nowrap text-pine-deep">
                         <span dir="ltr">{displayPhone(r.phone)}</span>
@@ -142,6 +175,9 @@ export function RequestsTable({
                         {r.account_email ?? "—"}
                       </span>
                     )}
+                  </td>
+                  <td className="py-3.5 pe-3">
+                    <Assignee r={r} me={me} />
                   </td>
                   <td className="py-3.5">
                     <Pill tone={statusTone[r.status] ?? "neutral"}>{statusLabel(r.status)}</Pill>
@@ -187,10 +223,19 @@ export function RequestsTable({
                     {r.service_title}
                     {r.company ? ` · ${r.company}` : ""}
                   </p>
-                  <div className="mt-2 flex items-center gap-2 text-xs text-slate">
+                  <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-slate">
                     <Num>#{r.id}</Num>
                     <span aria-hidden="true">·</span>
                     <time dateTime={created.toISOString()}>{formatRelative(created, now)}</time>
+                    <SourcePill source={r.source} />
+                    <span className="inline-flex items-center gap-1">
+                      <UserRound className="size-3" aria-hidden="true" />
+                      {r.assignee_id
+                        ? r.assignee_id === me
+                          ? "أنت"
+                          : (r.assignee_name ?? "عضو سابق")
+                        : "غير مسند"}
+                    </span>
                     {!r.notified_at ? (
                       <>
                         <span aria-hidden="true">·</span>

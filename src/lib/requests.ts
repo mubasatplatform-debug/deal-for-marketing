@@ -4,6 +4,7 @@ import { authMiddleware, optionalAuthMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
 import { serviceBySlug } from "@/lib/content";
 import { normalizePhone } from "@/lib/phone";
+import { attributionSchema, normalizeSource, sourceLabel } from "@/lib/attribution";
 
 /** Milliseconds a human needs at minimum to fill the form. */
 const MIN_FILL_MS = 2500;
@@ -24,6 +25,8 @@ export const leadSchema = z.object({
 const leadFormSchema = leadSchema.extend({
   /** Milliseconds from form mount to submit, from the browser's monotonic clock. */
   fillMs: z.number().int().min(0),
+  /** First-touch attribution captured in the browser (src/lib/attribution.ts). */
+  attribution: attributionSchema.optional(),
 });
 
 export type LeadInput = z.input<typeof leadFormSchema>;
@@ -91,10 +94,14 @@ export const createRequest = createServerFn({ method: "POST" })
     const { pruneExpiredRequests } = await import("@/lib/retention.server");
     await pruneExpiredRequests();
 
+    // Source is derived here, never trusted from the browser.
+    const a = data.attribution;
+    const source = normalizeSource(a);
     const sql = await getSql();
     const rows = await sql<{ id: number }>`
       insert into requests
-        (user_id, service_slug, service_title, contact_name, phone, company, brief, status, consent_at)
+        (user_id, service_slug, service_title, contact_name, phone, company, brief, status, consent_at,
+         source, utm_source, utm_medium, utm_campaign, referrer_host, landing_path)
       values (
         ${context.userId},
         ${service.slug},
@@ -104,7 +111,13 @@ export const createRequest = createServerFn({ method: "POST" })
         ${data.company},
         ${data.brief},
         'new',
-        now()
+        now(),
+        ${source},
+        ${a?.utm_source ?? null},
+        ${a?.utm_medium ?? null},
+        ${a?.utm_campaign ?? null},
+        ${a?.referrer_host ?? null},
+        ${a?.landing_path ?? null}
       )
       returning id
     `;
@@ -119,6 +132,7 @@ export const createRequest = createServerFn({ method: "POST" })
       company: data.company,
       brief: data.brief,
       source: data.source,
+      sourceLabel: `${sourceLabel(source)}${a?.utm_campaign ? ` · ${a.utm_campaign}` : ""}`,
     });
     if (delivered) await sql`update requests set notified_at = now() where id = ${id}`;
     return { id };

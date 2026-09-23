@@ -3,6 +3,16 @@ import { z } from "zod";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
 import { requestStatus } from "@/lib/content";
+import type {
+  NoteRow,
+  RequestActivity,
+  TeamMember,
+} from "@/lib/request-workflow.server";
+
+export type { EventRow, NoteRow, RequestActivity, TeamMember } from "@/lib/request-workflow.server";
+
+/** Longest internal note, in characters (matches the DB check). */
+export const NOTE_MAX = 2000;
 
 export type AdminRequestRow = {
   id: number;
@@ -16,6 +26,15 @@ export type AdminRequestRow = {
   created_at: string;
   notified_at: string | null;
   account_email: string | null;
+  assignee_id: string | null;
+  assignee_name: string | null;
+  /** Normalized lead source (src/lib/attribution.ts); null for older requests. */
+  source: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  referrer_host: string | null;
+  landing_path: string | null;
 };
 
 export const ADMIN_FORBIDDEN = "Forbidden";
@@ -59,27 +78,39 @@ export type AdminTotals = {
   thisWeek: number;
   lastWeek: number;
   byService: { title: string; count: number }[];
+  /** Requests per normalized source, most first; `source` null = unknown. */
+  bySource: { source: string | null; count: number }[];
   /** Last 30 days, oldest first, zero-filled; `day` is 'YYYY-MM-DD'. */
   daily: { day: string; count: number }[];
 };
 
-export type AdminRequestList = { rows: AdminRequestRow[]; totals: AdminTotals };
+export type AdminRequestList = {
+  rows: AdminRequestRow[];
+  totals: AdminTotals;
+  /** Who can be assigned (team members with an account). */
+  team: TeamMember[];
+  /** The signed-in team member's user id (for "my requests"). */
+  me: string;
+};
 
 type Sql = Awaited<ReturnType<typeof getSql>>;
 
 function selectRequests(sql: Sql, limit: number | null) {
   return sql<AdminRequestRow>`
     select r.id, r.service_slug, r.service_title, r.contact_name, r.phone, r.company, r.brief,
-           r.status, r.created_at, r.notified_at, u.email as account_email
+           r.status, r.created_at, r.notified_at, u.email as account_email,
+           r.assignee_id, coalesce(nullif(au.name, ''), au.email) as assignee_name,
+           r.source, r.utm_source, r.utm_medium, r.utm_campaign, r.referrer_host, r.landing_path
     from requests r
     left join "user" u on u.id = r.user_id
+    left join "user" au on au.id = r.assignee_id
     order by r.id desc
     limit ${limit}
   `;
 }
 
 async function requestTotals(sql: Sql): Promise<AdminTotals> {
-  const [[head], statuses, services, daily] = await Promise.all([
+  const [[head], statuses, services, sources, daily] = await Promise.all([
     sql<{ total: number; unnotified: number; this_week: number; last_week: number }>`
       select count(*)::int as total,
              count(*) filter (where notified_at is null)::int as unnotified,
@@ -94,6 +125,10 @@ async function requestTotals(sql: Sql): Promise<AdminTotals> {
     sql<{ title: string; count: number }>`
       select service_title as title, count(*)::int as count
       from requests group by service_title order by count desc, service_title
+    `,
+    sql<{ source: string | null; count: number }>`
+      select source, count(*)::int as count
+      from requests group by source order by count desc, source nulls last
     `,
     sql<{ day: string; count: number }>`
       with days as (
@@ -119,6 +154,7 @@ async function requestTotals(sql: Sql): Promise<AdminTotals> {
     thisWeek: head?.this_week ?? 0,
     lastWeek: head?.last_week ?? 0,
     byService: services,
+    bySource: sources,
     daily,
   };
 }
@@ -130,11 +166,13 @@ export const listAllRequests = createServerFn({ method: "GET" })
     const { pruneExpiredRequests } = await import("@/lib/retention.server");
     await pruneExpiredRequests();
     const sql = await getSql();
-    const [rows, totals] = await Promise.all([
+    const { teamMembers } = await import("@/lib/request-workflow.server");
+    const [rows, totals, team] = await Promise.all([
       selectRequests(sql, ADMIN_LIST_LIMIT),
       requestTotals(sql),
+      teamMembers(sql),
     ]);
-    return { rows, totals };
+    return { rows, totals, team, me: context.userId };
   });
 
 /** Every request, uncapped — for a complete CSV export. */
@@ -155,7 +193,61 @@ export const updateRequestStatus = createServerFn({ method: "POST" })
   .validator((input: unknown) => statusSchema.parse(input))
   .handler(async ({ context, data }) => {
     await assertAdmin(context.userId);
+    const { setStatusLogged } = await import("@/lib/request-workflow.server");
+    const res = await setStatusLogged(await getSql(), data.id, data.status, context.userId, "panel");
+    if (!res.found) throw new Error(REQUEST_NOT_FOUND);
+    return { ok: true, changed: res.changed };
+  });
+
+export const REQUEST_NOT_FOUND = "Request not found";
+export const NOT_TEAM_MEMBER = "Not a team member";
+
+const idOnly = z.object({ id: z.number().int().positive().max(2_147_483_647) });
+
+/** Internal notes + activity log of one request. Team-only. */
+export const getRequestActivity = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .validator((input: unknown) => idOnly.parse(input))
+  .handler(async ({ context, data }): Promise<RequestActivity> => {
+    await assertAdmin(context.userId);
+    const { requestActivity } = await import("@/lib/request-workflow.server");
+    return requestActivity(await getSql(), data.id);
+  });
+
+const assignSchema = idOnly.extend({
+  /** A team member's user id, or null to unassign. */
+  assigneeId: z.string().trim().min(1).max(128).nullable(),
+});
+
+export const assignRequest = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((input: unknown) => assignSchema.parse(input))
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.userId);
     const sql = await getSql();
-    await sql`update requests set status = ${data.status} where id = ${data.id}`;
-    return { ok: true };
+    const { setAssigneeLogged, teamMembers } = await import("@/lib/request-workflow.server");
+    // Only current team members can be assigned — checked here, not trusted
+    // from the browser.
+    if (data.assigneeId !== null) {
+      const team = await teamMembers(sql);
+      if (!team.some((m) => m.id === data.assigneeId)) throw new Error(NOT_TEAM_MEMBER);
+    }
+    const res = await setAssigneeLogged(sql, data.id, data.assigneeId, context.userId, "panel");
+    if (!res.found) throw new Error(REQUEST_NOT_FOUND);
+    return { ok: true, changed: res.changed };
+  });
+
+const noteSchema = idOnly.extend({
+  body: z.string().trim().min(1).max(NOTE_MAX),
+});
+
+export const addRequestNote = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((input: unknown) => noteSchema.parse(input))
+  .handler(async ({ context, data }): Promise<NoteRow> => {
+    await assertAdmin(context.userId);
+    const { addNoteLogged } = await import("@/lib/request-workflow.server");
+    const note = await addNoteLogged(await getSql(), data.id, data.body, context.userId);
+    if (!note) throw new Error(REQUEST_NOT_FOUND);
+    return note;
   });

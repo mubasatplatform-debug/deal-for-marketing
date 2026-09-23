@@ -17,6 +17,8 @@ export type LeadNotice = {
   company: string;
   brief: string;
   source: "form" | "line";
+  /** Where the lead came from (normalized source label, e.g. "سناب شات · launch"). */
+  sourceLabel?: string;
 };
 
 export async function notifyNewLead(lead: LeadNotice): Promise<boolean> {
@@ -30,7 +32,8 @@ export async function notifyNewLead(lead: LeadNotice): Promise<boolean> {
   const secret = process.env.LEADS_WEBHOOK_SECRET?.trim();
   const text =
     `طلب جديد #${lead.id} — ${lead.service}\n` +
-    `${lead.name} · ${lead.phone}${lead.company ? ` · ${lead.company}` : ""}\n\n${lead.brief}`;
+    `${lead.name} · ${lead.phone}${lead.company ? ` · ${lead.company}` : ""}\n\n${lead.brief}` +
+    (lead.sourceLabel ? `\n\nالمصدر: ${lead.sourceLabel}` : "");
   try {
     const res = await fetch(url, {
       method: "POST",

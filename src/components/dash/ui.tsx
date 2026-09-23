@@ -1,4 +1,10 @@
-import type { ButtonHTMLAttributes, ComponentType, ReactNode } from "react";
+import type {
+  ButtonHTMLAttributes,
+  ComponentType,
+  ReactNode,
+  SelectHTMLAttributes,
+} from "react";
+import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonClass, type ButtonVariant, type ButtonSize } from "@/components/dash/button-class";
 
@@ -244,5 +250,27 @@ export function Segmented<T extends string>({
         );
       })}
     </div>
+  );
+}
+
+/** Native select in the dashboard look (keeps the platform picker on phones). */
+export function Select({
+  className,
+  children,
+  ...rest
+}: SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <span className={cn("relative inline-block", className)}>
+      <select
+        {...rest}
+        className="h-10 w-full cursor-pointer appearance-none rounded-xl border border-line bg-surface ps-3 pe-9 text-[13px] font-semibold text-pine-deep transition-colors hover:border-line-strong focus:border-pine/40 focus:ring-4 focus:ring-pine/10 focus:outline-none disabled:cursor-default disabled:opacity-50"
+      >
+        {children}
+      </select>
+      <ChevronDown
+        aria-hidden="true"
+        className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-slate"
+      />
+    </span>
   );
 }

@@ -5,6 +5,7 @@ import { DealLogo } from "@/components/logo";
 import { SiteFooter } from "@/components/site-footer";
 import { siteButton, wrap } from "@/components/site-classes";
 import { nav } from "@/lib/content";
+import { captureFromBrowser } from "@/lib/attribution";
 import { cn } from "@/lib/utils";
 import { authEnabled, signOut } from "@/lib/auth/client";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
@@ -61,6 +62,10 @@ export function SiteChrome({ children, footer = true }: { children: ReactNode; f
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // First-touch lead attribution (utm / referrer / landing page), stored in
+  // this browser only; see src/lib/attribution.ts and the privacy policy.
+  useEffect(() => captureFromBrowser(), []);
 
   useEffect(() => {
     document.documentElement.classList.toggle("menu-lock", menu);

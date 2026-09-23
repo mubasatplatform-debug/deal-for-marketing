@@ -264,7 +264,7 @@ function buildServer(caller: ApiCaller): McpServer {
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     },
     async ({ id, status }) => {
-      const r = await ops.adminUpdateStatus(id, { status });
+      const r = await ops.adminUpdateStatus(caller, id, { status });
       return ok(`Request #${r.id} is now **${r.status}** (${r.status_label}).`, { request: r }, "markdown");
     },
   );

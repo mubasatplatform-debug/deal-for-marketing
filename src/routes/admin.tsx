@@ -8,11 +8,15 @@ import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { toast } from "sonner";
 import {
   ADMIN_FORBIDDEN,
+  addRequestNote,
+  assignRequest,
   exportAllRequests,
+  getRequestActivity,
   listAllRequests,
   updateRequestStatus,
   type AdminRequestRow,
   type AdminTotals,
+  type TeamMember,
 } from "@/lib/admin";
 import { pageHead } from "@/lib/seo";
 
@@ -29,6 +33,8 @@ function Admin() {
   const [state, setState] = useState<AdminPanelState | "forbidden">("loading");
   const [rows, setRows] = useState<AdminRequestRow[]>([]);
   const [totals, setTotals] = useState<AdminTotals | null>(null);
+  const [team, setTeam] = useState<TeamMember[]>([]);
+  const [me, setMe] = useState("");
   const [loadedAt, setLoadedAt] = useState(0);
   const [signingOut, setSigningOut] = useState(false);
   const [signOutFailed, setSignOutFailed] = useState(false);
@@ -46,6 +52,8 @@ function Admin() {
       .then((r) => {
         setRows(r.rows);
         setTotals(r.totals);
+        setTeam(r.team);
+        setMe(r.me);
         setLoadedAt(Date.now());
         setState("ready");
       })
@@ -65,6 +73,23 @@ function Admin() {
     await updateRequestStatus({ data: { id, status } });
     setRows((rs) => rs.map((r) => (r.id === id ? { ...r, status } : r)));
   }, []);
+
+  const setAssignee = useCallback(
+    async (id: number, assigneeId: string | null) => {
+      await assignRequest({ data: { id, assigneeId } });
+      const name = assigneeId ? (team.find((m) => m.id === assigneeId)?.name ?? null) : null;
+      setRows((rs) =>
+        rs.map((r) => (r.id === id ? { ...r, assignee_id: assigneeId, assignee_name: name } : r)),
+      );
+    },
+    [team],
+  );
+
+  const loadActivity = useCallback((id: number) => getRequestActivity({ data: { id } }), []);
+  const addNote = useCallback(
+    (id: number, body: string) => addRequestNote({ data: { id, body } }),
+    [],
+  );
 
   const loadAll = useCallback(() => exportAllRequests(), []);
 
@@ -116,6 +141,11 @@ function Admin() {
       now={loadedAt}
       onRetry={load}
       onStatusChange={setStatus}
+      team={team}
+      me={me}
+      onAssign={setAssignee}
+      onLoadActivity={loadActivity}
+      onAddNote={addNote}
       onLoadAll={loadAll}
       onSignOut={onSignOut}
       signingOut={signingOut}
