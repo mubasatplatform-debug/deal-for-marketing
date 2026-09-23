@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { ChevronDown, MessageCircle, Search, X } from "lucide-react";
+import { ChevronDown, MessageCircle, MessagesSquare, Search, X } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { Card, CardHeader, Num, Segmented, Skeleton } from "@/components/dash/ui";
 import { buttonClass } from "@/components/dash/button-class";
 import type { RequestRow } from "@/lib/requests";
@@ -173,6 +174,7 @@ function RequestRowItem({
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
             <span className="truncate text-[15px] font-bold text-pine-deep">{row.service_title}</span>
+            {row.unread > 0 ? <UnreadBadge count={row.unread} /> : null}
           </span>
           <span className="mt-1 flex min-w-0 items-center gap-x-2 text-[13px] text-slate sm:mt-0.5">
             <span className="shrink-0 sm:hidden">
@@ -230,20 +232,47 @@ function RequestRowItem({
                 </time>
                 {row.company ? <> · {row.company}</> : null}
               </p>
-              <a
-                href={waLink(followUpText(row.id, row.service_title))}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={buttonClass("secondary", "sm")}
-              >
-                <MessageCircle className="size-3.5" />
-                تابع على واتساب
-              </a>
+              <div className="flex gap-2">
+                <a
+                  href={waLink(followUpText(row.id, row.service_title))}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(buttonClass("secondary", "sm"), "flex-1 sm:flex-none")}
+                >
+                  <MessageCircle className="size-3.5" />
+                  واتساب
+                </a>
+                <Link
+                  to="/client/requests/$id"
+                  params={{ id: String(row.id) }}
+                  className={cn(buttonClass("primary", "sm"), "flex-1 sm:flex-none")}
+                >
+                  <MessagesSquare className="size-3.5" />
+                  المحادثة والملفات
+                  {row.unread > 0 ? (
+                    <Num className="rounded-full bg-pine-deep px-1.5 text-[11px] leading-5 text-lime">{row.unread}</Num>
+                  ) : null}
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       ) : null}
     </div>
+  );
+}
+
+/** "2 جديد" chip for unread team messages on a request. */
+export function UnreadBadge({ count }: { count: number }) {
+  return (
+    <span
+      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-lime px-2 py-0.5 text-[11px] leading-4 font-bold text-pine-deep"
+      title={count === 1 ? "رسالة جديدة من فريق ديل" : `${count} رسائل جديدة من فريق ديل`}
+    >
+      <MessagesSquare aria-hidden="true" className="size-3" />
+      <Num>{count}</Num>
+      <span className="sr-only">رسائل جديدة</span>
+    </span>
   );
 }
 

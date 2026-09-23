@@ -10,6 +10,8 @@ export type NavItem = {
   icon: ComponentType<{ className?: string }>;
   active?: boolean;
   badge?: number;
+  /** Runs before the link's own navigation (e.g. to set a filter). */
+  onClick?: () => void;
 };
 
 type ShellProps = {
@@ -171,6 +173,7 @@ function Sidebar({
           <a
             key={item.href + item.label}
             href={item.href}
+            onClick={item.onClick}
             aria-current={item.active ? "page" : undefined}
             className={cn(
               "group relative flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold transition-colors",

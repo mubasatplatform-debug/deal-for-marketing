@@ -52,8 +52,12 @@ services:
         sync: false
       - key: LEADS_WEBHOOK_SECRET
         sync: false
-      # Mail relay for password-reset emails
+      # Mail relay for password-reset and request-thread emails
       - key: MAIL_RELAY_URL
         sync: false
       - key: MAIL_RELAY_TOKEN
+        sync: false
+      # Optional: private Vercel Blob store for thread attachments; unset keeps
+      # file bytes in Postgres.
+      - key: BLOB_READ_WRITE_TOKEN
         sync: false

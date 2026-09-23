@@ -1,4 +1,5 @@
-import { ArrowLeft, MessageCircle } from "lucide-react";
+import { ArrowLeft, MessageCircle, MessagesSquare } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { Card, Num, Skeleton } from "@/components/dash/ui";
 import { buttonClass } from "@/components/dash/button-class";
 import type { RequestRow } from "@/lib/requests";
@@ -81,14 +82,24 @@ export function ActiveRequest({
             <MessageCircle className="size-4" />
             تابع على واتساب
           </a>
-          <button
-            type="button"
+          <Link
+            to="/client/requests/$id"
+            params={{ id: String(row.id) }}
             onClick={() => onOpen(row.id)}
-            className={buttonClass("ghost", "md") + " flex-1 md:flex-none"}
+            className={buttonClass(row.unread > 0 ? "primary" : "ghost", "md") + " flex-1 md:flex-none"}
           >
-            التفاصيل
-            <ArrowLeft className="size-4" />
-          </button>
+            {row.unread > 0 ? (
+              <>
+                <MessagesSquare className="size-4" />
+                {row.unread === 1 ? "رسالة جديدة" : `${row.unread} رسائل جديدة`}
+              </>
+            ) : (
+              <>
+                المحادثة والتفاصيل
+                <ArrowLeft className="size-4" />
+              </>
+            )}
+          </Link>
         </div>
       </div>
     </Card>

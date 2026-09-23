@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, BellOff, BellRing, ChevronLeft, UserRound } from "lucide-react";
+import { ArrowDown, ArrowUp, BellOff, BellRing, ChevronLeft, MessagesSquare, UserRound } from "lucide-react";
 import { Avatar, Num, Pill, Skeleton } from "@/components/dash/ui";
 import type { AdminRequestRow } from "@/lib/admin";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,32 @@ function NotifyState({ at }: { at: string | null }) {
       <span className="sr-only">{label}</span>
     </span>
   );
+}
+
+/** Thread state: lime count of unread customer messages, else the total. */
+function Messages({ r }: { r: AdminRequestRow }) {
+  if (r.team_unread > 0) {
+    return (
+      <span
+        title={`${r.team_unread} رسائل غير مقروءة من العميل`}
+        className="inline-flex items-center gap-1 rounded-full bg-lime px-2 py-0.5 text-[11px] font-bold text-pine-deep"
+      >
+        <MessagesSquare className="size-3" aria-hidden="true" />
+        <Num>{r.team_unread}</Num>
+        <span className="sr-only">رسائل غير مقروءة</span>
+      </span>
+    );
+  }
+  if (r.message_count > 0) {
+    return (
+      <span title={`${r.message_count} رسائل في المحادثة`} className="inline-flex items-center gap-1 text-xs text-slate">
+        <MessagesSquare className="size-3.5" aria-hidden="true" />
+        <Num>{r.message_count}</Num>
+        <span className="sr-only">رسائل</span>
+      </span>
+    );
+  }
+  return <span className="text-xs text-slate/40" aria-label="لا رسائل">—</span>;
 }
 
 function Customer({ r }: { r: AdminRequestRow }) {
@@ -88,11 +114,12 @@ export function RequestsTable({
       <div className="hidden md:block">
         <table className="w-full table-fixed border-collapse text-start">
           <colgroup>
-            <col className="w-[24%]" />
-            <col className="w-[21%]" />
-            <col className="hidden w-[15%] xl:table-column" />
-            <col className="w-[15%]" />
+            <col className="w-[22%]" />
+            <col className="w-[20%]" />
+            <col className="hidden w-[14%] xl:table-column" />
+            <col className="w-[14%]" />
             <col className="w-[12%]" />
+            <col className="w-[8%]" />
             <col className="w-[11%]" />
             <col className="w-[6%]" />
           </colgroup>
@@ -112,6 +139,9 @@ export function RequestsTable({
               </th>
               <th scope="col" className="text-start font-semibold">
                 الحالة
+              </th>
+              <th scope="col" className="text-start font-semibold">
+                رسائل
               </th>
               <th
                 scope="col"
@@ -183,6 +213,9 @@ export function RequestsTable({
                     <Pill tone={statusTone[r.status] ?? "neutral"}>{statusLabel(r.status)}</Pill>
                   </td>
                   <td className="py-3.5">
+                    <Messages r={r} />
+                  </td>
+                  <td className="py-3.5">
                     <time
                       dateTime={created.toISOString()}
                       title={formatAbsolute(created)}
@@ -214,8 +247,9 @@ export function RequestsTable({
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="truncate text-[14px] font-bold text-pine-deep">
-                      {initialsName(r)}
+                    <p className="flex min-w-0 items-center gap-2">
+                      <span className="truncate text-[14px] font-bold text-pine-deep">{initialsName(r)}</span>
+                      {r.team_unread > 0 ? <Messages r={r} /> : null}
                     </p>
                     <Pill tone={statusTone[r.status] ?? "neutral"}>{statusLabel(r.status)}</Pill>
                   </div>

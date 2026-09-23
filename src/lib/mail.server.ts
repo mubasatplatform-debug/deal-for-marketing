@@ -32,3 +32,56 @@ export async function sendPasswordResetEmail(input: {
     console.error("[mail] reset email relay failed:", err);
   }
 }
+
+export type ThreadNotice = {
+  /** `'team'`: the relay's fixed owner inbox; otherwise one customer email. */
+  to: string[] | "team";
+  /** The customer's name (for the team) or the greeting name (for a customer). */
+  name: string;
+  requestId: number;
+  service: string;
+  /** Short plain-text excerpt of the new message. */
+  preview: string;
+  /** Where to read it: https://<origin>/client or /admin. */
+  url: string;
+};
+
+/**
+ * "New message on your request" email through the relay's `message` action.
+ * Body: `{ action: 'message', to, name, requestId, service, preview, url }`,
+ * where `to` is the string `'team'` or a single customer email. Never throws;
+ * returns whether the relay accepted it.
+ */
+export async function sendThreadNotice(input: ThreadNotice): Promise<boolean> {
+  const endpoint = process.env.MAIL_RELAY_URL?.trim();
+  const token = process.env.MAIL_RELAY_TOKEN?.trim();
+  if (!endpoint || !token) {
+    console.warn(
+      `[mail] MAIL_RELAY_URL / MAIL_RELAY_TOKEN not set — thread notice for request #${input.requestId} not sent`,
+    );
+    return false;
+  }
+  const to = input.to === "team" ? "team" : input.to[0];
+  if (!to) return false;
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        action: "message",
+        to,
+        name: input.name,
+        requestId: input.requestId,
+        service: input.service,
+        preview: input.preview,
+        url: input.url,
+      }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) console.error(`[mail] thread notice relay answered ${res.status}`);
+    return res.ok;
+  } catch (err) {
+    console.error("[mail] thread notice relay failed:", err);
+    return false;
+  }
+}

@@ -39,6 +39,9 @@ export type RequestRow = {
   brief: string;
   status: string;
   created_at: string;
+  /** Thread messages in total, and team messages the customer has not read. */
+  messages: number;
+  unread: number;
 };
 
 /** Error messages the form shows verbatim; anything else gets a generic line. */
@@ -54,10 +57,13 @@ export const listMyRequests = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const sql = await getSql();
     return sql<RequestRow>`
-      select id, service_slug, service_title, company, brief, status, created_at
-      from requests
-      where user_id = ${context.userId}
-      order by id desc
+      select r.id, r.service_slug, r.service_title, r.company, r.brief, r.status, r.created_at,
+             (select count(*) from request_messages m where m.request_id = r.id)::int as messages,
+             (select count(*) from request_messages m
+               where m.request_id = r.id and m.role = 'team' and m.id > r.client_read_msg_id)::int as unread
+      from requests r
+      where r.user_id = ${context.userId}
+      order by r.id desc
     `;
   });
 

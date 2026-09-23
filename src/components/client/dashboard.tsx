@@ -1,12 +1,14 @@
 import { useMemo, useState } from "react";
-import { AlertCircle, ClipboardList, KeyRound, MessageCircle, Plus, RotateCw } from "lucide-react";
+import { AlertCircle, ArrowLeft, MessagesSquare, Plus, RotateCw } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { DashShell, type NavItem } from "@/components/dash/shell";
+import { DashShell } from "@/components/dash/shell";
+import { CLIENT_NAV } from "./nav";
 import { Button, Card, Kpi, Skeleton } from "@/components/dash/ui";
 import { buttonClass } from "@/components/dash/button-class";
 import { firstName } from "@/lib/names";
 import type { RequestRow } from "@/lib/requests";
 import { cn } from "@/lib/utils";
+import { messagesWord } from "@/components/thread/format";
 import { ActiveRequest, ActiveRequestSkeleton } from "./active-request";
 import { FirstRequest } from "./empty";
 import { RequestList, RequestListSkeleton } from "./request-list";
@@ -20,12 +22,6 @@ export type DashboardUser = {
 
 export type DashboardState = "loading" | "error" | "ready";
 
-const NAV: NavItem[] = [
-  { href: "#requests", label: "طلباتي", icon: ClipboardList, active: true },
-  { href: "/start", label: "طلب جديد", icon: Plus },
-  { href: "#contact", label: "تواصل معنا", icon: MessageCircle },
-  { href: "/client/keys", label: "مفاتيح API", icon: KeyRound },
-];
 
 /**
  * Presentational client dashboard ("مشاريعي"). Holds no data fetching so it can
@@ -63,7 +59,7 @@ export function ClientDashboard({
   return (
     <DashShell
       area="حساب العميل"
-      nav={NAV.map((n) => (n.href === "#requests" && ready ? { ...n, badge: active.length || undefined } : n))}
+      nav={CLIENT_NAV.map((n) => (n.href === "#requests" && ready ? { ...n, badge: active.length || undefined } : n))}
       user={{ name: shellName, email: user?.primaryEmail }}
       onSignOut={onSignOut}
       title={greetName ? `أهلًا، ${greetName}` : "أهلًا بك"}
@@ -98,6 +94,7 @@ export function ClientDashboard({
 
           {ready && rows.length > 0 ? (
             <>
+              <UnreadBanner rows={rows} />
               {hero ? (
                 <ActiveRequest row={hero} others={active.length - 1} now={now} onOpen={setOpenId} />
               ) : null}
@@ -120,6 +117,40 @@ export function ClientDashboard({
         </aside>
       </div>
     </DashShell>
+  );
+}
+
+/** New team replies across requests, linking to the first one waiting. */
+function UnreadBanner({ rows }: { rows: RequestRow[] }) {
+  const waiting = rows.filter((r) => r.unread > 0);
+  if (waiting.length === 0) return null;
+  const total = waiting.reduce((s, r) => s + r.unread, 0);
+  const first = waiting[0];
+  return (
+    <Link
+      to="/client/requests/$id"
+      params={{ id: String(first.id) }}
+      className="group flex items-center gap-3.5 rounded-2xl bg-pine-deep px-4 py-3.5 text-snow shadow-[0_8px_24px_-12px_rgba(16,38,40,0.5)] transition-colors hover:bg-pine md:px-5"
+    >
+      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-lime text-pine-deep">
+        <MessagesSquare className="size-5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[14px] font-bold">
+          {messagesWord(total)} من فريق ديل
+        </span>
+        <span className="block truncate text-[12px] text-snow/70">
+          {waiting.length === 1
+            ? `على طلب «${first.service_title}»`
+            : `على ${waiting.length} من طلباتك · الأحدث: «${first.service_title}»`}
+        </span>
+      </span>
+      <span className="hidden shrink-0 items-center gap-1 text-[13px] font-semibold text-lime sm:inline-flex">
+        افتح المحادثة
+        <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" />
+      </span>
+      <ArrowLeft className="size-4 shrink-0 text-lime sm:hidden" />
+    </Link>
   );
 }
 
