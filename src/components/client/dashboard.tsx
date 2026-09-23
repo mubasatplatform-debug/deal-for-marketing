@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { DashShell, type NavItem } from "@/components/dash/shell";
 import { Button, Card, Kpi, Skeleton } from "@/components/dash/ui";
 import { buttonClass } from "@/components/dash/button-class";
+import { firstName } from "@/lib/names";
 import type { RequestRow } from "@/lib/requests";
 import { cn } from "@/lib/utils";
 import { ActiveRequest, ActiveRequestSkeleton } from "./active-request";
@@ -56,7 +57,7 @@ export function ClientDashboard({
   const hero = active[0];
 
   const fullName = user?.displayName?.trim() || "";
-  const firstName = fullName.split(/\s+/)[0];
+  const greetName = firstName(fullName);
   const shellName = fullName || user?.primaryEmail?.split("@")[0] || "حسابك";
 
   return (
@@ -65,7 +66,7 @@ export function ClientDashboard({
       nav={NAV.map((n) => (n.href === "#requests" && ready ? { ...n, badge: active.length || undefined } : n))}
       user={{ name: shellName, email: user?.primaryEmail }}
       onSignOut={onSignOut}
-      title={firstName ? `أهلًا، ${firstName}` : "أهلًا بك"}
+      title={greetName ? `أهلًا، ${greetName}` : "أهلًا بك"}
       subtitle={
         ready ? (
           activeSummary(active.length, rows.length)

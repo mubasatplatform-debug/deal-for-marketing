@@ -1,14 +1,10 @@
 import type { ReactNode } from "react";
 import {
-  BarChart3,
   Check,
   CheckCheck,
   Clock,
   Download,
   FileText,
-  Headset,
-  Inbox as InboxIcon,
-  LayoutGrid,
   Link2,
   MessageCircle,
   MicOff,
@@ -23,7 +19,6 @@ import {
   SlidersHorizontal,
   Sparkles,
   UserPlus,
-  Users,
 } from "lucide-react";
 import {
   Bar,
@@ -37,7 +32,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { DeskFrame, LiveChip, type DeskNavItem } from "@/components/desk-frame";
+import { DeskFrame, LiveChip } from "@/components/desk-frame";
+import { CRM_PRODUCT, crmMore, crmNav, type CrmView } from "@/components/desks/navs";
 import { Button, Card, CardHeader, Num, Pill, type Tone } from "@/components/dash/ui";
 import {
   ChartTip,
@@ -54,20 +50,6 @@ import {
 import { chart } from "@/components/desks/tokens";
 import { cn } from "@/lib/utils";
 
-const nav = [
-  { id: "home", label: "غرفة العمليات", icon: LayoutGrid },
-  { id: "inbox", label: "الوارد", icon: InboxIcon, badge: 7 },
-  { id: "calls", label: "الكول سنتر", icon: Headset, badge: 4 },
-  { id: "ai", label: "الذكاء يدير", icon: Sparkles },
-] as const satisfies readonly DeskNavItem[];
-
-const more: DeskNavItem[] = [
-  { id: "customers", label: "العملاء", icon: Users },
-  { id: "reports", label: "التقارير", icon: BarChart3 },
-];
-
-export type CrmView = (typeof nav)[number]["id"];
-
 const pages: Record<CrmView, { title?: string; subtitle?: string; bare?: boolean; path: string }> =
   {
     home: {
@@ -83,6 +65,8 @@ const pages: Record<CrmView, { title?: string; subtitle?: string; bare?: boolean
       path: "instant/ai",
     },
   };
+
+export type { CrmView };
 
 export function CrmDesk({ view }: { view: CrmView }) {
   const screens: Record<CrmView, ReactNode> = {
@@ -114,17 +98,18 @@ export function CrmDesk({ view }: { view: CrmView }) {
   const p = pages[view];
   return (
     <DeskFrame
-      product="الحل اللحظي"
+      product={CRM_PRODUCT}
       workspace="محامص الريم"
       workspaceMark="ر"
       workspaceMeta="بريدة · 3 فروع"
       path={p.path}
+      route="/desk/crm/$view"
       view={view}
-      nav={nav}
-      more={more}
+      nav={crmNav}
+      more={crmMore}
       user={{ name: "هند العلي", role: "مشرفة خدمة العملاء" }}
       searchHint="ابحث باسم عميل، رقم طلب، أو محادثة"
-      status={<LiveChip>الخط يعمل · 3 وكلاء</LiveChip>}
+      status={<LiveChip detail="3 وكلاء">الخط يعمل</LiveChip>}
       title={p.title}
       subtitle={p.subtitle}
       actions={actions[view]}
@@ -276,7 +261,7 @@ const hourly = [
 function Home() {
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1 max-sm:gap-3">
         <Stat
           label="محادثات اليوم"
           value="142"
@@ -314,8 +299,8 @@ function Home() {
         />
       </div>
 
-      <div className="grid grid-cols-12 gap-5">
-        <Card className="col-span-8">
+      <div className="grid grid-cols-12 gap-5 max-lg:grid-cols-1 max-sm:gap-4">
+        <Card className="col-span-8 max-lg:col-span-full">
           <CardHeader
             title="المحادثات حسب الساعة"
             description="من ردّ على كل محادثة اليوم"
@@ -372,7 +357,7 @@ function Home() {
           </div>
         </Card>
 
-        <Card className="col-span-4">
+        <Card className="col-span-4 max-lg:col-span-full">
           <CardHeader title="الفريق الآن" description="3 وكلاء والذكاء على الخط" />
           <ul className="mt-3 divide-y divide-line px-5 pb-2">
             {[
@@ -416,32 +401,34 @@ function Home() {
             </Button>
           }
         />
-        <table className="mt-4 w-full">
-          <TableHead cols={["العميل", "القناة", "الموضوع", "المسؤول", "الحالة", "الوقت"]} />
-          <tbody className="divide-y divide-line">
-            {threads.slice(0, 6).map((t) => (
-              <tr key={t.name}>
-                <td className={td}>
-                  <span className="flex items-center gap-2.5">
-                    <Face name={t.name} className="size-7 text-[11px]" />
-                    <span className="font-bold">{t.name}</span>
-                  </span>
-                </td>
-                <td className={td}>
-                  <ChannelTag ch={t.ch} />
-                </td>
-                <td className={cn(td, "max-w-[280px] truncate text-slate")}>{t.preview}</td>
-                <td className={td}>{t.agent}</td>
-                <td className={td}>
-                  <StatePill s={t.state} />
-                </td>
-                <td className={cn(td, "text-slate")}>
-                  <Num>{t.time}</Num>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full">
+            <TableHead cols={["العميل", "القناة", "الموضوع", "المسؤول", "الحالة", "الوقت"]} />
+            <tbody className="divide-y divide-line">
+              {threads.slice(0, 6).map((t) => (
+                <tr key={t.name}>
+                  <td className={td}>
+                    <span className="flex items-center gap-2.5">
+                      <Face name={t.name} className="size-7 text-[11px]" />
+                      <span className="font-bold">{t.name}</span>
+                    </span>
+                  </td>
+                  <td className={td}>
+                    <ChannelTag ch={t.ch} />
+                  </td>
+                  <td className={cn(td, "max-w-[280px] truncate text-slate")}>{t.preview}</td>
+                  <td className={td}>{t.agent}</td>
+                  <td className={td}>
+                    <StatePill s={t.state} />
+                  </td>
+                  <td className={cn(td, "text-slate")}>
+                    <Num>{t.time}</Num>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Card>
     </div>
   );
@@ -452,11 +439,11 @@ function Home() {
 function Inbox() {
   const active = threads[0];
   return (
-    <div className="grid h-full min-h-0 grid-cols-[320px_minmax(0,1fr)_320px]">
+    <div className="grid h-full min-h-0 grid-cols-[320px_minmax(0,1fr)_320px] max-lg:h-auto max-lg:grid-cols-[280px_minmax(0,1fr)] max-md:flex max-md:flex-col">
       <ThreadList />
 
       <section className="flex min-h-0 flex-col bg-paper">
-        <header className="flex h-16 shrink-0 items-center gap-3 border-b border-line bg-surface px-6">
+        <header className="flex h-16 shrink-0 items-center gap-3 border-b border-line bg-surface px-6 max-sm:gap-2.5 max-sm:px-4">
           <Face name={active.name} tone="pine" />
           <div className="min-w-0 flex-1">
             <p className="text-[15px] font-bold">{active.name}</p>
@@ -466,8 +453,10 @@ function Inbox() {
               <Masked tail="891" />
             </p>
           </div>
-          <Pill tone="pine">يرد الذكاء · هند تراقب</Pill>
-          <Button size="sm" icon={UserPlus}>
+          <Pill tone="pine" className="max-lg:hidden">
+            يرد الذكاء · هند تراقب
+          </Pill>
+          <Button size="sm" icon={UserPlus} className="max-sm:hidden">
             إسناد
           </Button>
           <Button size="sm" variant="dark" icon={Check}>
@@ -475,7 +464,7 @@ function Inbox() {
           </Button>
         </header>
 
-        <div className="min-h-0 flex-1 space-y-4 overflow-hidden px-8 py-6">
+        <div className="min-h-0 flex-1 space-y-4 overflow-hidden px-8 py-6 max-sm:px-4 max-sm:py-5">
           <p className="text-center">
             <span className="rounded-full bg-surface px-3 py-1 text-[11px] font-semibold text-slate ring-1 ring-line">
               اليوم
@@ -510,7 +499,7 @@ function Inbox() {
           </p>
         </div>
 
-        <div className="shrink-0 border-t border-line bg-surface px-6 py-4">
+        <div className="shrink-0 border-t border-line bg-surface px-6 py-4 max-sm:px-4 max-sm:py-3">
           <div className="rounded-xl border border-line-strong bg-surface">
             <p className="px-4 pt-3 pb-6 text-[13px] text-slate/80">
               اكتب ردك، أو اعتمد اقتراح الذكاء…
@@ -534,7 +523,7 @@ function Inbox() {
 
 function ThreadList() {
   return (
-    <aside className="flex min-h-0 flex-col border-e border-line bg-surface">
+    <aside className="flex min-h-0 flex-col border-e border-line bg-surface max-md:order-last max-md:border-e-0 max-md:border-t">
       <div className="shrink-0 px-5 pt-5 pb-3">
         <div className="flex items-baseline justify-between">
           <h1 className="text-[17px] font-extrabold">الوارد</h1>
@@ -621,7 +610,12 @@ function Msg({
 }) {
   const mine = from !== "them";
   return (
-    <div className={cn("flex max-w-[72%] flex-col", mine ? "ms-auto items-end" : "items-start")}>
+    <div
+      className={cn(
+        "flex max-w-[72%] flex-col max-sm:max-w-[86%]",
+        mine ? "ms-auto items-end" : "items-start",
+      )}
+    >
       <p
         className={cn(
           "rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed",
@@ -647,7 +641,7 @@ function Msg({
 
 function SystemNote({ icon: Icon, children }: { icon: typeof Package; children: ReactNode }) {
   return (
-    <p className="mx-auto flex w-fit items-center gap-2 rounded-full border border-dashed border-line-strong bg-surface/60 px-3.5 py-1.5 text-xs text-slate">
+    <p className="mx-auto flex w-fit max-w-full items-center gap-2 rounded-full border border-dashed border-line-strong bg-surface/60 px-3.5 py-1.5 text-xs text-slate">
       <Icon className="size-3.5 text-pine" />
       {children}
     </p>
@@ -656,7 +650,7 @@ function SystemNote({ icon: Icon, children }: { icon: typeof Package; children: 
 
 function CustomerPanel() {
   return (
-    <aside className="min-h-0 overflow-hidden border-s border-line bg-surface">
+    <aside className="min-h-0 overflow-hidden border-s border-line bg-surface max-lg:col-span-full max-lg:border-s-0 max-lg:border-t max-lg:pb-6">
       <div className="px-5 pt-5 pb-4">
         <div className="flex items-center gap-3">
           <Face name="أبو فهد العنزي" tone="pine" className="size-11 text-base" />
@@ -760,8 +754,8 @@ function Calls() {
     ["0:38", "أبشري، أحولك الحين على سلطان وأثبّت لك الموعد مبدئيًا.", true],
   ];
   return (
-    <div className="grid h-full min-h-0 grid-cols-[300px_minmax(0,1fr)_320px]">
-      <aside className="flex min-h-0 flex-col border-e border-line bg-surface">
+    <div className="grid h-full min-h-0 grid-cols-[300px_minmax(0,1fr)_320px] max-lg:h-auto max-lg:grid-cols-[280px_minmax(0,1fr)] max-md:flex max-md:flex-col">
+      <aside className="flex min-h-0 flex-col border-e border-line bg-surface max-md:order-last max-md:border-e-0 max-md:border-t max-md:pb-3">
         <div className="px-5 pt-5 pb-3">
           <h1 className="text-[17px] font-extrabold">الكول سنتر</h1>
           <p className="mt-0.5 text-xs text-slate">
@@ -808,17 +802,19 @@ function Calls() {
         ))}
       </aside>
 
-      <section className="flex min-h-0 flex-col bg-paper px-8 py-6">
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <Face name="نورة السبيعي" tone="pine" className="size-14 text-xl" />
-            <div className="flex-1">
+      <section className="flex min-h-0 flex-col bg-paper px-8 py-6 max-lg:px-6 max-sm:px-4 max-sm:py-5">
+        <Card className="p-6 max-sm:p-4">
+          <div className="flex items-center gap-4 max-sm:gap-3">
+            <Face name="نورة السبيعي" tone="pine" className="size-14 text-xl max-sm:size-12" />
+            <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold text-lime-600">مكالمة جارية · الذكاء يستمع</p>
               <p className="mt-0.5 text-[20px] font-extrabold">نورة السبيعي</p>
               <Masked tail="418" className="text-[13px] text-slate" />
             </div>
             <div className="text-end">
-              <Num className="block text-[34px] leading-none font-bold tracking-tight">4:12</Num>
+              <Num className="block text-[34px] leading-none font-bold tracking-tight max-sm:text-[28px]">
+                4:12
+              </Num>
               <span className="mt-1.5 block text-xs text-slate">مدة المكالمة</span>
             </div>
           </div>
@@ -834,7 +830,7 @@ function Calls() {
               />
             ))}
           </div>
-          <div className="mt-6 flex items-center justify-center gap-3">
+          <div className="mt-6 flex items-center justify-center gap-3 max-sm:gap-2">
             {[
               [MicOff, "كتم"],
               [Pause, "انتظار"],
@@ -844,10 +840,10 @@ function Calls() {
               return (
                 <span
                   key={String(l)}
-                  className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-surface px-4 text-[13px] font-semibold"
+                  className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-surface px-4 text-[13px] font-semibold max-sm:px-3"
                 >
                   <I className="size-4 text-slate" />
-                  {String(l)}
+                  <span className="max-sm:sr-only">{String(l)}</span>
                 </span>
               );
             })}
@@ -889,7 +885,7 @@ function Calls() {
         </Card>
       </section>
 
-      <aside className="min-h-0 overflow-hidden border-s border-line bg-surface px-5 py-5">
+      <aside className="min-h-0 overflow-hidden border-s border-line bg-surface px-5 py-5 max-lg:col-span-full max-lg:border-s-0 max-lg:border-t max-lg:pb-6">
         <p className="text-xs font-semibold text-slate">ملف المتصلة</p>
         <p className="mt-2 text-[15px] font-bold">نورة السبيعي</p>
         <p className="text-xs text-slate">عميلة منذ 2025 · استلام من الفرع</p>
@@ -971,7 +967,7 @@ const decisionPill: Record<"done" | "handoff" | "draft", [string, Tone]> = {
 function AiRun() {
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1 max-sm:gap-3">
         <Stat
           label="ردود أنهاها وحده"
           value="84"
@@ -1007,8 +1003,8 @@ function AiRun() {
         />
       </div>
 
-      <div className="grid grid-cols-12 gap-5">
-        <Card className="col-span-8">
+      <div className="grid grid-cols-12 gap-5 max-lg:grid-cols-1 max-sm:gap-4">
+        <Card className="col-span-8 max-lg:col-span-full">
           <CardHeader
             title="نسبة الحل دون تدخّل"
             description="10 إلى 23 سبتمبر · الهدف 85%"
@@ -1069,7 +1065,7 @@ function AiRun() {
           </div>
         </Card>
 
-        <Card className="col-span-4">
+        <Card className="col-span-4 max-lg:col-span-full">
           <CardHeader title="حدود الذكاء" description="ما يقفله وحده، وما يحوّله لك" />
           <div className="mt-3 px-5 pb-5">
             <p className="text-[11px] font-semibold text-slate">يقفله وحده</p>
@@ -1098,37 +1094,39 @@ function AiRun() {
             </Button>
           }
         />
-        <table className="mt-4 w-full">
-          <TableHead
-            cols={["الوقت", "العميل", "القناة", "ما طلبه العميل", "القرار", "الثقة", "زمن الرد"]}
-          />
-          <tbody className="divide-y divide-line">
-            {decisions.map(([t, n, ch, intent, d, conf, speed]) => (
-              <tr key={t}>
-                <td className={cn(td, "text-slate")}>
-                  <Num>{t}</Num>
-                </td>
-                <td className={cn(td, "font-bold")}>{n}</td>
-                <td className={td}>
-                  <ChannelTag ch={ch} />
-                </td>
-                <td className={td}>{intent}</td>
-                <td className={td}>
-                  <Pill tone={decisionPill[d][1]}>{decisionPill[d][0]}</Pill>
-                </td>
-                <td className={td}>
-                  <span className="flex items-center gap-2">
-                    <Meter value={conf} tone={conf > 80 ? "pine" : "lime"} className="w-20" />
-                    <Num className="text-xs text-slate">{conf}%</Num>
-                  </span>
-                </td>
-                <td className={cn(td, "text-slate")}>
-                  <Num>{speed.replace(" ث", "")}</Num> ث
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full">
+            <TableHead
+              cols={["الوقت", "العميل", "القناة", "ما طلبه العميل", "القرار", "الثقة", "زمن الرد"]}
+            />
+            <tbody className="divide-y divide-line">
+              {decisions.map(([t, n, ch, intent, d, conf, speed]) => (
+                <tr key={t}>
+                  <td className={cn(td, "text-slate")}>
+                    <Num>{t}</Num>
+                  </td>
+                  <td className={cn(td, "font-bold")}>{n}</td>
+                  <td className={td}>
+                    <ChannelTag ch={ch} />
+                  </td>
+                  <td className={td}>{intent}</td>
+                  <td className={td}>
+                    <Pill tone={decisionPill[d][1]}>{decisionPill[d][0]}</Pill>
+                  </td>
+                  <td className={td}>
+                    <span className="flex items-center gap-2">
+                      <Meter value={conf} tone={conf > 80 ? "pine" : "lime"} className="w-20" />
+                      <Num className="text-xs text-slate">{conf}%</Num>
+                    </span>
+                  </td>
+                  <td className={cn(td, "text-slate")}>
+                    <Num>{speed.replace(" ث", "")}</Num> ث
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Card>
     </div>
   );

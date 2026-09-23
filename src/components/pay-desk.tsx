@@ -1,21 +1,17 @@
 import type { ReactNode } from "react";
 import {
-  ArrowLeftRight,
   Copy,
   CreditCard,
   Delete,
   Download,
   Landmark,
-  LayoutDashboard,
   Link2,
   Lock,
   MessageCircle,
   Nfc,
   Plus,
   QrCode,
-  ReceiptText,
   ShieldCheck,
-  Smartphone,
 } from "lucide-react";
 import {
   Bar,
@@ -27,7 +23,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { DeskFrame, LiveChip, type DeskNavItem } from "@/components/desk-frame";
+import { DeskFrame, LiveChip } from "@/components/desk-frame";
+import { PAY_PRODUCT, payMore, payNav, type PayView } from "@/components/desks/navs";
 import { Button, Card, CardHeader, Num, Pill, type Tone } from "@/components/dash/ui";
 import {
   ChartTip,
@@ -42,20 +39,6 @@ import {
 } from "@/components/desks/kit";
 import { chart, fmt } from "@/components/desks/tokens";
 import { cn } from "@/lib/utils";
-
-const nav = [
-  { id: "home", label: "التحصيل", icon: LayoutDashboard },
-  { id: "pay", label: "روابط الدفع", icon: Link2, badge: 12 },
-  { id: "bills", label: "الفواتير", icon: ReceiptText },
-  { id: "pos", label: "نقطة البيع", icon: Smartphone },
-] as const satisfies readonly DeskNavItem[];
-
-const more: DeskNavItem[] = [
-  { id: "tx", label: "العمليات", icon: ArrowLeftRight },
-  { id: "settle", label: "التسويات", icon: Landmark },
-];
-
-export type PayView = (typeof nav)[number]["id"];
 
 const pages: Record<PayView, { title: string; subtitle: string; path: string }> = {
   home: {
@@ -79,6 +62,8 @@ const pages: Record<PayView, { title: string; subtitle: string; path: string }> 
     path: "pay/pos",
   },
 };
+
+export type { PayView };
 
 export function PayDesk({ view }: { view: PayView }) {
   const screens: Record<PayView, ReactNode> = {
@@ -113,14 +98,15 @@ export function PayDesk({ view }: { view: PayView }) {
   const p = pages[view];
   return (
     <DeskFrame
-      product="مبسط باي"
+      product={PAY_PRODUCT}
       workspace="دار العود الفاخر"
       workspaceMark="ع"
       workspaceMeta="بريدة · متجر وفرعان"
       path={p.path}
+      route="/desk/pay/$view"
       view={view}
-      nav={nav}
-      more={more}
+      nav={payNav}
+      more={payMore}
       user={{ name: "عبدالرحمن الحربي", role: "المدير المالي" }}
       searchHint="ابحث برقم عملية، فاتورة، أو اسم عميل"
       status={<LiveChip>البوابة تعمل</LiveChip>}
@@ -236,7 +222,7 @@ const daily = [
 function Home() {
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1 max-sm:gap-3">
         <Stat
           label="حُصّل اليوم"
           value={<Money value={18420} unitClass="text-[13px]" />}
@@ -264,8 +250,8 @@ function Home() {
         />
       </div>
 
-      <div className="grid grid-cols-12 gap-5">
-        <Card className="col-span-8">
+      <div className="grid grid-cols-12 gap-5 max-lg:grid-cols-1 max-sm:gap-4">
+        <Card className="col-span-8 max-lg:col-span-full">
           <CardHeader
             title="التحصيل اليومي"
             description="آخر 14 يومًا · ر.س"
@@ -313,7 +299,7 @@ function Home() {
           </div>
         </Card>
 
-        <Card className="col-span-4">
+        <Card className="col-span-4 max-lg:col-span-full">
           <CardHeader title="طرق الدفع" description="حصة كل وسيلة هذا الشهر" />
           <ul className="mt-4 space-y-3.5 px-5">
             {[
@@ -354,32 +340,34 @@ function Home() {
             </Button>
           }
         />
-        <table className="mt-4 w-full">
-          <TableHead
-            cols={["العملية", "العميل", "القناة", "الوسيلة", "المبلغ", "الحالة", "الوقت"]}
-          />
-          <tbody className="divide-y divide-line">
-            {tx.map((r) => (
-              <tr key={r.id}>
-                <td className={cn(td, "text-slate")}>
-                  <Num>{r.id}</Num>
-                </td>
-                <td className={cn(td, "font-bold")}>{r.name}</td>
-                <td className={td}>{r.via}</td>
-                <td className={cn(td, "text-slate")}>{r.method}</td>
-                <td className={td}>
-                  <Money value={r.amount} className="font-bold" />
-                </td>
-                <td className={td}>
-                  <Pill tone={txPill[r.s][1]}>{txPill[r.s][0]}</Pill>
-                </td>
-                <td className={cn(td, "text-slate")}>
-                  <Num>{r.time}</Num>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full">
+            <TableHead
+              cols={["العملية", "العميل", "القناة", "الوسيلة", "المبلغ", "الحالة", "الوقت"]}
+            />
+            <tbody className="divide-y divide-line">
+              {tx.map((r) => (
+                <tr key={r.id}>
+                  <td className={cn(td, "text-slate")}>
+                    <Num>{r.id}</Num>
+                  </td>
+                  <td className={cn(td, "font-bold")}>{r.name}</td>
+                  <td className={td}>{r.via}</td>
+                  <td className={cn(td, "text-slate")}>{r.method}</td>
+                  <td className={td}>
+                    <Money value={r.amount} className="font-bold" />
+                  </td>
+                  <td className={td}>
+                    <Pill tone={txPill[r.s][1]}>{txPill[r.s][0]}</Pill>
+                  </td>
+                  <td className={cn(td, "text-slate")}>
+                    <Num>{r.time}</Num>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Card>
     </div>
   );
@@ -401,9 +389,9 @@ function Field({ label, children, hint }: { label: string; children: ReactNode; 
 
 function PayLink() {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_400px] gap-5">
-      <Card className="p-6">
-        <div className="grid grid-cols-2 gap-5">
+    <div className="grid grid-cols-[minmax(0,1fr)_400px] gap-5 max-lg:grid-cols-1 max-sm:gap-4">
+      <Card className="p-6 max-sm:p-4">
+        <div className="grid grid-cols-2 gap-5 max-sm:grid-cols-1 max-sm:gap-4">
           <Field label="العميل">مؤسسة النور التجارية</Field>
           <Field label="الجوال">
             <Masked tail="891" />
@@ -418,11 +406,11 @@ function PayLink() {
           <Field label="البيان">توريد عود كمبودي — دفعة أولى من طلب الجملة</Field>
         </div>
         <p className="mt-6 text-[13px] font-semibold">وسائل الدفع</p>
-        <div className="mt-2 grid grid-cols-3 gap-3">
+        <div className="mt-2 grid grid-cols-3 gap-3 max-sm:grid-cols-2 max-sm:gap-2">
           {["مدى", "آبل باي", "بطاقة ائتمانية"].map((m) => (
             <span
               key={m}
-              className="flex h-11 items-center gap-2.5 rounded-xl border border-pine bg-pine-50/60 px-3.5 text-[13px] font-semibold"
+              className="flex h-11 items-center gap-2.5 rounded-xl border border-pine bg-pine-50/60 px-3.5 text-[13px] font-semibold whitespace-nowrap max-sm:px-3 max-sm:last:col-span-2"
             >
               <span className="grid size-4 place-items-center rounded bg-pine text-snow">
                 <svg viewBox="0 0 12 12" className="size-2.5" aria-hidden="true">
@@ -450,7 +438,7 @@ function PayLink() {
             نسخ
           </span>
         </div>
-        <div className="mt-6 flex gap-3">
+        <div className="mt-6 flex gap-3 max-sm:gap-2">
           <Button variant="primary" icon={MessageCircle} className="flex-1">
             أرسل الرابط على واتساب
           </Button>
@@ -527,7 +515,7 @@ function Bills() {
   };
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1 max-sm:gap-3">
         <Stat label="صدرت هذا الشهر" value="48" foot={`بقيمة ${fmt(96240)} ر.س`} />
         <Stat
           label="مدفوعة"
@@ -569,34 +557,36 @@ function Bills() {
             </div>
           }
         />
-        <table className="mt-4 w-full">
-          <TableHead
-            cols={["الفاتورة", "العميل", "المبلغ", "تاريخ الاستحقاق", "الحالة", "آخر حركة"]}
-          />
-          <tbody className="divide-y divide-line">
-            {rows.map(([id, n, a, s, due, last]) => (
-              <tr key={id}>
-                <td className={cn(td, "text-slate")}>
-                  <Num>{id}</Num>
-                </td>
-                <td className={td}>
-                  <span className="flex items-center gap-2.5">
-                    <Face name={n} className="size-7 text-[11px]" />
-                    <span className="font-bold">{n}</span>
-                  </span>
-                </td>
-                <td className={td}>
-                  <Money value={a} className="font-bold" />
-                </td>
-                <td className={td}>{due}</td>
-                <td className={td}>
-                  <Pill tone={pill[s][1]}>{pill[s][0]}</Pill>
-                </td>
-                <td className={cn(td, "text-slate")}>{last}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full">
+            <TableHead
+              cols={["الفاتورة", "العميل", "المبلغ", "تاريخ الاستحقاق", "الحالة", "آخر حركة"]}
+            />
+            <tbody className="divide-y divide-line">
+              {rows.map(([id, n, a, s, due, last]) => (
+                <tr key={id}>
+                  <td className={cn(td, "text-slate")}>
+                    <Num>{id}</Num>
+                  </td>
+                  <td className={td}>
+                    <span className="flex items-center gap-2.5">
+                      <Face name={n} className="size-7 text-[11px]" />
+                      <span className="font-bold">{n}</span>
+                    </span>
+                  </td>
+                  <td className={td}>
+                    <Money value={a} className="font-bold" />
+                  </td>
+                  <td className={td}>{due}</td>
+                  <td className={td}>
+                    <Pill tone={pill[s][1]}>{pill[s][0]}</Pill>
+                  </td>
+                  <td className={cn(td, "text-slate")}>{last}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Card>
     </div>
   );
@@ -607,7 +597,7 @@ function Bills() {
 function Pos() {
   const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "00", "0", "del"];
   return (
-    <div className="grid grid-cols-[380px_minmax(0,1fr)] gap-5">
+    <div className="grid grid-cols-[380px_minmax(0,1fr)] gap-5 max-lg:grid-cols-1 max-sm:gap-4">
       <div className="grid place-items-center rounded-2xl bg-pine-50/60 py-8 ring-1 ring-line">
         <div className="w-[290px] rounded-[34px] bg-pine-deep p-2.5 shadow-[0_30px_60px_-30px_rgba(16,38,40,0.5)]">
           <div className="rounded-[26px] bg-surface px-5 pt-6 pb-5">
@@ -641,8 +631,8 @@ function Pos() {
         </div>
       </div>
 
-      <div className="space-y-5">
-        <div className="grid grid-cols-3 gap-4">
+      <div className="space-y-5 max-sm:space-y-4">
+        <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 max-sm:gap-3">
           <Stat
             label="مبيعات اليوم"
             value={<Money value={6240} unitClass="text-[13px]" />}
@@ -654,35 +644,37 @@ function Pos() {
         </div>
         <Card>
           <CardHeader title="تمريرات اليوم" description="الفرع الرئيسي · جوال عبدالرحمن" />
-          <table className="mt-4 w-full">
-            <TableHead cols={["الوقت", "الوسيلة", "البطاقة", "المبلغ", "الحالة"]} />
-            <tbody className="divide-y divide-line">
-              {[
-                ["12:14", "مدى", "4471", 85, "paid"],
-                ["11:40", "آبل باي", "9023", 210, "paid"],
-                ["10:02", "بطاقة ائتمانية", "5518", 1250, "paid"],
-                ["9:48", "مدى", "3307", 40, "paid"],
-                ["9:30", "مدى", "7712", 120, "refund"],
-                ["9:11", "آبل باي", "2264", 320, "paid"],
-              ].map(([t, m, card, a, s]) => (
-                <tr key={String(t)}>
-                  <td className={cn(td, "text-slate")}>
-                    <Num>{t}</Num>
-                  </td>
-                  <td className={td}>{m}</td>
-                  <td className={cn(td, "text-slate")}>
-                    <Num>•••• {card}</Num>
-                  </td>
-                  <td className={td}>
-                    <Money value={Number(a)} className="font-bold" />
-                  </td>
-                  <td className={td}>
-                    <Pill tone={txPill[s as TxState][1]}>{txPill[s as TxState][0]}</Pill>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full">
+              <TableHead cols={["الوقت", "الوسيلة", "البطاقة", "المبلغ", "الحالة"]} />
+              <tbody className="divide-y divide-line">
+                {[
+                  ["12:14", "مدى", "4471", 85, "paid"],
+                  ["11:40", "آبل باي", "9023", 210, "paid"],
+                  ["10:02", "بطاقة ائتمانية", "5518", 1250, "paid"],
+                  ["9:48", "مدى", "3307", 40, "paid"],
+                  ["9:30", "مدى", "7712", 120, "refund"],
+                  ["9:11", "آبل باي", "2264", 320, "paid"],
+                ].map(([t, m, card, a, s]) => (
+                  <tr key={String(t)}>
+                    <td className={cn(td, "text-slate")}>
+                      <Num>{t}</Num>
+                    </td>
+                    <td className={td}>{m}</td>
+                    <td className={cn(td, "text-slate")}>
+                      <Num>•••• {card}</Num>
+                    </td>
+                    <td className={td}>
+                      <Money value={Number(a)} className="font-bold" />
+                    </td>
+                    <td className={td}>
+                      <Pill tone={txPill[s as TxState][1]}>{txPill[s as TxState][0]}</Pill>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
       </div>
     </div>

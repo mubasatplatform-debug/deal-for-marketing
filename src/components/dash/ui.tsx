@@ -63,16 +63,19 @@ export function Pill({
   tone = "neutral",
   children,
   dot = true,
+  className,
 }: {
   tone?: Tone;
   children: ReactNode;
   dot?: boolean;
+  className?: string;
 }) {
   return (
     <span
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ring-1 ring-inset",
         toneClass[tone],
+        className,
       )}
     >
       {dot ? <span aria-hidden="true" className="size-1.5 rounded-full bg-current" /> : null}

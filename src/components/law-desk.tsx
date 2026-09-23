@@ -7,7 +7,6 @@ import {
   FileText,
   FolderOpen,
   Gavel,
-  LayoutDashboard,
   Lock,
   MapPin,
   Mic,
@@ -18,8 +17,6 @@ import {
   Send,
   ShieldCheck,
   Sparkles,
-  UserCog,
-  Video,
   VideoIcon,
 } from "lucide-react";
 import {
@@ -32,23 +29,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { DeskFrame, LiveChip, type DeskNavItem } from "@/components/desk-frame";
+import { DeskFrame, LiveChip } from "@/components/desk-frame";
+import { LAW_PRODUCT, lawNav, type LawView } from "@/components/desks/navs";
 import { Button, Card, CardHeader, Num, Pill, type Tone } from "@/components/dash/ui";
 import { ChartTip, Face, Meter, Money, Stat, TableHead, td } from "@/components/desks/kit";
 import { chart } from "@/components/desks/tokens";
 import { cn } from "@/lib/utils";
-
-const nav = [
-  { id: "home", label: "لوحة التحكم", icon: LayoutDashboard },
-  { id: "book", label: "المواعيد", icon: CalendarDays, badge: 2 },
-  { id: "crm", label: "ملفات العملاء", icon: FolderOpen },
-  { id: "cases", label: "القضايا وناجز", icon: Scale },
-  { id: "docs", label: "العقود", icon: FileText, badge: 4 },
-  { id: "video", label: "جلسة الفيديو", icon: Video },
-  { id: "staff", label: "الفريق", icon: UserCog },
-] as const satisfies readonly DeskNavItem[];
-
-export type LawView = (typeof nav)[number]["id"];
 
 const pages: Record<
   LawView,
@@ -78,6 +64,8 @@ const pages: Record<
   video: { bare: true, path: "law/session" },
   staff: { title: "الفريق", subtitle: "6 أعضاء · الصلاحيات والمهام اليوم", path: "law/team" },
 };
+
+export type { LawView };
 
 export function LawDesk({ view }: { view: LawView }) {
   const screens: Record<LawView, ReactNode> = {
@@ -127,13 +115,14 @@ export function LawDesk({ view }: { view: LawView }) {
   const p = pages[view];
   return (
     <DeskFrame
-      product="مكتب المحامي"
+      product={LAW_PRODUCT}
       workspace="مكتب واصل للمحاماة"
       workspaceMark={<Scale className="size-4" />}
       workspaceMeta="بريدة · 6 أعضاء"
       path={p.path}
+      route="/desk/law/$view"
       view={view}
-      nav={nav}
+      nav={lawNav}
       user={{ name: "أبو فيصل", role: "الشريك المؤسس" }}
       searchHint="ابحث برقم قضية، اسم موكل، أو عقد"
       status={<LiveChip>ناجز متصل</LiveChip>}
@@ -227,7 +216,7 @@ const fees = [
 function HomeView() {
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1 max-sm:gap-3">
         <Stat label="قضايا مفتوحة" value="24" delta="3 جديدة" foot="11 تجاري · 8 إيجار · 5 عمالي" />
         <Stat
           label="جلسات هذا الأسبوع"
@@ -256,8 +245,8 @@ function HomeView() {
         />
       </div>
 
-      <div className="grid grid-cols-12 gap-5">
-        <Card className="col-span-7">
+      <div className="grid grid-cols-12 gap-5 max-lg:grid-cols-1 max-sm:gap-4">
+        <Card className="col-span-7 max-lg:col-span-full">
           <CardHeader
             title="جدول اليوم"
             description="4 مواعيد · جلسة واحدة في المحكمة"
@@ -315,11 +304,11 @@ function HomeView() {
               <li
                 key={e.t}
                 className={cn(
-                  "relative flex items-center gap-4 rounded-xl px-3 py-3",
+                  "relative flex items-center gap-4 rounded-xl px-3 py-3 max-sm:gap-3 max-sm:px-2",
                   e.now && "bg-pine-50/70",
                 )}
               >
-                <div className="w-14 shrink-0 text-center">
+                <div className="w-14 shrink-0 text-center max-sm:w-11">
                   <Num className={cn("block text-[15px] font-bold", e.done && "text-slate")}>
                     {e.t}
                   </Num>
@@ -354,7 +343,7 @@ function HomeView() {
           </ol>
         </Card>
 
-        <Card className="col-span-5">
+        <Card className="col-span-5 max-lg:col-span-full">
           <CardHeader
             title="بانتظار اعتمادك"
             description="جهّزها الفريق والذكاء، والقرار لك"
@@ -415,8 +404,8 @@ function HomeView() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-12 gap-5">
-        <Card className="col-span-8">
+      <div className="grid grid-cols-12 gap-5 max-lg:grid-cols-1 max-sm:gap-4">
+        <Card className="col-span-8 max-lg:col-span-full">
           <CardHeader
             title="القضايا النشطة"
             description="مرتبة حسب أقرب جلسة"
@@ -426,34 +415,36 @@ function HomeView() {
               </Button>
             }
           />
-          <table className="mt-4 w-full">
-            <TableHead
-              cols={["رقم القضية", "الموكل", "النوع", "الجلسة القادمة", "المسؤول", "الحالة"]}
-            />
-            <tbody className="divide-y divide-line">
-              {cases.map((c) => (
-                <tr key={c.no}>
-                  <td className={td}>
-                    <Num className="font-bold">{c.no}</Num>
-                  </td>
-                  <td className={cn(td, "font-bold")}>{c.client}</td>
-                  <td className={cn(td, "text-slate")}>{c.kind}</td>
-                  <td className={td}>{c.next}</td>
-                  <td className={td}>
-                    <span className="flex items-center gap-2">
-                      <Face name={c.owner} className="size-6 text-[10px]" />
-                      {c.owner}
-                    </span>
-                  </td>
-                  <td className={td}>
-                    <Pill tone={statusPill[c.s][1]}>{statusPill[c.s][0]}</Pill>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full">
+              <TableHead
+                cols={["رقم القضية", "الموكل", "النوع", "الجلسة القادمة", "المسؤول", "الحالة"]}
+              />
+              <tbody className="divide-y divide-line">
+                {cases.map((c) => (
+                  <tr key={c.no}>
+                    <td className={td}>
+                      <Num className="font-bold">{c.no}</Num>
+                    </td>
+                    <td className={cn(td, "font-bold")}>{c.client}</td>
+                    <td className={cn(td, "text-slate")}>{c.kind}</td>
+                    <td className={td}>{c.next}</td>
+                    <td className={td}>
+                      <span className="flex items-center gap-2">
+                        <Face name={c.owner} className="size-6 text-[10px]" />
+                        {c.owner}
+                      </span>
+                    </td>
+                    <td className={td}>
+                      <Pill tone={statusPill[c.s][1]}>{statusPill[c.s][0]}</Pill>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
-        <Card className="col-span-4">
+        <Card className="col-span-4 max-lg:col-span-full">
           <CardHeader title="الأتعاب المحصّلة" description="آخر 6 أشهر · ر.س" />
           <div className="h-[230px] px-3 pt-4 pb-3" dir="ltr">
             <ResponsiveContainer width="100%" height="100%">
@@ -535,8 +526,9 @@ const events: {
 
 function BookView() {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_300px] gap-5">
-      <Card className="overflow-hidden">
+    <div className="grid grid-cols-[minmax(0,1fr)_300px] gap-5 max-lg:grid-cols-1 max-sm:gap-4">
+      <Agenda />
+      <Card className="overflow-hidden max-sm:hidden">
         <div className="grid grid-cols-[64px_repeat(5,minmax(0,1fr))] border-b border-line">
           <span />
           {days.map(([d, n], i) => (
@@ -614,7 +606,7 @@ function BookView() {
         </div>
       </Card>
 
-      <div className="space-y-4">
+      <div className="space-y-4 max-lg:grid max-lg:grid-cols-2 max-lg:gap-4 max-lg:space-y-0 max-sm:grid-cols-1">
         <Card className="p-5">
           <p className="flex items-center gap-2 text-[13px] font-bold">
             <Sparkles className="size-4 text-lime-600" />
@@ -659,6 +651,77 @@ function BookView() {
   );
 }
 
+/** Phones: the week grid reads as a day-by-day agenda of the same events. */
+function Agenda() {
+  const clock = (t: number) => {
+    const h = Math.floor(t);
+    const m = Math.round((t - h) * 60);
+    return `${h > 12 ? h - 12 : h}:${String(m).padStart(2, "0")}`;
+  };
+  return (
+    <Card className="overflow-hidden sm:hidden">
+      {days.map(([d, n], di) => (
+        <section key={d} className="border-t border-line first:border-t-0">
+          <p
+            className={cn(
+              "flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-bold",
+              di === 3 ? "bg-pine-50/60 text-pine" : "bg-paper/60 text-slate",
+            )}
+          >
+            <span
+              className={cn(
+                "grid size-7 place-items-center rounded-full font-ui text-[13px]",
+                di === 3 ? "bg-pine text-snow" : "bg-surface text-pine-deep ring-1 ring-line",
+              )}
+            >
+              {n}
+            </span>
+            {d}
+            {di === 3 ? <span className="ms-auto text-[11px] font-semibold">اليوم</span> : null}
+          </p>
+          <ul className="divide-y divide-line/70">
+            {events
+              .filter((e) => e.d === di)
+              .sort((x, y) => x.start - y.start)
+              .map((e) => (
+                <li key={e.title} className="flex items-center gap-3 px-4 py-3">
+                  <div className="w-11 shrink-0 text-center">
+                    <Num className="block text-[13px] font-bold">{clock(e.start)}</Num>
+                    <span className="text-[10.5px] text-slate">
+                      {e.start < 12 ? "صباحًا" : "مساءً"}
+                    </span>
+                  </div>
+                  <span
+                    className={cn(
+                      "h-9 w-[3px] shrink-0 rounded-full",
+                      e.tone === "pine" && "bg-pine",
+                      e.tone === "soft" && "bg-pine-100",
+                      e.tone === "lime" && "bg-lime",
+                      e.tone === "ghost" && "border-s-[3px] border-dashed border-lime-600",
+                    )}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[13px] font-bold">{e.title}</p>
+                    <p className="truncate text-xs text-slate">{e.meta}</p>
+                  </div>
+                  {e.tone === "ghost" ? (
+                    <Pill tone="lime" dot={false}>
+                      مقترح
+                    </Pill>
+                  ) : e.tone === "pine" ? (
+                    <Pill tone="pine" dot={false}>
+                      جلسة
+                    </Pill>
+                  ) : null}
+                </li>
+              ))}
+          </ul>
+        </section>
+      ))}
+    </Card>
+  );
+}
+
 /* ───────────────────────── Client file ───────────────────────── */
 
 function ClientView() {
@@ -671,8 +734,8 @@ function ClientView() {
     ["مكتب السالم", "أحوال · 1447/03", false],
   ] as const;
   return (
-    <div className="grid h-full min-h-0 grid-cols-[300px_minmax(0,1fr)_310px]">
-      <aside className="border-e border-line bg-surface">
+    <div className="grid h-full min-h-0 grid-cols-[300px_minmax(0,1fr)_310px] max-lg:h-auto max-lg:grid-cols-[260px_minmax(0,1fr)] max-md:flex max-md:flex-col">
+      <aside className="border-e border-line bg-surface max-md:order-last max-md:border-e-0 max-md:border-t max-md:pb-3">
         <div className="px-5 pt-5 pb-3">
           <h1 className="text-[17px] font-extrabold">ملفات العملاء</h1>
           <p className="text-xs text-slate">
@@ -705,10 +768,10 @@ function ClientView() {
       </aside>
 
       <section className="flex min-h-0 flex-col bg-paper">
-        <header className="shrink-0 border-b border-line bg-surface px-6 pt-4">
+        <header className="shrink-0 border-b border-line bg-surface px-6 pt-4 max-sm:px-4">
           <div className="flex items-center gap-3">
             <Face name="مؤسسة النور" tone="pine" className="size-10" />
-            <div className="flex-1">
+            <div className="min-w-0 flex-1">
               <p className="text-[16px] font-extrabold">مؤسسة النور التجارية</p>
               <p className="text-xs text-slate">
                 موكل منذ 2023 · <Num>1447/12</Num> · المسؤول سلطان الحربي
@@ -716,12 +779,12 @@ function ClientView() {
             </div>
             <Pill tone="pine">جلسة اليوم</Pill>
           </div>
-          <div className="mt-4 flex gap-6 text-[13px]">
+          <div className="mt-4 flex gap-6 text-[13px] max-sm:-mx-4 max-sm:gap-5 max-sm:overflow-x-auto max-sm:px-4 max-sm:[scrollbar-width:none]">
             {["المحادثات", "القضايا", "العقود", "المواعيد", "المستندات"].map((t, i) => (
               <span
                 key={t}
                 className={cn(
-                  "border-b-2 pb-2.5 font-semibold",
+                  "shrink-0 border-b-2 pb-2.5 font-semibold whitespace-nowrap",
                   i === 0 ? "border-pine text-pine-deep" : "border-transparent text-slate",
                 )}
               >
@@ -730,7 +793,7 @@ function ClientView() {
             ))}
           </div>
         </header>
-        <div className="min-h-0 flex-1 space-y-4 overflow-hidden px-8 py-6">
+        <div className="min-h-0 flex-1 space-y-4 overflow-hidden px-8 py-6 max-sm:px-4 max-sm:py-5">
           <Bubble time="7:12">السلام عليكم، جلسة اليوم باقية على موعدها؟</Bubble>
           <Bubble mine time="7:14">
             وعليكم السلام. باقية الساعة الثامنة، والملف مكتمل. سلطان يحضر عنكم.
@@ -739,14 +802,14 @@ function ClientView() {
           <Bubble mine time="7:18">
             التوكيل ساري حتى جمادى الآخرة، وصورة السجل التجاري محفوظة في الملف. ما ينقص شيء.
           </Bubble>
-          <p className="mx-auto flex w-fit items-center gap-2 rounded-full border border-dashed border-line-strong px-3.5 py-1.5 text-xs text-slate">
+          <p className="mx-auto flex w-fit max-w-full items-center gap-2 rounded-full border border-dashed border-line-strong px-3.5 py-1.5 text-xs text-slate">
             <Gavel className="size-3.5 text-pine" />
             حُدّثت حالة القضية في ناجز — <Num>8:41</Num>
           </p>
         </div>
       </section>
 
-      <aside className="border-s border-line bg-surface px-5 py-5">
+      <aside className="border-s border-line bg-surface px-5 py-5 max-lg:col-span-full max-lg:border-s-0 max-lg:border-t max-lg:pb-6">
         <p className="text-xs font-semibold text-slate">ملخص القضية</p>
         <dl className="mt-3 space-y-3 text-[13px]">
           {[
@@ -792,7 +855,12 @@ function Bubble({
   children: ReactNode;
 }) {
   return (
-    <div className={cn("flex max-w-[70%] flex-col", mine ? "ms-auto items-end" : "items-start")}>
+    <div
+      className={cn(
+        "flex max-w-[70%] flex-col max-sm:max-w-[86%]",
+        mine ? "ms-auto items-end" : "items-start",
+      )}
+    >
       <p
         className={cn(
           "rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed",
@@ -818,7 +886,7 @@ function StaffView() {
   ];
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1 max-sm:gap-3">
         <Stat label="في المكتب" value="3" foot="من 6 أعضاء" />
         <Stat label="في المحكمة" value="1" foot="سلطان · حتى 10:00 ص" />
         <Stat label="مهام مفتوحة" value="17" delta="5 أُنجزت اليوم" />
@@ -829,43 +897,45 @@ function StaffView() {
           title="أعضاء المكتب"
           description="الصلاحيات تحدد ما يراه كل عضو من ملفات العملاء"
         />
-        <table className="mt-4 w-full">
-          <TableHead cols={["العضو", "مهمة اليوم", "المكان", "الحمل", "الصلاحية"]} />
-          <tbody className="divide-y divide-line">
-            {rows.map(([n, role, task, where, tone, load, perm]) => (
-              <tr key={n}>
-                <td className={td}>
-                  <span className="flex items-center gap-3">
-                    <Face name={n} />
-                    <span>
-                      <span className="block font-bold">{n}</span>
-                      <span className="block text-xs text-slate">{role}</span>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full">
+            <TableHead cols={["العضو", "مهمة اليوم", "المكان", "الحمل", "الصلاحية"]} />
+            <tbody className="divide-y divide-line">
+              {rows.map(([n, role, task, where, tone, load, perm]) => (
+                <tr key={n}>
+                  <td className={td}>
+                    <span className="flex items-center gap-3">
+                      <Face name={n} />
+                      <span>
+                        <span className="block font-bold">{n}</span>
+                        <span className="block text-xs text-slate">{role}</span>
+                      </span>
                     </span>
-                  </span>
-                </td>
-                <td className={td}>
-                  {task.replace(/\d+\/\d+/, "")}
-                  <Num>{task.match(/\d+\/\d+/)?.[0]}</Num>
-                </td>
-                <td className={td}>
-                  <Pill tone={tone}>{where}</Pill>
-                </td>
-                <td className={td}>
-                  <span className="flex items-center gap-2">
-                    <Meter value={load} className="w-28" />
-                    <Num className="text-xs text-slate">{load}%</Num>
-                  </span>
-                </td>
-                <td className={td}>
-                  <span className="inline-flex items-center gap-1.5 text-[13px]">
-                    <ShieldCheck className="size-4 text-pine" />
-                    {perm}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </td>
+                  <td className={td}>
+                    {task.replace(/\d+\/\d+/, "")}
+                    <Num>{task.match(/\d+\/\d+/)?.[0]}</Num>
+                  </td>
+                  <td className={td}>
+                    <Pill tone={tone}>{where}</Pill>
+                  </td>
+                  <td className={td}>
+                    <span className="flex items-center gap-2">
+                      <Meter value={load} className="w-28" />
+                      <Num className="text-xs text-slate">{load}%</Num>
+                    </span>
+                  </td>
+                  <td className={td}>
+                    <span className="inline-flex items-center gap-1.5 text-[13px]">
+                      <ShieldCheck className="size-4 text-pine" />
+                      {perm}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Card>
     </div>
   );
@@ -875,15 +945,15 @@ function StaffView() {
 
 function DocsView() {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_340px] gap-5">
-      <Card className="px-12 py-10">
+    <div className="grid grid-cols-[minmax(0,1fr)_340px] gap-5 max-lg:grid-cols-1 max-sm:gap-4">
+      <Card className="px-12 py-10 max-lg:px-8 max-sm:px-5 max-sm:py-7">
         <p className="text-center text-xs font-semibold text-slate">بسم الله الرحمن الرحيم</p>
         <h2 className="mt-4 text-center text-[19px] font-extrabold">عقد توريد</h2>
         <p className="mt-1 text-center text-xs text-slate">
           بين مؤسسة النور التجارية (الطرف الأول) وروابي للتجارة (الطرف الثاني) · رقم{" "}
           <Num>1447/21</Num>
         </p>
-        <div className="mt-8 space-y-5 text-[14px] leading-loose text-pine-deep/90">
+        <div className="mt-8 space-y-5 text-[14px] leading-loose text-pine-deep/90 max-sm:mt-6">
           <Clause n="4" title="التسليم">
             يلتزم الطرف الثاني بتسليم البضاعة خلال <Num>15</Num> يوم عمل من تاريخ أمر الشراء، في
             مستودع الطرف الأول ببريدة.
@@ -967,7 +1037,12 @@ function Clause({
   children: ReactNode;
 }) {
   return (
-    <div className={cn(flag && "-mx-4 rounded-xl border border-lime/60 bg-lime-50/70 px-4 py-3")}>
+    <div
+      className={cn(
+        flag &&
+          "-mx-4 rounded-xl border border-lime/60 bg-lime-50/70 px-4 py-3 max-sm:-mx-2 max-sm:px-3",
+      )}
+    >
       <p className="text-[13px] font-extrabold">
         البند <Num>{n}</Num> — {title}
         {flag ? <span className="ms-2 text-xs font-semibold text-lime-600">يحتاج رأيك</span> : null}
@@ -1082,7 +1157,7 @@ function CasesView() {
     },
   ];
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1 max-sm:gap-3">
       {cols.map((c) => (
         <div key={c.name} className="rounded-2xl bg-pine-50/50 p-3 ring-1 ring-line">
           <p className="flex items-center gap-2 px-1 pb-3 text-[13px] font-bold">
@@ -1122,19 +1197,21 @@ function CasesView() {
 
 function VideoView() {
   return (
-    <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_320px]">
-      <section className="flex min-h-0 flex-col bg-pine-deep p-5">
-        <div className="flex items-center gap-3 text-snow">
+    <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_320px] max-lg:h-auto max-lg:grid-cols-1">
+      <section className="flex min-h-0 flex-col bg-pine-deep p-5 max-sm:p-4">
+        <div className="flex items-center gap-3 text-snow max-sm:flex-wrap max-sm:gap-x-2 max-sm:gap-y-2.5">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.08] px-3 py-1 text-xs font-semibold">
             <Lock className="size-3.5 text-lime" />
             جلسة مشفّرة · داخل المنصة
           </span>
-          <p className="text-[13px] font-bold">مراجعة عقد التوريد — روابي للتجارة</p>
+          <p className="text-[13px] font-bold max-sm:order-last max-sm:w-full">
+            مراجعة عقد التوريد — روابي للتجارة
+          </p>
           <Num className="ms-auto rounded-full bg-white/[0.08] px-3 py-1 text-xs text-snow/80">
             42:18
           </Num>
         </div>
-        <div className="mt-4 grid min-h-0 flex-1 grid-cols-2 gap-4">
+        <div className="mt-4 grid min-h-0 flex-1 grid-cols-2 gap-4 max-lg:flex-none max-sm:gap-2.5">
           {[
             { n: "سلطان الحربي", r: "مكتب واصل للمحاماة", speaking: true },
             { n: "روابي للتجارة", r: "ممثل الموكل" },
@@ -1142,23 +1219,27 @@ function VideoView() {
             <div
               key={p.n}
               className={cn(
-                "relative grid place-items-center rounded-2xl bg-[radial-gradient(circle_at_50%_40%,#24484c_0%,#16302f_70%)]",
+                "relative grid place-items-center rounded-2xl bg-[radial-gradient(circle_at_50%_40%,#24484c_0%,#16302f_70%)] max-lg:aspect-[4/3] max-sm:aspect-[3/4]",
                 p.speaking && "ring-2 ring-lime",
               )}
             >
               <Face
                 name={p.n}
                 tone={p.speaking ? "lime" : "pine"}
-                className="size-24 text-4xl ring-4 ring-white/5"
+                className="size-24 text-4xl ring-4 ring-white/5 max-sm:size-16 max-sm:text-2xl"
               />
-              <span className="absolute start-3 bottom-3 inline-flex items-center gap-2 rounded-lg bg-black/30 px-2.5 py-1 text-xs text-snow">
-                <Mic className="size-3.5 text-lime" />
-                {p.n} · <span className="text-snow/60">{p.r}</span>
+              <span className="absolute start-3 bottom-3 inline-flex items-center gap-2 rounded-lg bg-black/30 px-2.5 py-1 text-xs text-snow max-sm:start-2 max-sm:bottom-2 max-sm:max-w-[calc(100%-1rem)] max-sm:gap-1.5 max-sm:px-2">
+                <Mic className="size-3.5 shrink-0 text-lime" />
+                <span className="max-sm:truncate max-sm:pb-0.5">
+                  {p.n}
+                  <span className="max-sm:hidden"> ·</span>
+                </span>
+                <span className="text-snow/60 max-sm:hidden">{p.r}</span>
               </span>
             </div>
           ))}
         </div>
-        <div className="mt-4 flex items-center justify-center gap-3">
+        <div className="mt-4 flex items-center justify-center gap-3 max-sm:gap-2">
           {[Mic, VideoIcon, MonitorUp].map((I, i) => (
             <span
               key={i}
@@ -1174,7 +1255,7 @@ function VideoView() {
         </div>
       </section>
 
-      <aside className="flex flex-col border-s border-line bg-surface px-5 py-5">
+      <aside className="flex flex-col border-s border-line bg-surface px-5 py-5 max-lg:border-s-0 max-lg:pb-6">
         <p className="flex items-center gap-2 text-[13px] font-bold">
           <Sparkles className="size-4 text-lime-600" />
           مذكرة الجلسة

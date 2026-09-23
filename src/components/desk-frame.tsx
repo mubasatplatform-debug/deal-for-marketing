@@ -1,4 +1,5 @@
-import { useEffect, useState, type ComponentType, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
 import { Bell, ChevronsUpDown, CircleHelp, Lock, Search, Settings } from "lucide-react";
 import { DealWordmark } from "@/components/logo";
 import { Face } from "@/components/desks/kit";
@@ -9,7 +10,14 @@ import { cn } from "@/lib/utils";
  * from it). Same visual language as the real dashboards — pine sidebar, paper
  * canvas, white cards — but every nav item is inert: these are stages, not apps.
  * With `?shot=1` the desk is wrapped in a quiet browser window for screenshots.
+ *
+ * Below `lg` the sidebar gives way to a scrollable tab row (real links, so a
+ * phone visitor can move between views) and the panes reflow to one column;
+ * from `lg` up — and always in shot mode — the desk keeps its desktop layout.
  */
+
+/** The desk routes; each takes the view id as `$view`. */
+export type DeskRoute = "/desk/crm/$view" | "/desk/law/$view" | "/desk/pay/$view";
 
 export type DeskNavItem = {
   id: string;
@@ -32,6 +40,7 @@ export function DeskFrame({
   workspaceMark,
   workspaceMeta,
   path,
+  route,
   view,
   nav,
   more,
@@ -53,6 +62,8 @@ export function DeskFrame({
   workspaceMeta: string;
   /** URL path shown in the screenshot browser bar. */
   path: string;
+  /** Route the mobile tab row links to, with each nav id as `$view`. */
+  route: DeskRoute;
   view: string;
   nav: readonly DeskNavItem[];
   more?: readonly DeskNavItem[];
@@ -127,8 +138,25 @@ export function DeskFrame({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center gap-4 border-b border-line bg-surface px-6">
-          <div className="flex h-9 w-full max-w-[380px] items-center gap-2.5 rounded-xl border border-line bg-paper px-3 text-slate">
+        <header className="flex h-14 shrink-0 items-center gap-4 border-b border-line bg-surface px-6 max-sm:gap-2.5 max-sm:px-4">
+          {shot ? null : (
+            <div className="flex shrink-0 items-center gap-2.5 lg:hidden">
+              <span className="grid h-9 place-items-center rounded-xl bg-pine-deep px-2.5">
+                <DealWordmark className="h-3.5 w-auto text-lime" />
+              </span>
+              <span className="hidden text-[14px] font-bold whitespace-nowrap sm:inline">
+                {product}
+              </span>
+            </div>
+          )}
+          <span
+            role="img"
+            aria-label={searchHint}
+            className="grid size-9 shrink-0 place-items-center rounded-xl border border-line bg-paper text-slate sm:hidden"
+          >
+            <Search className="size-4" />
+          </span>
+          <div className="flex h-9 w-full max-w-[380px] items-center gap-2.5 rounded-xl border border-line bg-paper px-3 text-slate max-sm:hidden">
             <Search className="size-4 shrink-0" />
             <span className="flex-1 truncate text-[13px] text-slate/80">{searchHint}</span>
             <kbd
@@ -138,33 +166,35 @@ export function DeskFrame({
               Ctrl K
             </kbd>
           </div>
-          <div className="ms-auto flex items-center gap-2">
+          <div className="ms-auto flex shrink-0 items-center gap-2 max-sm:gap-1.5">
             {status}
             <span className="relative grid size-9 place-items-center rounded-xl text-slate">
               <Bell className="size-[18px]" />
               <span className="absolute end-2 top-2 size-2 rounded-full bg-lime ring-2 ring-surface" />
             </span>
-            <span className="mx-1 h-6 w-px bg-line" />
+            <span className="mx-1 h-6 w-px bg-line max-sm:hidden" />
             <Face name={user.name} tone="pine" className="size-8" />
           </div>
         </header>
 
+        {shot ? null : <MobileNav nav={nav} view={view} route={route} label={product} />}
+
         <main className={cn("min-h-0 flex-1", shot ? "overflow-hidden" : "overflow-auto")}>
-          <div className={cn("h-full", !shot && "min-w-[1080px]")}>
+          <div className={cn("h-full", !shot && "lg:min-w-[1080px]")}>
             {bare ? (
               children
             ) : (
-              <div className="px-8 pt-6 pb-10">
+              <div className="px-8 pt-6 pb-10 max-lg:px-6 max-sm:px-4 max-sm:pt-5 max-sm:pb-8">
                 {title ? (
-                  <div className="mb-6 flex items-end justify-between gap-6">
+                  <div className="mb-6 flex items-end justify-between gap-6 max-sm:mb-5 max-sm:flex-col max-sm:items-stretch max-sm:gap-3">
                     <div className="min-w-0">
-                      <h1 className="text-[22px] leading-tight font-extrabold tracking-tight text-pine-deep">
+                      <h1 className="text-[22px] leading-tight font-extrabold tracking-tight text-pine-deep max-sm:text-[20px]">
                         {title}
                       </h1>
                       {subtitle ? <p className="mt-1 text-[13px] text-slate">{subtitle}</p> : null}
                     </div>
                     {actions ? (
-                      <div className="flex shrink-0 items-center gap-2">{actions}</div>
+                      <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>
                     ) : null}
                   </div>
                 ) : null}
@@ -226,12 +256,87 @@ function NavRow({ item, active }: { item: DeskNavItem; active: boolean }) {
   );
 }
 
-/** Live-state chip for the top bar: a soft pine pill with a lime pulse. */
-export function LiveChip({ children }: { children: ReactNode }) {
+/** Below `lg`: the sidebar's views as a horizontally scrollable row of tabs. */
+function MobileNav({
+  nav,
+  view,
+  route,
+  label,
+}: {
+  nav: readonly DeskNavItem[];
+  view: string;
+  route: DeskRoute;
+  label: string;
+}) {
+  const rowRef = useRef<HTMLDivElement>(null);
+  // Keep the current view's tab in sight when it sits past the row's edge.
+  useEffect(() => {
+    const row = rowRef.current;
+    const tab = row?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (!row || !tab) return;
+    const r = row.getBoundingClientRect();
+    const t = tab.getBoundingClientRect();
+    if (t.left < r.left + 16) row.scrollBy({ left: t.left - r.left - 16 });
+    else if (t.right > r.right - 16) row.scrollBy({ left: t.right - r.right + 16 });
+  }, [view]);
   return (
-    <span className="me-1 inline-flex h-8 items-center gap-2 rounded-full bg-pine-50 px-3 text-xs font-semibold text-pine ring-1 ring-pine-100 ring-inset">
-      <span className="size-2 rounded-full bg-lime-600 ring-[3px] ring-lime/30" />
-      {children}
+    <nav aria-label={label} className="shrink-0 border-b border-line bg-surface lg:hidden">
+      <div
+        ref={rowRef}
+        className="flex gap-1.5 overflow-x-auto px-4 py-2 [scrollbar-width:none] sm:px-6 [&::-webkit-scrollbar]:hidden"
+      >
+        {nav.map((item) => {
+          const Icon = item.icon;
+          const active = item.id === view;
+          return (
+            <Link
+              key={item.id}
+              to={route}
+              params={{ view: item.id }}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "inline-flex h-9 shrink-0 items-center gap-2 rounded-xl px-3 text-[13px] font-semibold whitespace-nowrap transition-colors",
+                active
+                  ? "bg-pine-deep text-snow"
+                  : "text-slate hover:bg-pine-50 hover:text-pine-deep",
+              )}
+            >
+              <Icon className={cn("size-4 shrink-0", active ? "text-lime" : "text-slate/80")} />
+              {item.label}
+              {item.badge ? (
+                <span
+                  className={cn(
+                    "rounded-full px-1.5 font-ui text-[11px] leading-[18px] font-bold tabular-nums",
+                    active ? "bg-lime text-pine-deep" : "bg-lime-50 text-lime-600",
+                  )}
+                >
+                  {item.badge}
+                </span>
+              ) : null}
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
+/**
+ * Live-state chip for the top bar: a soft pine pill with a lime pulse. `detail`
+ * follows after a dot and drops on phones so the chip stays on one line.
+ */
+export function LiveChip({ children, detail }: { children: ReactNode; detail?: ReactNode }) {
+  return (
+    <span className="me-1 inline-flex h-8 shrink-0 items-center gap-2 rounded-full bg-pine-50 px-3 text-xs font-semibold whitespace-nowrap text-pine ring-1 ring-pine-100 ring-inset max-sm:me-0 max-sm:px-2.5">
+      <span className="size-2 shrink-0 rounded-full bg-lime-600 ring-[3px] ring-lime/30" />
+      {detail ? (
+        <span>
+          {children}
+          <span className="max-sm:hidden"> · {detail}</span>
+        </span>
+      ) : (
+        children
+      )}
     </span>
   );
 }

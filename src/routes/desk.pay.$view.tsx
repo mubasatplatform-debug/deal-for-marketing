@@ -1,12 +1,13 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { PayDesk, type PayView } from "@/components/pay-desk";
+import { payDeskTitle } from "@/components/desks/navs";
 import { pageHead } from "@/lib/seo";
 
 const views = ["home", "pay", "bills", "pos"] as const;
 
 export const Route = createFileRoute("/desk/pay/$view")({
   // Internal screenshot stage for the product stills — never indexed.
-  head: () => pageHead({ noindex: true }),
+  head: ({ params }) => pageHead({ title: payDeskTitle(params.view), noindex: true }),
   component: DeskPay,
 });
 
