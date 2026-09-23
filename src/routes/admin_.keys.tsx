@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminForbidden } from "@/components/admin/forbidden";
 import { AdminKeysPage } from "@/components/keys/keys-page";
-import { authEnabled, signOut } from "@/lib/auth/client";
+import { useSignOut } from "@/components/keys/use-sign-out";
+import { authEnabled } from "@/lib/auth/client";
 import { hasGateSessionMarker } from "@/lib/auth/gate-session-marker";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { pageHead } from "@/lib/seo";
@@ -21,6 +22,7 @@ function AdminKeys() {
   const gateSession = useSyncExternalStore(subscribeToNothing, hasGateSessionMarker, noGateSessionOnServer);
   const canSignOut = authEnabled && !gateSession;
   const onForbidden = useCallback(() => setForbidden(true), []);
+  const signOut = useSignOut();
 
   useEffect(() => {
     // Full navigation so /login reads `redirect` from the real URL.
@@ -33,7 +35,9 @@ function AdminKeys() {
     return (
       <AdminForbidden
         email={user.primaryEmail}
-        onSignOut={canSignOut ? () => void signOut("/login?redirect=/admin/keys") : undefined}
+        signingOut={signOut.signingOut}
+        signOutFailed={signOut.signOutFailed}
+        onSignOut={canSignOut ? () => signOut.start("/login?redirect=/admin/keys", () => {}) : undefined}
       />
     );
   }
@@ -41,7 +45,7 @@ function AdminKeys() {
   return (
     <AdminKeysPage
       user={{ name: user.displayName?.trim() || user.primaryEmail || "الفريق", email: user.primaryEmail }}
-      onSignOut={canSignOut ? () => void signOut("/") : undefined}
+      onSignOut={canSignOut ? () => signOut.start("/") : undefined}
       onForbidden={onForbidden}
     />
   );

@@ -1,7 +1,8 @@
 import { useSyncExternalStore } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ClientKeysPage } from "@/components/keys/keys-page";
-import { authEnabled, signOut } from "@/lib/auth/client";
+import { useSignOut } from "@/components/keys/use-sign-out";
+import { authEnabled } from "@/lib/auth/client";
 import { hasGateSessionMarker } from "@/lib/auth/gate-session-marker";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
@@ -19,6 +20,7 @@ function ClientKeys() {
   const { user, isPending } = useCurrentUserState();
   const gateSession = useSyncExternalStore(subscribeToNothing, hasGateSessionMarker, noGateSessionOnServer);
   const canSignOut = authEnabled && !gateSession;
+  const signOut = useSignOut();
 
   if (isPending) return null;
   if (!user) return <RedirectToSignIn to="/login?redirect=/client/keys" />;
@@ -27,7 +29,7 @@ function ClientKeys() {
   return (
     <ClientKeysPage
       user={{ name, email: user.primaryEmail }}
-      onSignOut={canSignOut ? () => void signOut("/").catch(() => {}) : undefined}
+      onSignOut={canSignOut ? () => signOut.start("/") : undefined}
     />
   );
 }

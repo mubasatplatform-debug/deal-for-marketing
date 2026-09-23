@@ -17,12 +17,6 @@ export const leadSchema = z.object({
   consent: z.literal(true),
   /** Honeypot: hidden from people, filled by naive bots. */
   website: z.string().max(200).optional(),
-  /**
-   * @deprecated Ignored. The old absolute browser timestamp, kept only so
-   * `leadSchema.omit({ startedAt: true })` in api/ops.server.ts still
-   * type-checks; drop both together. The form sends `fillMs` instead.
-   */
-  startedAt: z.number().int().optional(),
   source: z.enum(["form", "line"]).default("form"),
 });
 

@@ -90,11 +90,12 @@ function toAdminApi(r: AdminRow): ApiAdminRequest {
 // Input schemas (shared with MCP tool definitions)
 
 /**
- * The lead form's schema minus its bot traps: an API key already proves a real
- * account, so the honeypot and fill-time checks do not apply. Everything else —
+ * The lead's schema minus the form's bot traps: an API key already proves a
+ * real account, so the honeypot does not apply (and the form-only `fillMs`
+ * timing check lives on the form's own schema, not this one). Everything else —
  * lengths, phone, PDPL consent — validates exactly like `createRequest`.
  */
-export const apiRequestSchema = leadSchema.omit({ website: true, startedAt: true, source: true });
+export const apiRequestSchema = leadSchema.omit({ website: true, source: true });
 export type ApiRequestInput = z.input<typeof apiRequestSchema>;
 
 export const listQuerySchema = z.object({

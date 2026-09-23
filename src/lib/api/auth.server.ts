@@ -30,7 +30,17 @@ export const AUTH_FAIL_WINDOW_SECONDS = 300;
 const unauthorized = (message: string) => new ApiError(401, "unauthorized", message);
 
 /**
- * Callers (HMAC of the IP, see `visitorId`; the raw address is never stored)
+ * Best-effort client IP from the request itself (the edge sets `x-real-ip`;
+ * `x-forwarded-for`'s first hop is the fallback). Only ever stored as an HMAC.
+ */
+function requestIp(request: Request): string {
+  const real = request.headers.get("x-real-ip")?.trim();
+  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return (real || forwarded || "unknown").slice(0, 64);
+}
+
+/**
+ * Callers (HMAC of the IP via `pseudonymizeIp`; the raw address is never stored)
  * that recently tripped the failed-auth limit, kept per instance so a
  * blocked caller is turned away before any database work. The authoritative
  * count lives in `rate_hits` (shared across instances).
@@ -66,8 +76,8 @@ async function recordAuthFailure(ip: string, err: ApiError): Promise<never> {
 }
 
 export async function authenticate(request: Request): Promise<ApiCaller> {
-  const { visitorId } = await import("@/lib/rate-limit.server");
-  const ip = visitorId();
+  const { pseudonymizeIp } = await import("@/lib/rate-limit.server");
+  const ip = pseudonymizeIp(requestIp(request));
   const wait = blockedFor(ip);
   if (wait) throw tooManyFailures(wait);
 

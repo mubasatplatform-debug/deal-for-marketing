@@ -10,14 +10,14 @@ import * as ops from "./ops.server";
  *
  * CORS: `*` without credentials. These endpoints authenticate by bearer key
  * only and never read cookies, so a cross-origin page gains nothing it does
- * not already hold. Only GET/POST are offered cross-origin.
+ * not already hold.
  */
 
 const MAX_BODY_BYTES = 32 * 1024;
 
 const CORS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
   "Access-Control-Allow-Headers": "Authorization, Content-Type",
   "Access-Control-Expose-Headers": "Retry-After, X-RateLimit-Limit",
   "Access-Control-Max-Age": "600",
