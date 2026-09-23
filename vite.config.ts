@@ -145,6 +145,9 @@ function authPopupPlugin(): Plugin {
 // `0.0.0.0:8080` is the live-preview contract — don't change host/port.
 // The dev server starts once `src/router.tsx` and `src/routes/` exist — see
 // AGENTS.md § "First scaffold".
+/** Build for a standalone host (Render, a VPS) instead of the Grok/Vercel platform. */
+const standalone = process.env.DEAL_STANDALONE === "1";
+
 export default defineConfig(({ command, isPreview }) => ({
   server: {
     host: "0.0.0.0",
@@ -170,11 +173,14 @@ export default defineConfig(({ command, isPreview }) => ({
     ...(command === "build" || isPreview
       ? [
           nitro({
-            preset: "vercel",
+            // DEAL_STANDALONE=1 (Render, a VPS): a plain Node server without the
+            // Grok platform middleware (install page, platform manifest and the
+            // injected Grok badge), which only belongs on Grok-hosted deploys.
+            preset: standalone ? "node-server" : "vercel",
             // Auto-registers server/middleware/* (the PWA install page +
             // manifest + head-tag middleware). Nitro v3 defaults serverDir to
             // false, so removing this silently unwires /?install=1 on deploys.
-            serverDir: "./server",
+            serverDir: standalone ? false : "./server",
             // Baseline hardening. No CSP / frame-ancestors yet: the Grok live
             // preview frames the app and injects its extensions script.
             routeRules: {

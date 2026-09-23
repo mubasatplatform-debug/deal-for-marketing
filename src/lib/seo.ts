@@ -1,7 +1,7 @@
 import { mobile, phone } from "@/lib/content";
 
 /** Public origin used for canonical links, the sitemap and JSON-LD. */
-export const SITE_URL = "https://dealadv.sa";
+export const SITE_URL = "https://deal.mubasat.net";
 export const SITE_NAME = "ديل | DEAL FOR MARKETING";
 
 type PageHead = { title?: string; description?: string; path?: string; noindex?: boolean };
