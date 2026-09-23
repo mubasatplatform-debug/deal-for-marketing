@@ -181,7 +181,7 @@ export const rest = {
     ),
 
   adminUpdateRequest: (request: Request, id: string) =>
-    withKey(request, "admin:requests:write", async () => ({
-      data: await ops.adminUpdateStatus(id, await readJson(request)),
+    withKey(request, "admin:requests:write", async (c) => ({
+      data: await ops.adminUpdateStatus(c, id, await readJson(request)),
     })),
 };

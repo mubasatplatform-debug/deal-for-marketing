@@ -25,20 +25,31 @@ import {
   EmptyState,
   Num,
   Segmented,
+  Select,
   Skeleton,
 } from "@/components/dash/ui";
-import type { AdminRequestRow, AdminTotals } from "@/lib/admin";
+import type {
+  AdminRequestRow,
+  AdminTotals,
+  NoteRow,
+  RequestActivity,
+  TeamMember,
+} from "@/lib/admin";
+import { sourceLabel } from "@/lib/attribution";
 import { cn } from "@/lib/utils";
 import { LeadsChart, ServiceBars } from "./charts";
 import { CustomersList } from "./customers";
 import {
   STATUS_ORDER,
+  type AssigneeFilter,
   aggregateCustomers,
   countOf,
   dailySeries,
   downloadCsv,
   formatLongDay,
+  matchesAssignee,
   matchesQuery,
+  matchesSource,
   requestsWord,
   selectRows,
   statsFromTotals,
@@ -47,6 +58,7 @@ import {
 import { AdminKpi } from "./kpi";
 import { RequestDrawer } from "./request-drawer";
 import { RequestsTable, TableSkeleton, type SortDir } from "./requests-table";
+import { SourceBreakdown } from "./source";
 
 export type AdminPanelState = "loading" | "error" | "ready";
 
@@ -60,6 +72,7 @@ const EMPTY_TOTALS: AdminTotals = {
   thisWeek: 0,
   lastWeek: 0,
   byService: [],
+  bySource: [],
   daily: [],
 };
 const num = (n: number) => n.toLocaleString("en-US");
@@ -77,6 +90,14 @@ export type AdminPanelProps = {
   onRetry: () => void;
   /** Persist a status change. Reject to roll the optimistic update back. */
   onStatusChange: (id: number, status: string) => Promise<void>;
+  /** Team members who can be assigned, and the signed-in member's id. */
+  team: TeamMember[];
+  me: string;
+  /** Persist an assignment (null = unassign). Reject to roll back. */
+  onAssign: (id: number, assigneeId: string | null) => Promise<void>;
+  /** Internal notes + activity log of one request. */
+  onLoadActivity: (id: number) => Promise<RequestActivity>;
+  onAddNote: (id: number, body: string) => Promise<NoteRow>;
   /** Every request, uncapped — used for CSV export when `rows` is truncated. */
   onLoadAll: () => Promise<AdminRequestRow[]>;
   onSignOut?: () => void;
@@ -91,11 +112,20 @@ export function AdminPanel({
   now,
   onRetry,
   onStatusChange,
+  team,
+  me,
+  onAssign,
+  onLoadActivity,
+  onAddNote,
   onLoadAll,
   onSignOut,
   signingOut,
 }: AdminPanelProps) {
   const [overrides, setOverrides] = useState<Record<number, string>>({});
+  /** Optimistic assignments, keyed by request id (null = unassigned). */
+  const [assigned, setAssigned] = useState<Record<number, string | null>>({});
+  const [assignee, setAssignee] = useState<AssigneeFilter>("all");
+  const [source, setSource] = useState("all");
   const [pending, setPending] = useState<number | null>(null);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
@@ -108,10 +138,20 @@ export function AdminPanel({
 
   const applyOverrides = useCallback(
     (list: AdminRequestRow[]) =>
-      list.map((r) =>
-        overrides[r.id] && overrides[r.id] !== r.status ? { ...r, status: overrides[r.id] } : r,
-      ),
-    [overrides],
+      list.map((r) => {
+        let next = r;
+        if (overrides[r.id] && overrides[r.id] !== r.status) next = { ...next, status: overrides[r.id] };
+        if (r.id in assigned && assigned[r.id] !== r.assignee_id) {
+          const id = assigned[r.id];
+          next = {
+            ...next,
+            assignee_id: id,
+            assignee_name: id ? (team.find((m) => m.id === id)?.name ?? null) : null,
+          };
+        }
+        return next;
+      }),
+    [overrides, assigned, team],
   );
   const rows = useMemo(() => applyOverrides(sourceRows), [applyOverrides, sourceRows]);
 
@@ -129,15 +169,44 @@ export function AdminPanel({
   const last30 = series.reduce((s, d) => s + d.count, 0);
 
   const searched = useMemo(() => rows.filter((r) => matchesQuery(r, query)), [rows, query]);
+  // Each filter's counts reflect the other filters, so the numbers always
+  // match what a click would show.
+  const scoped = useMemo(
+    () => searched.filter((r) => matchesAssignee(r, assignee, me) && matchesSource(r, source)),
+    [searched, assignee, source, me],
+  );
   const counts = useMemo(() => {
     const c: Record<string, number> = {};
-    for (const r of searched) c[r.status] = (c[r.status] ?? 0) + 1;
+    for (const r of scoped) c[r.status] = (c[r.status] ?? 0) + 1;
     return c;
-  }, [searched]);
+  }, [scoped]);
+  const assigneeCounts = useMemo(() => {
+    const base = searched.filter(
+      (r) => matchesSource(r, source) && (filter === "all" || r.status === filter),
+    );
+    return {
+      all: base.length,
+      mine: base.filter((r) => r.assignee_id === me).length,
+      unassigned: base.filter((r) => !r.assignee_id).length,
+    };
+  }, [searched, source, filter, me]);
   const filtered = useMemo(
-    () => selectRows(searched, "", filter, sort),
-    [searched, filter, sort],
+    () => selectRows(scoped, { query: "", status: filter, assignee: "all", source: "all", me }, sort),
+    [scoped, filter, sort, me],
   );
+  const sourceOptions = useMemo(() => {
+    const keys = totals.bySource.map((b) => b.source ?? "unknown");
+    if (source !== "all" && !keys.includes(source)) keys.push(source);
+    return keys;
+  }, [totals.bySource, source]);
+  const filtersActive = query !== "" || filter !== "all" || assignee !== "all" || source !== "all";
+  const clearFilters = () => {
+    setQuery("");
+    setFilter("all");
+    setAssignee("all");
+    setSource("all");
+    setLimit(PAGE);
+  };
 
   // A truncated list would export a truncated CSV: fetch every request and
   // apply the same search, filter and sort first.
@@ -145,14 +214,18 @@ export function AdminPanel({
     if (!truncated) return downloadCsv(filtered, new Date(now));
     setExporting(true);
     try {
-      const all = selectRows(applyOverrides(await onLoadAll()), query, filter, sort);
+      const all = selectRows(
+        applyOverrides(await onLoadAll()),
+        { query, status: filter, assignee, source, me },
+        sort,
+      );
       downloadCsv(all, new Date(now));
     } catch {
       toast.error("تعذر تصدير الطلبات", { description: "تحقق من الاتصال ثم حاول مرة أخرى." });
     } finally {
       setExporting(false);
     }
-  }, [truncated, filtered, now, onLoadAll, applyOverrides, query, filter, sort]);
+  }, [truncated, filtered, now, onLoadAll, applyOverrides, query, filter, assignee, source, me, sort]);
 
   const open = openId === null ? null : (rows.find((r) => r.id === openId) ?? null);
 
@@ -174,6 +247,28 @@ export function AdminPanel({
       }
     },
     [rows, onStatusChange],
+  );
+
+  const changeAssignee = useCallback(
+    async (id: number, next: string | null) => {
+      const row = rows.find((r) => r.id === id);
+      if (!row || row.assignee_id === next) return;
+      const prev = row.assignee_id;
+      setAssigned((a) => ({ ...a, [id]: next }));
+      setPending(id);
+      try {
+        await onAssign(id, next);
+        const who = next === me ? "لك" : next ? `إلى ${team.find((m) => m.id === next)?.name ?? "عضو"}` : null;
+        toast.success(who ? `أُسند الطلب #${id} ${who}` : `أُلغي إسناد الطلب #${id}`);
+      } catch {
+        setAssigned((a) => ({ ...a, [id]: prev }));
+        toast.error("تعذر تغيير المسؤول", { description: "أعدنا الطلب إلى المسؤول السابق." });
+        throw new Error("assign failed");
+      } finally {
+        setPending(null);
+      }
+    },
+    [rows, onAssign, me, team],
   );
 
   // "/" focuses search, like the products it takes after.
@@ -257,7 +352,7 @@ export function AdminPanel({
     >
       <Toaster
         dir="rtl"
-        position="bottom-left"
+        position="bottom-center"
         offset={24}
         toastOptions={{
           style: {
@@ -367,6 +462,46 @@ export function AdminPanel({
                 </div>
               </Card>
             </div>
+
+            <Card>
+              <CardHeader
+                title="الطلبات حسب المصدر"
+                description={
+                  loading
+                    ? "جارٍ التحميل…"
+                    : "أول قناة أوصلت العميل للموقع · اضغط مصدرًا لعرض طلباته"
+                }
+              />
+              <div className="px-5 pt-3 pb-4 md:px-6">
+                {loading ? (
+                  <div className="grid gap-x-8 gap-y-4 py-2 md:grid-cols-2 xl:grid-cols-3">
+                    {Array.from({ length: 6 }, (_, i) => (
+                      <div key={i} className="space-y-2">
+                        <Skeleton className="h-3.5 w-1/2" />
+                        <Skeleton className="h-1.5 w-full" />
+                      </div>
+                    ))}
+                  </div>
+                ) : totals.bySource.length ? (
+                  <SourceBreakdown
+                    data={totals.bySource}
+                    total={stats.total}
+                    active={source}
+                    onPick={(v) => {
+                      setSource(v);
+                      resetPaging();
+                      if (v !== "all") {
+                        document
+                          .getElementById("requests")
+                          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }
+                    }}
+                  />
+                ) : (
+                  <p className="py-10 text-center text-sm text-slate">لا توجد بيانات بعد.</p>
+                )}
+              </div>
+            </Card>
           </section>
 
           {/* Requests */}
@@ -451,6 +586,49 @@ export function AdminPanel({
                   />
                 </div>
               </div>
+              <div className="flex flex-wrap items-center gap-3 px-4 pb-4 md:px-6">
+                <Segmented<AssigneeFilter>
+                  label="تصفية حسب المسؤول"
+                  value={assignee}
+                  onChange={(v) => {
+                    setAssignee(v);
+                    resetPaging();
+                  }}
+                  options={[
+                    { value: "all", label: "كل الفريق", count: loading ? undefined : assigneeCounts.all },
+                    { value: "mine", label: "طلباتي", count: loading ? undefined : assigneeCounts.mine },
+                    {
+                      value: "unassigned",
+                      label: "غير مسندة",
+                      count: loading ? undefined : assigneeCounts.unassigned,
+                    },
+                  ]}
+                />
+                <label className="flex items-center gap-2 text-[13px] font-semibold text-slate">
+                  المصدر
+                  <Select
+                    value={source}
+                    disabled={loading}
+                    onChange={(e) => {
+                      setSource(e.target.value);
+                      resetPaging();
+                    }}
+                    className="w-40"
+                  >
+                    <option value="all">كل المصادر</option>
+                    {sourceOptions.map((k) => (
+                      <option key={k} value={k}>
+                        {sourceLabel(k === "unknown" ? null : k)}
+                      </option>
+                    ))}
+                  </Select>
+                </label>
+                {filtersActive && !loading ? (
+                  <Button size="sm" variant="ghost" icon={X} onClick={clearFilters} className="ms-auto">
+                    مسح التصفية
+                  </Button>
+                ) : null}
+              </div>
 
               {loading ? (
                 <TableSkeleton />
@@ -467,15 +645,9 @@ export function AdminPanel({
                   <EmptyState
                     icon={SearchX}
                     title="لا نتائج مطابقة"
-                    body="جرّب كلمة بحث أخرى أو غيّر الحالة المختارة."
+                    body="جرّب كلمة بحث أخرى أو غيّر الحالة أو المسؤول أو المصدر."
                     action={
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setQuery("");
-                          setFilter("all");
-                        }}
-                      >
+                      <Button size="sm" onClick={clearFilters}>
                         مسح التصفية
                       </Button>
                     }
@@ -486,6 +658,7 @@ export function AdminPanel({
                   <RequestsTable
                     rows={filtered.slice(0, limit)}
                     now={now}
+                    me={me}
                     sort={sort}
                     onSort={() => setSort((s) => (s === "desc" ? "asc" : "desc"))}
                     onOpen={setOpenId}
@@ -540,8 +713,13 @@ export function AdminPanel({
           row={open}
           now={now}
           pending={pending === open.id}
+          team={team}
+          me={me}
           onClose={() => setOpenId(null)}
-          onStatus={(s) => void changeStatus(open.id, s)}
+          onStatus={(s) => changeStatus(open.id, s)}
+          onAssign={(a) => changeAssignee(open.id, a)}
+          loadActivity={() => onLoadActivity(open.id)}
+          onAddNote={(body) => onAddNote(open.id, body)}
         />
       ) : null}
     </DashShell>

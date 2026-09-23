@@ -1,6 +1,7 @@
 import type { Tone } from "@/components/dash/ui";
 import type { AdminRequestRow, AdminTotals } from "@/lib/admin";
 import { requestStatus } from "@/lib/content";
+import { sourceLabel } from "@/lib/attribution";
 
 /** Gregorian calendar, Latin digits — the product's one date locale. */
 const LOCALE = "ar-SA-u-nu-latn-ca-gregory";
@@ -113,7 +114,16 @@ export function matchesQuery(r: AdminRequestRow, q: string): boolean {
   if (/^\d+$/.test(needle) && String(r.id) === needle) return true;
   const digits = needle.replace(/\D/g, "");
   if (digits.length >= 3 && normalizePhone(r.phone).includes(normalizePhone(digits))) return true;
-  return [r.contact_name, r.company, r.brief, r.service_title, r.account_email ?? "", String(r.id)]
+  return [
+    r.contact_name,
+    r.company,
+    r.brief,
+    r.service_title,
+    r.account_email ?? "",
+    r.assignee_name ?? "",
+    r.utm_campaign ?? "",
+    String(r.id),
+  ]
     .join("\n")
     .toLowerCase()
     .includes(needle);
@@ -136,6 +146,13 @@ export function downloadCsv(rows: AdminRequestRow[], now = new Date()) {
     "الحالة",
     "تاريخ الطلب",
     "الإشعار",
+    "المسؤول",
+    "المصدر",
+    "utm_source",
+    "utm_medium",
+    "utm_campaign",
+    "الموقع المحيل",
+    "صفحة الوصول",
     "التفاصيل",
   ];
   const lines = rows.map((r) =>
@@ -150,6 +167,13 @@ export function downloadCsv(rows: AdminRequestRow[], now = new Date()) {
       statusLabel(r.status),
       formatAbsolute(new Date(r.created_at)),
       r.notified_at ? "وصل" : "لم يصل",
+      r.assignee_name ?? "",
+      sourceLabel(r.source),
+      r.utm_source ?? "",
+      r.utm_medium ?? "",
+      r.utm_campaign ?? "",
+      r.referrer_host ?? "",
+      r.landing_path ?? "",
       r.brief,
     ]
       .map(cell)
@@ -203,15 +227,43 @@ export function dailySeries(daily: AdminTotals["daily"]) {
   });
 }
 
-/** Search + status filter + date sort, as the requests table shows them. */
+export type AssigneeFilter = "all" | "mine" | "unassigned";
+/** A normalized source, "unknown" (no source recorded) or "all". */
+export type SourceFilter = string;
+
+export type RowFilters = {
+  query: string;
+  status: string;
+  assignee: AssigneeFilter;
+  source: SourceFilter;
+  /** The signed-in team member, for "mine". */
+  me: string;
+};
+
+export function matchesAssignee(r: AdminRequestRow, f: AssigneeFilter, me: string): boolean {
+  if (f === "mine") return r.assignee_id === me;
+  if (f === "unassigned") return !r.assignee_id;
+  return true;
+}
+
+export function matchesSource(r: AdminRequestRow, f: SourceFilter): boolean {
+  if (f === "all") return true;
+  if (f === "unknown") return !r.source;
+  return r.source === f;
+}
+
+/** Search + filters + date sort, as the requests table shows them. */
 export function selectRows(
   rows: AdminRequestRow[],
-  query: string,
-  filter: string,
+  f: RowFilters,
   sort: "asc" | "desc",
 ): AdminRequestRow[] {
   const list = rows.filter(
-    (r) => matchesQuery(r, query) && (filter === "all" || r.status === filter),
+    (r) =>
+      matchesQuery(r, f.query) &&
+      (f.status === "all" || r.status === f.status) &&
+      matchesAssignee(r, f.assignee, f.me) &&
+      matchesSource(r, f.source),
   );
   const dir = sort === "desc" ? -1 : 1;
   return list.sort(

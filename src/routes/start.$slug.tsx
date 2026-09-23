@@ -8,6 +8,7 @@ import { Eyebrow, Frame, Photo } from "@/components/site-ui";
 import { SignedIn, SignedOut } from "@/lib/auth/gates";
 import { cn } from "@/lib/utils";
 import { mobile, phone as dealPhone, serviceBySlug } from "@/lib/content";
+import { attributionForLead } from "@/lib/attribution";
 import { LINE_DRAFT_KEY } from "@/lib/line";
 import { normalizePhone } from "@/lib/phone";
 import { createRequest, LEAD_ERRORS } from "@/lib/requests";
@@ -124,6 +125,7 @@ function StartService() {
           website,
           fillMs: Math.round(performance.now() - mountedAt.current),
           source: fromLine ? "line" : "form",
+          attribution: attributionForLead(),
         },
       });
       try {

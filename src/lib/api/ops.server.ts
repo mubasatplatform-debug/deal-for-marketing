@@ -32,6 +32,8 @@ export type ApiAdminRequest = ApiRequest & {
   phone: string;
   account_email: string | null;
   notified_at: string | null;
+  /** Normalized lead source (snapchat, google, direct, …); null when unknown. */
+  source: string | null;
 };
 
 export type Page<T> = {
@@ -60,6 +62,7 @@ type AdminRow = Row & {
   phone: string;
   account_email: string | null;
   notified_at: string | Date | null;
+  source: string | null;
 };
 
 const iso = (v: string | Date) => new Date(v).toISOString();
@@ -83,6 +86,7 @@ function toAdminApi(r: AdminRow): ApiAdminRequest {
     phone: r.phone,
     account_email: r.account_email,
     notified_at: r.notified_at ? iso(r.notified_at) : null,
+    source: r.source,
   };
 }
 
@@ -237,7 +241,7 @@ export async function createOwnRequest(caller: ApiCaller, input: unknown): Promi
 
 const ADMIN_COLUMNS = `
   r.id, r.service_slug, r.service_title, r.company, r.brief, r.status, r.created_at,
-  r.contact_name, r.phone, r.notified_at, u.email as account_email`;
+  r.contact_name, r.phone, r.notified_at, u.email as account_email, r.source`;
 
 export async function adminListRequests(query: unknown): Promise<Page<ApiAdminRequest>> {
   const q = parseInput(listQuerySchema, query);
@@ -258,14 +262,18 @@ export async function adminListRequests(query: unknown): Promise<Page<ApiAdminRe
   return page(rows.map(toAdminApi), count[0]?.n ?? 0, q);
 }
 
-export async function adminUpdateStatus(rawId: unknown, input: unknown): Promise<ApiAdminRequest> {
+export async function adminUpdateStatus(
+  caller: ApiCaller,
+  rawId: unknown,
+  input: unknown,
+): Promise<ApiAdminRequest> {
   const id = parseId(rawId);
   const { status } = parseInput(statusChangeSchema, input);
   const sql = await getSql();
-  const updated = await sql<{ id: number }>`
-    update requests set status = ${status} where id = ${id} returning id
-  `;
-  if (!updated[0]) throw notFound(id, true);
+  // Logged in the request's activity history as the key owner, via the API.
+  const { setStatusLogged } = await import("@/lib/request-workflow.server");
+  const res = await setStatusLogged(sql, id, status, caller.userId, "api");
+  if (!res.found) throw notFound(id, true);
   const rows = await sql.query<AdminRow>(
     `select ${ADMIN_COLUMNS} from requests r left join "user" u on u.id = r.user_id where r.id = $1`,
     [id],
