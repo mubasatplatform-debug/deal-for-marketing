@@ -6,12 +6,21 @@ import { phone as dealPhone, serviceBySlug } from "@/lib/content";
 import { LINE_DRAFT_KEY } from "@/lib/line";
 import { normalizePhone } from "@/lib/phone";
 import { createRequest, LEAD_ERRORS } from "@/lib/requests";
+import { pageHead } from "@/lib/seo";
 
 const inputClass =
   "mt-2 h-12 w-full border border-hair bg-card px-4 text-snow outline-none focus-visible:border-lime focus-visible:outline-2 focus-visible:outline-lime";
 const knownErrors: string[] = Object.values(LEAD_ERRORS);
 
-export const Route = createFileRoute("/start/$slug")({ component: StartService });
+export const Route = createFileRoute("/start/$slug")({
+  head: ({ params }) => {
+    const service = serviceBySlug(params.slug);
+    return service
+      ? pageHead({ title: service.title, description: service.body, path: `/start/${service.slug}` })
+      : pageHead({ noindex: true });
+  },
+  component: StartService,
+});
 
 function StartService() {
   const { slug } = Route.useParams();

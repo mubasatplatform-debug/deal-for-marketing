@@ -9,11 +9,10 @@ import {
   updateRequestStatus,
   type AdminRequestRow,
 } from "@/lib/admin";
+import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({
-    meta: [{ title: "صندوق الطلبات | ديل" }, { name: "robots", content: "noindex, nofollow" }],
-  }),
+  head: () => pageHead({ title: "صندوق الطلبات", noindex: true }),
   component: Admin,
 });
 

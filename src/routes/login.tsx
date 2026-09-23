@@ -3,6 +3,7 @@ import { DealLogo } from "@/components/logo";
 import { DealSignIn } from "@/components/deal-sign-in";
 import { LimeWave } from "@/components/lime-wave";
 import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
+import { pageHead } from "@/lib/seo";
 
 /** Only same-origin relative paths ("/x" — not "//host", "/\\host" or anything with whitespace/control chars). */
 function safeRedirect(value: unknown): string | undefined {
@@ -13,6 +14,7 @@ function safeRedirect(value: unknown): string | undefined {
 }
 
 export const Route = createFileRoute("/login")({
+  head: () => pageHead({ title: "دخول العميل", noindex: true }),
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
     redirect: safeRedirect(search.redirect),
   }),

@@ -5,8 +5,12 @@ import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { requestStatus } from "@/lib/content";
 import { listMyRequests, type RequestRow } from "@/lib/requests";
+import { pageHead } from "@/lib/seo";
 
-export const Route = createFileRoute("/client")({ component: ClientHome });
+export const Route = createFileRoute("/client")({
+  head: () => pageHead({ title: "مشاريعي", noindex: true }),
+  component: ClientHome,
+});
 
 function ClientHome() {
   const { user, isPending } = useCurrentUserState();
@@ -44,7 +48,9 @@ function ClientHome() {
           {rows === null ? (
             <p className="text-mist">جارٍ التحميل…</p>
           ) : rows.length === 0 ? (
-            <p className="border border-hair px-6 py-12 text-center text-mist">لا توجد طلبات بعد. ابدأ من الخدمات.</p>
+            <p className="border border-hair px-6 py-12 text-center text-mist">
+              لا توجد طلبات بعد. ابدأ من الخدمات.
+            </p>
           ) : (
             <ul className="space-y-px bg-hair">
               {rows.map((r) => (

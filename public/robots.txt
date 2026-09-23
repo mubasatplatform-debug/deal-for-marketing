@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /login
+Disallow: /client
+Disallow: /admin
+Disallow: /desk/
+Disallow: /api/
+
+Sitemap: https://dealadv.sa/sitemap.xml

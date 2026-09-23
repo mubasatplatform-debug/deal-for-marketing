@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { IdentityBreak } from "@/components/identity-break";
 import { SiteChrome } from "@/components/site-chrome";
+import { organizationJsonLd, pageHead } from "@/lib/seo";
 import {
   About,
   AiUse,
@@ -20,7 +21,13 @@ import {
   Works,
 } from "@/components/home-sections";
 
-export const Route = createFileRoute("/")({ component: Home });
+export const Route = createFileRoute("/")({
+  head: () => ({
+    ...pageHead({ path: "/" }),
+    scripts: [{ type: "application/ld+json", children: JSON.stringify(organizationJsonLd) }],
+  }),
+  component: Home,
+});
 
 function Home() {
   return (

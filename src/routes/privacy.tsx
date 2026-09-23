@@ -1,17 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteChrome } from "@/components/site-chrome";
 import { phone } from "@/lib/content";
+import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/privacy")({
-  head: () => ({
-    meta: [
-      { title: "سياسة الخصوصية | ديل" },
-      {
-        name: "description",
-        content: "كيف تجمع ديل للتسويق بياناتك وتستخدمها وتحميها، وفق نظام حماية البيانات الشخصية.",
-      },
-    ],
-  }),
+  head: () =>
+    pageHead({
+      title: "سياسة الخصوصية",
+      description:
+        "كيف تجمع ديل للتسويق بياناتك وتستخدمها وتحميها، وفق نظام حماية البيانات الشخصية.",
+      path: "/privacy",
+    }),
   component: Privacy,
 });
 

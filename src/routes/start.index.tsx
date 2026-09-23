@@ -1,8 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteChrome } from "@/components/site-chrome";
+import { pageHead } from "@/lib/seo";
 import { services } from "@/lib/content";
 
-export const Route = createFileRoute("/start/")({ component: Start });
+export const Route = createFileRoute("/start/")({
+  head: () =>
+    pageHead({
+      title: "اطلب خدمتك",
+      description: "اختر خدمتك من ديل — أنظمة العملاء والمحامين والدفع، والهوية والإنتاج والفعاليات — وأرسل طلبك مباشرة للفريق.",
+      path: "/start",
+    }),
+  component: Start,
+});
 
 const professions = new Set(["law", "ai"]);
 

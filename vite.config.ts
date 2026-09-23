@@ -186,6 +186,11 @@ export default defineConfig(({ command, isPreview }) => ({
                   "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
                 },
               },
+              // Media is replaced in place (same file names), so revalidate
+              // weekly rather than marking it immutable.
+              "/images/**": { headers: { "Cache-Control": "public, max-age=604800, stale-while-revalidate=86400" } },
+              "/video/**": { headers: { "Cache-Control": "public, max-age=604800, stale-while-revalidate=86400" } },
+              "/fonts/**": { headers: { "Cache-Control": "public, max-age=2592000, stale-while-revalidate=86400" } },
             },
           }),
         ]

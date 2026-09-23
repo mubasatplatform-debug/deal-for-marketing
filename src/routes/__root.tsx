@@ -16,6 +16,7 @@ export const Route = createRootRoute({
         content: "حيث يبقى التأثير — التأثير لا يأتي صدفة… نحن نصنعه. وكالة ديل للتسويق.",
       },
       { name: "theme-color", content: "#050505" },
+      { property: "og:locale", content: "ar_SA" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
