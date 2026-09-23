@@ -3,15 +3,15 @@ import {
   ArrowLeft,
   Building2,
   Check,
-  CreditCard,
+  Globe,
   Languages,
-  Layers,
   LockKeyhole,
   MessageCircle,
   Plus,
   ShieldCheck,
   UserPlus,
   Users,
+  Video,
 } from "lucide-react";
 import { Reveal } from "@/components/reveal";
 import { siteButton, wrap } from "@/components/site-classes";
@@ -26,8 +26,8 @@ import { cn } from "@/lib/utils";
 /**
  * /law — the «مكتب المحامي» product page. Same light, photographic language as
  * the DEAL home (paper canvas, pine type, lime accents, rounded photo frames).
- * Honest about scope: what ships today is marked "متاح الآن", the practice
- * modules "قريبًا". No testimonials, customer logos or usage numbers.
+ * Honest about scope: only what ships is described (video consultations are
+ * gated by plan and say so). No testimonials, customer logos or usage numbers.
  */
 
 const SIGNUP = "/law/signup";
@@ -79,8 +79,8 @@ export function LawHero() {
             في مكان واحد.
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-pine-deep/80">
-            نظام سعودي لإدارة مكتب المحاماة: فريقك وصلاحياته، ثم المواعيد وملفات العملاء والقضايا والمستندات. عربي
-            أولًا، ومصمم لطريقة عمل المكاتب في المملكة.
+            نظام سعودي لإدارة مكتب المحاماة: العملاء والقضايا والجلسات والمهام والمستندات، واستشارات عن بُعد
+            بالفيديو مع صفحة حجز إلكتروني لمكتبك. عربي أولًا، ومصمم لطريقة عمل المكاتب في المملكة.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a href={SIGNUP} className={siteButton("primary", "lg")}>
@@ -158,19 +158,19 @@ export function LawTrust() {
 
 const NOW = [
   {
+    icon: Video,
+    title: "استشارات بالفيديو دون تطبيق",
+    body: "يدخل العميل من رابط خاص به ويفحص الكاميرا والصوت، ثم ينتظر حتى يسمح له المحامي بالدخول. أو استخدم رابط Zoom أو Meet إن فضّلت.",
+  },
+  {
+    icon: Globe,
+    title: "صفحة حجز لمكتبك",
+    body: "رابط تشاركه مع عملائك: يختارون نوع الاستشارة والوقت من الأوقات المتاحة فعلًا، وتؤكد أنت الطلب.",
+  },
+  {
     icon: Users,
     title: "الفريق والصلاحيات",
     body: "ادعُ المحامين والموظفين بالبريد، ولكل عضو صلاحيته: مالك، مدير، محامٍ، أو موظف.",
-  },
-  {
-    icon: Layers,
-    title: "أكثر من مكتب بحساب واحد",
-    body: "إن كنت شريكًا في أكثر من مكتب أو فرع، بدّل بينها بضغطة، وكل مكتب ببياناته.",
-  },
-  {
-    icon: CreditCard,
-    title: "اشتراك واضح",
-    body: "خطة ومقاعد وتاريخ تجديد أمامك، وطلبات دفع بمرجع واضح للتحويل البنكي.",
   },
 ];
 
@@ -193,15 +193,11 @@ export function LawFeatures() {
         <SectionHead
           id="features-h"
           eyebrow="المزايا"
-          title="ابدأ بتنظيم مكتبك اليوم، والباقي يصلك تباعًا."
-          body="نطلق مكتب المحامي على مراحل: الأساس متاح الآن، ووحدات العمل اليومي تصل داخل اشتراكك دون إعداد جديد."
+          title="كل ما يحتاجه مكتبك في يومه، في مكان واحد."
+          body="من حجز الاستشارة إلى إغلاق القضية: العميل، المواعيد، الجلسات، المهام والمستندات، ومكالمة الفيديو نفسها."
         />
 
-        <p className="mt-12 flex items-center gap-2 text-sm font-bold text-pine">
-          <span className="size-2 rounded-full bg-lime-600 ring-[3px] ring-lime/30" aria-hidden="true" />
-          متاح الآن
-        </p>
-        <ul className="mt-4 grid gap-4 md:grid-cols-3">
+        <ul className="mt-12 grid gap-4 md:grid-cols-3">
           {NOW.map((f) => (
             <li key={f.title} className="rounded-3xl bg-surface p-6 ring-1 ring-line md:p-7">
               <span className="grid size-11 place-items-center rounded-2xl bg-lime text-pine-deep">
@@ -213,22 +209,26 @@ export function LawFeatures() {
           ))}
         </ul>
 
-        <p className="mt-12 flex items-center gap-2 text-sm font-bold text-slate">
-          <span className="size-2 rounded-full bg-line-strong" aria-hidden="true" />
-          قريبًا
+        <p className="mt-12 flex items-center gap-2 text-sm font-bold text-pine">
+          <span className="size-2 rounded-full bg-lime-600 ring-[3px] ring-lime/30" aria-hidden="true" />
+          وحدات المكتب
         </p>
-        <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {MODULES.map((m) => (
-            <li key={m.id} className="flex flex-col rounded-3xl border border-dashed border-line-strong bg-paper p-6">
+            <li key={m.id} className="flex flex-col rounded-3xl bg-surface p-6 ring-1 ring-line">
               <span className="grid size-11 place-items-center rounded-2xl bg-pine-50 text-pine">
                 <m.icon className="size-5" aria-hidden="true" />
               </span>
               <h3 className="mt-5 text-lg font-bold text-pine-deep">{m.title}</h3>
-              <p className="mt-2 flex-1 text-[15px] leading-relaxed text-slate">{m.blurb}</p>
-              <a href={m.demo} className="mt-4 inline-flex min-h-10 items-center gap-1.5 text-sm font-semibold text-pine hover:underline">
-                شاهد الفكرة في العرض
-                <ArrowLeft className="size-3.5" aria-hidden="true" />
-              </a>
+              <p className="mt-2 text-[15px] leading-relaxed text-slate">{m.blurb}</p>
+              <ul className="mt-4 space-y-1.5 text-sm text-pine-deep">
+                {m.points.map((p) => (
+                  <li key={p} className="flex items-start gap-2">
+                    <Check className="mt-0.5 size-4 shrink-0 text-lime-600" aria-hidden="true" />
+                    {p}
+                  </li>
+                ))}
+              </ul>
             </li>
           ))}
         </ul>
@@ -430,8 +430,12 @@ const FAQ = [
     a: "نعم. حساب واحد يمكن أن يكون عضوًا في عدة مكاتب مع التبديل بينها، وخطة «مؤسسي» مصممة لتعدد الفروع.",
   },
   {
-    q: "متى تصل المواعيد والعملاء والقضايا والمستندات؟",
-    a: "تُطلق تباعًا، وتظهر تلقائيًا في مكتبك حسب مزايا خطتك دون إعداد جديد. تستطيع رؤية فكرتها الآن في العرض التوضيحي.",
+    q: "كيف تعمل الاستشارات بالفيديو؟",
+    a: "تحدد أوقات عملك، وتشارك صفحة الحجز مع عملائك. يحجز العميل وقتًا متاحًا، وبعد تأكيدك يدخل من رابط خاص به من المتصفح دون تطبيق، ويفحص الكاميرا والصوت، ثم ينتظر حتى تسمح له بالدخول. الاستشارات المرئية ضمن الخطة الاحترافية فأعلى، ويمكنك استخدام رابط Zoom أو Google Meet بدلًا منها.",
+  },
+  {
+    q: "أين تُحفظ مستندات المكتب؟",
+    a: "في مساحة مكتبك وحده، ولا تُنزّل إلا لأعضائه. يُفحص نوع كل ملف ومحتواه قبل الحفظ، ومساحة التخزين حسب خطتك.",
   },
 ];
 

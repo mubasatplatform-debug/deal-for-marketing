@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button, Card, CardHeader } from "@/components/dash/ui";
 import { PageHead } from "@/components/law/app-frame";
 import { useLawApp } from "@/components/law/app-context";
+import { BookingSettingsCard } from "@/components/law/booking-settings";
 import { Field, SelectInput, TextInput } from "@/components/law/fields";
 import { CITIES, TEAM_SIZE_OPTIONS, toLatinDigits } from "@/components/law/office-options";
 import { dateAr } from "@/components/law/format";
@@ -163,6 +164,7 @@ function Settings() {
           </Card>
         </div>
       </div>
+      <BookingSettingsCard />
     </>
   );
 }

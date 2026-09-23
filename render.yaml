@@ -72,3 +72,14 @@ services:
         sync: false
       - key: MOYASAR_WEBHOOK_SECRET
         sync: false
+      # «مكتب المحامي» video consultations (optional): LiveKit embedded calls.
+      # Unset -> Jitsi Meet fallback in a new tab.
+      - key: LIVEKIT_URL
+        sync: false
+      - key: LIVEKIT_API_KEY
+        sync: false
+      - key: LIVEKIT_API_SECRET
+        sync: false
+      # Optional: secret for client meeting links (defaults to BETTER_AUTH_SECRET)
+      - key: LAW_MEET_SECRET
+        sync: false

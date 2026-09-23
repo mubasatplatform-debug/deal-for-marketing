@@ -53,7 +53,17 @@ export type WorkspaceErrorCode =
   | "invite_revoked"
   | "email_mismatch"
   | "invoice_not_found"
-  | "not_found";
+  | "not_found"
+  // Practice modules (phase 2, src/lib/law/*-core.ts)
+  | "plan_feature"
+  | "has_records"
+  | "slot_taken"
+  | "quota"
+  | "invalid"
+  | "window"
+  | "status"
+  | "slug_taken"
+  | "video_unavailable";
 
 export const WORKSPACE_ERROR_PREFIX = "WS:";
 

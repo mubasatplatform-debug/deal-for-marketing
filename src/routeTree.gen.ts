@@ -20,18 +20,22 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as StartRouteImport } from './routes/start'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as AdminKeysRouteImport } from './routes/admin_.keys'
 import { Route as AdminLawRouteImport } from './routes/admin_.law'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as AppIndexRouteImport } from './routes/app.index'
-import { Route as AppModuleRouteImport } from './routes/app.$module'
+import { Route as AppAppointmentsRouteImport } from './routes/app.appointments'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
+import { Route as AppDocumentsRouteImport } from './routes/app.documents'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppTasksRouteImport } from './routes/app.tasks'
 import { Route as AppTeamRouteImport } from './routes/app.team'
 import { Route as ClientKeysRouteImport } from './routes/client_.keys'
 import { Route as LawIndexRouteImport } from './routes/law.index'
 import { Route as LawSignupRouteImport } from './routes/law.signup'
 import { Route as LawTermsRouteImport } from './routes/law.terms'
+import { Route as MeetTokenRouteImport } from './routes/meet.$token'
 import { Route as StartIndexRouteImport } from './routes/start.index'
 import { Route as StartSlugRouteImport } from './routes/start.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -40,14 +44,24 @@ import { Route as ApiLawMoyasarRouteImport } from './routes/api/law/moyasar'
 import { Route as ApiV1SplatRouteImport } from './routes/api/v1/$'
 import { Route as ApiV1RequestsRouteImport } from './routes/api/v1/requests'
 import { Route as ApiV1ServicesRouteImport } from './routes/api/v1/services'
+import { Route as AppCasesIndexRouteImport } from './routes/app.cases.index'
+import { Route as AppCasesIdRouteImport } from './routes/app.cases.$id'
+import { Route as AppClientsIndexRouteImport } from './routes/app.clients.index'
+import { Route as AppClientsIdRouteImport } from './routes/app.clients.$id'
+import { Route as AppConsultationsIndexRouteImport } from './routes/app.consultations.index'
+import { Route as AppConsultationsIdRouteImport } from './routes/app.consultations.$id'
 import { Route as AppInviteTokenRouteImport } from './routes/app_.invite.$token'
 import { Route as ClientRequestsIdRouteImport } from './routes/client_.requests.$id'
 import { Route as DeskCrmViewRouteImport } from './routes/desk.crm.$view'
 import { Route as DeskLawViewRouteImport } from './routes/desk.law.$view'
 import { Route as DeskPayViewRouteImport } from './routes/desk.pay.$view'
+import { Route as OSlugBookRouteImport } from './routes/o.$slug.book'
+import { Route as ApiLawDocumentsIdRouteImport } from './routes/api/law/documents.$id'
+import { Route as ApiLawDocumentsUploadRouteImport } from './routes/api/law/documents.upload'
 import { Route as ApiRequestsIdMessagesRouteImport } from './routes/api/requests.$id.messages'
 import { Route as ApiV1AdminRequestsRouteImport } from './routes/api/v1/admin/requests'
 import { Route as ApiV1RequestsIdRouteImport } from './routes/api/v1/requests.$id'
+import { Route as AppConsultationsIdCallRouteImport } from './routes/app_.consultations.$id.call'
 import { Route as ApiV1AdminRequestsIdRouteImport } from './routes/api/v1/admin/requests.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -105,6 +119,11 @@ const StartRoute = StartRouteImport.update({
   path: '/start',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminKeysRoute = AdminKeysRouteImport.update({
   id: '/admin_/keys',
   path: '/admin/keys',
@@ -125,9 +144,9 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
-const AppModuleRoute = AppModuleRouteImport.update({
-  id: '/$module',
-  path: '/$module',
+const AppAppointmentsRoute = AppAppointmentsRouteImport.update({
+  id: '/appointments',
+  path: '/appointments',
   getParentRoute: () => AppRoute,
 } as any)
 const AppBillingRoute = AppBillingRouteImport.update({
@@ -135,9 +154,19 @@ const AppBillingRoute = AppBillingRouteImport.update({
   path: '/billing',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDocumentsRoute = AppDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTasksRoute = AppTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
   getParentRoute: () => AppRoute,
 } as any)
 const AppTeamRoute = AppTeamRouteImport.update({
@@ -163,6 +192,11 @@ const LawSignupRoute = LawSignupRouteImport.update({
 const LawTermsRoute = LawTermsRouteImport.update({
   id: '/law/terms',
   path: '/law/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MeetTokenRoute = MeetTokenRouteImport.update({
+  id: '/meet/$token',
+  path: '/meet/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StartIndexRoute = StartIndexRouteImport.update({
@@ -205,6 +239,36 @@ const ApiV1ServicesRoute = ApiV1ServicesRouteImport.update({
   path: '/api/v1/services',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppCasesIndexRoute = AppCasesIndexRouteImport.update({
+  id: '/cases/',
+  path: '/cases/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCasesIdRoute = AppCasesIdRouteImport.update({
+  id: '/cases/$id',
+  path: '/cases/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppClientsIndexRoute = AppClientsIndexRouteImport.update({
+  id: '/clients/',
+  path: '/clients/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppClientsIdRoute = AppClientsIdRouteImport.update({
+  id: '/clients/$id',
+  path: '/clients/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppConsultationsIndexRoute = AppConsultationsIndexRouteImport.update({
+  id: '/consultations/',
+  path: '/consultations/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppConsultationsIdRoute = AppConsultationsIdRouteImport.update({
+  id: '/consultations/$id',
+  path: '/consultations/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppInviteTokenRoute = AppInviteTokenRouteImport.update({
   id: '/app_/invite/$token',
   path: '/app/invite/$token',
@@ -230,6 +294,21 @@ const DeskPayViewRoute = DeskPayViewRouteImport.update({
   path: '/desk/pay/$view',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OSlugBookRoute = OSlugBookRouteImport.update({
+  id: '/o/$slug/book',
+  path: '/o/$slug/book',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLawDocumentsIdRoute = ApiLawDocumentsIdRouteImport.update({
+  id: '/api/law/documents/$id',
+  path: '/api/law/documents/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLawDocumentsUploadRoute = ApiLawDocumentsUploadRouteImport.update({
+  id: '/api/law/documents/upload',
+  path: '/api/law/documents/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiRequestsIdMessagesRoute = ApiRequestsIdMessagesRouteImport.update({
   id: '/api/requests/$id/messages',
   path: '/api/requests/$id/messages',
@@ -244,6 +323,11 @@ const ApiV1RequestsIdRoute = ApiV1RequestsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => ApiV1RequestsRoute,
+} as any)
+const AppConsultationsIdCallRoute = AppConsultationsIdCallRouteImport.update({
+  id: '/app_/consultations/$id/call',
+  path: '/app/consultations/$id/call',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiV1AdminRequestsIdRoute = ApiV1AdminRequestsIdRouteImport.update({
   id: '/$id',
@@ -263,16 +347,20 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/start': typeof StartRouteWithChildren
+  '/verify-email': typeof VerifyEmailRoute
   '/admin/keys': typeof AdminKeysRoute
   '/admin/law': typeof AdminLawRoute
   '/api/mcp': typeof ApiMcpRoute
-  '/app/$module': typeof AppModuleRoute
+  '/app/appointments': typeof AppAppointmentsRoute
   '/app/billing': typeof AppBillingRoute
+  '/app/documents': typeof AppDocumentsRoute
   '/app/settings': typeof AppSettingsRoute
+  '/app/tasks': typeof AppTasksRoute
   '/app/team': typeof AppTeamRoute
   '/client/keys': typeof ClientKeysRoute
   '/law/signup': typeof LawSignupRoute
   '/law/terms': typeof LawTermsRoute
+  '/meet/$token': typeof MeetTokenRoute
   '/start/$slug': typeof StartSlugRoute
   '/app/': typeof AppIndexRoute
   '/law/': typeof LawIndexRoute
@@ -283,14 +371,24 @@ export interface FileRoutesByFullPath {
   '/api/v1/$': typeof ApiV1SplatRoute
   '/api/v1/requests': typeof ApiV1RequestsRouteWithChildren
   '/api/v1/services': typeof ApiV1ServicesRoute
+  '/app/cases/$id': typeof AppCasesIdRoute
+  '/app/clients/$id': typeof AppClientsIdRoute
+  '/app/consultations/$id': typeof AppConsultationsIdRoute
   '/app/invite/$token': typeof AppInviteTokenRoute
   '/client/requests/$id': typeof ClientRequestsIdRoute
   '/desk/crm/$view': typeof DeskCrmViewRoute
   '/desk/law/$view': typeof DeskLawViewRoute
   '/desk/pay/$view': typeof DeskPayViewRoute
+  '/o/$slug/book': typeof OSlugBookRoute
+  '/app/cases/': typeof AppCasesIndexRoute
+  '/app/clients/': typeof AppClientsIndexRoute
+  '/app/consultations/': typeof AppConsultationsIndexRoute
+  '/api/law/documents/$id': typeof ApiLawDocumentsIdRoute
+  '/api/law/documents/upload': typeof ApiLawDocumentsUploadRoute
   '/api/requests/$id/messages': typeof ApiRequestsIdMessagesRoute
   '/api/v1/admin/requests': typeof ApiV1AdminRequestsRouteWithChildren
   '/api/v1/requests/$id': typeof ApiV1RequestsIdRoute
+  '/app/consultations/$id/call': typeof AppConsultationsIdCallRoute
   '/api/v1/admin/requests/$id': typeof ApiV1AdminRequestsIdRoute
 }
 export interface FileRoutesByTo {
@@ -303,16 +401,20 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/admin/keys': typeof AdminKeysRoute
   '/admin/law': typeof AdminLawRoute
   '/api/mcp': typeof ApiMcpRoute
-  '/app/$module': typeof AppModuleRoute
+  '/app/appointments': typeof AppAppointmentsRoute
   '/app/billing': typeof AppBillingRoute
+  '/app/documents': typeof AppDocumentsRoute
   '/app/settings': typeof AppSettingsRoute
+  '/app/tasks': typeof AppTasksRoute
   '/app/team': typeof AppTeamRoute
   '/client/keys': typeof ClientKeysRoute
   '/law/signup': typeof LawSignupRoute
   '/law/terms': typeof LawTermsRoute
+  '/meet/$token': typeof MeetTokenRoute
   '/start/$slug': typeof StartSlugRoute
   '/app': typeof AppIndexRoute
   '/law': typeof LawIndexRoute
@@ -323,14 +425,24 @@ export interface FileRoutesByTo {
   '/api/v1/$': typeof ApiV1SplatRoute
   '/api/v1/requests': typeof ApiV1RequestsRouteWithChildren
   '/api/v1/services': typeof ApiV1ServicesRoute
+  '/app/cases/$id': typeof AppCasesIdRoute
+  '/app/clients/$id': typeof AppClientsIdRoute
+  '/app/consultations/$id': typeof AppConsultationsIdRoute
   '/app/invite/$token': typeof AppInviteTokenRoute
   '/client/requests/$id': typeof ClientRequestsIdRoute
   '/desk/crm/$view': typeof DeskCrmViewRoute
   '/desk/law/$view': typeof DeskLawViewRoute
   '/desk/pay/$view': typeof DeskPayViewRoute
+  '/o/$slug/book': typeof OSlugBookRoute
+  '/app/cases': typeof AppCasesIndexRoute
+  '/app/clients': typeof AppClientsIndexRoute
+  '/app/consultations': typeof AppConsultationsIndexRoute
+  '/api/law/documents/$id': typeof ApiLawDocumentsIdRoute
+  '/api/law/documents/upload': typeof ApiLawDocumentsUploadRoute
   '/api/requests/$id/messages': typeof ApiRequestsIdMessagesRoute
   '/api/v1/admin/requests': typeof ApiV1AdminRequestsRouteWithChildren
   '/api/v1/requests/$id': typeof ApiV1RequestsIdRoute
+  '/app/consultations/$id/call': typeof AppConsultationsIdCallRoute
   '/api/v1/admin/requests/$id': typeof ApiV1AdminRequestsIdRoute
 }
 export interface FileRoutesById {
@@ -346,16 +458,20 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/start': typeof StartRouteWithChildren
+  '/verify-email': typeof VerifyEmailRoute
   '/admin_/keys': typeof AdminKeysRoute
   '/admin_/law': typeof AdminLawRoute
   '/api/mcp': typeof ApiMcpRoute
-  '/app/$module': typeof AppModuleRoute
+  '/app/appointments': typeof AppAppointmentsRoute
   '/app/billing': typeof AppBillingRoute
+  '/app/documents': typeof AppDocumentsRoute
   '/app/settings': typeof AppSettingsRoute
+  '/app/tasks': typeof AppTasksRoute
   '/app/team': typeof AppTeamRoute
   '/client_/keys': typeof ClientKeysRoute
   '/law/signup': typeof LawSignupRoute
   '/law/terms': typeof LawTermsRoute
+  '/meet/$token': typeof MeetTokenRoute
   '/start/$slug': typeof StartSlugRoute
   '/app/': typeof AppIndexRoute
   '/law/': typeof LawIndexRoute
@@ -366,14 +482,24 @@ export interface FileRoutesById {
   '/api/v1/$': typeof ApiV1SplatRoute
   '/api/v1/requests': typeof ApiV1RequestsRouteWithChildren
   '/api/v1/services': typeof ApiV1ServicesRoute
+  '/app/cases/$id': typeof AppCasesIdRoute
+  '/app/clients/$id': typeof AppClientsIdRoute
+  '/app/consultations/$id': typeof AppConsultationsIdRoute
   '/app_/invite/$token': typeof AppInviteTokenRoute
   '/client_/requests/$id': typeof ClientRequestsIdRoute
   '/desk/crm/$view': typeof DeskCrmViewRoute
   '/desk/law/$view': typeof DeskLawViewRoute
   '/desk/pay/$view': typeof DeskPayViewRoute
+  '/o/$slug/book': typeof OSlugBookRoute
+  '/app/cases/': typeof AppCasesIndexRoute
+  '/app/clients/': typeof AppClientsIndexRoute
+  '/app/consultations/': typeof AppConsultationsIndexRoute
+  '/api/law/documents/$id': typeof ApiLawDocumentsIdRoute
+  '/api/law/documents/upload': typeof ApiLawDocumentsUploadRoute
   '/api/requests/$id/messages': typeof ApiRequestsIdMessagesRoute
   '/api/v1/admin/requests': typeof ApiV1AdminRequestsRouteWithChildren
   '/api/v1/requests/$id': typeof ApiV1RequestsIdRoute
+  '/app_/consultations/$id/call': typeof AppConsultationsIdCallRoute
   '/api/v1/admin/requests/$id': typeof ApiV1AdminRequestsIdRoute
 }
 export interface FileRouteTypes {
@@ -390,16 +516,20 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/start'
+    | '/verify-email'
     | '/admin/keys'
     | '/admin/law'
     | '/api/mcp'
-    | '/app/$module'
+    | '/app/appointments'
     | '/app/billing'
+    | '/app/documents'
     | '/app/settings'
+    | '/app/tasks'
     | '/app/team'
     | '/client/keys'
     | '/law/signup'
     | '/law/terms'
+    | '/meet/$token'
     | '/start/$slug'
     | '/app/'
     | '/law/'
@@ -410,14 +540,24 @@ export interface FileRouteTypes {
     | '/api/v1/$'
     | '/api/v1/requests'
     | '/api/v1/services'
+    | '/app/cases/$id'
+    | '/app/clients/$id'
+    | '/app/consultations/$id'
     | '/app/invite/$token'
     | '/client/requests/$id'
     | '/desk/crm/$view'
     | '/desk/law/$view'
     | '/desk/pay/$view'
+    | '/o/$slug/book'
+    | '/app/cases/'
+    | '/app/clients/'
+    | '/app/consultations/'
+    | '/api/law/documents/$id'
+    | '/api/law/documents/upload'
     | '/api/requests/$id/messages'
     | '/api/v1/admin/requests'
     | '/api/v1/requests/$id'
+    | '/app/consultations/$id/call'
     | '/api/v1/admin/requests/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -430,16 +570,20 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy'
     | '/reset-password'
+    | '/verify-email'
     | '/admin/keys'
     | '/admin/law'
     | '/api/mcp'
-    | '/app/$module'
+    | '/app/appointments'
     | '/app/billing'
+    | '/app/documents'
     | '/app/settings'
+    | '/app/tasks'
     | '/app/team'
     | '/client/keys'
     | '/law/signup'
     | '/law/terms'
+    | '/meet/$token'
     | '/start/$slug'
     | '/app'
     | '/law'
@@ -450,14 +594,24 @@ export interface FileRouteTypes {
     | '/api/v1/$'
     | '/api/v1/requests'
     | '/api/v1/services'
+    | '/app/cases/$id'
+    | '/app/clients/$id'
+    | '/app/consultations/$id'
     | '/app/invite/$token'
     | '/client/requests/$id'
     | '/desk/crm/$view'
     | '/desk/law/$view'
     | '/desk/pay/$view'
+    | '/o/$slug/book'
+    | '/app/cases'
+    | '/app/clients'
+    | '/app/consultations'
+    | '/api/law/documents/$id'
+    | '/api/law/documents/upload'
     | '/api/requests/$id/messages'
     | '/api/v1/admin/requests'
     | '/api/v1/requests/$id'
+    | '/app/consultations/$id/call'
     | '/api/v1/admin/requests/$id'
   id:
     | '__root__'
@@ -472,16 +626,20 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/start'
+    | '/verify-email'
     | '/admin_/keys'
     | '/admin_/law'
     | '/api/mcp'
-    | '/app/$module'
+    | '/app/appointments'
     | '/app/billing'
+    | '/app/documents'
     | '/app/settings'
+    | '/app/tasks'
     | '/app/team'
     | '/client_/keys'
     | '/law/signup'
     | '/law/terms'
+    | '/meet/$token'
     | '/start/$slug'
     | '/app/'
     | '/law/'
@@ -492,14 +650,24 @@ export interface FileRouteTypes {
     | '/api/v1/$'
     | '/api/v1/requests'
     | '/api/v1/services'
+    | '/app/cases/$id'
+    | '/app/clients/$id'
+    | '/app/consultations/$id'
     | '/app_/invite/$token'
     | '/client_/requests/$id'
     | '/desk/crm/$view'
     | '/desk/law/$view'
     | '/desk/pay/$view'
+    | '/o/$slug/book'
+    | '/app/cases/'
+    | '/app/clients/'
+    | '/app/consultations/'
+    | '/api/law/documents/$id'
+    | '/api/law/documents/upload'
     | '/api/requests/$id/messages'
     | '/api/v1/admin/requests'
     | '/api/v1/requests/$id'
+    | '/app_/consultations/$id/call'
     | '/api/v1/admin/requests/$id'
   fileRoutesById: FileRoutesById
 }
@@ -515,12 +683,14 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   StartRoute: typeof StartRouteWithChildren
+  VerifyEmailRoute: typeof VerifyEmailRoute
   AdminKeysRoute: typeof AdminKeysRoute
   AdminLawRoute: typeof AdminLawRoute
   ApiMcpRoute: typeof ApiMcpRoute
   ClientKeysRoute: typeof ClientKeysRoute
   LawSignupRoute: typeof LawSignupRoute
   LawTermsRoute: typeof LawTermsRoute
+  MeetTokenRoute: typeof MeetTokenRoute
   LawIndexRoute: typeof LawIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiFilesIdRoute: typeof ApiFilesIdRoute
@@ -533,8 +703,12 @@ export interface RootRouteChildren {
   DeskCrmViewRoute: typeof DeskCrmViewRoute
   DeskLawViewRoute: typeof DeskLawViewRoute
   DeskPayViewRoute: typeof DeskPayViewRoute
+  OSlugBookRoute: typeof OSlugBookRoute
+  ApiLawDocumentsIdRoute: typeof ApiLawDocumentsIdRoute
+  ApiLawDocumentsUploadRoute: typeof ApiLawDocumentsUploadRoute
   ApiRequestsIdMessagesRoute: typeof ApiRequestsIdMessagesRoute
   ApiV1AdminRequestsRoute: typeof ApiV1AdminRequestsRouteWithChildren
+  AppConsultationsIdCallRoute: typeof AppConsultationsIdCallRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -616,6 +790,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/keys': {
       id: '/admin_/keys'
       path: '/admin/keys'
@@ -644,11 +825,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/$module': {
-      id: '/app/$module'
-      path: '/$module'
-      fullPath: '/app/$module'
-      preLoaderRoute: typeof AppModuleRouteImport
+    '/app/appointments': {
+      id: '/app/appointments'
+      path: '/appointments'
+      fullPath: '/app/appointments'
+      preLoaderRoute: typeof AppAppointmentsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/billing': {
@@ -658,11 +839,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBillingRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/documents': {
+      id: '/app/documents'
+      path: '/documents'
+      fullPath: '/app/documents'
+      preLoaderRoute: typeof AppDocumentsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/settings': {
       id: '/app/settings'
       path: '/settings'
       fullPath: '/app/settings'
       preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/tasks': {
+      id: '/app/tasks'
+      path: '/tasks'
+      fullPath: '/app/tasks'
+      preLoaderRoute: typeof AppTasksRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/team': {
@@ -698,6 +893,13 @@ declare module '@tanstack/react-router' {
       path: '/law/terms'
       fullPath: '/law/terms'
       preLoaderRoute: typeof LawTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/meet/$token': {
+      id: '/meet/$token'
+      path: '/meet/$token'
+      fullPath: '/meet/$token'
+      preLoaderRoute: typeof MeetTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/start/': {
@@ -756,6 +958,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV1ServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/cases/': {
+      id: '/app/cases/'
+      path: '/cases'
+      fullPath: '/app/cases/'
+      preLoaderRoute: typeof AppCasesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/cases/$id': {
+      id: '/app/cases/$id'
+      path: '/cases/$id'
+      fullPath: '/app/cases/$id'
+      preLoaderRoute: typeof AppCasesIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/clients/': {
+      id: '/app/clients/'
+      path: '/clients'
+      fullPath: '/app/clients/'
+      preLoaderRoute: typeof AppClientsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/clients/$id': {
+      id: '/app/clients/$id'
+      path: '/clients/$id'
+      fullPath: '/app/clients/$id'
+      preLoaderRoute: typeof AppClientsIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/consultations/': {
+      id: '/app/consultations/'
+      path: '/consultations'
+      fullPath: '/app/consultations/'
+      preLoaderRoute: typeof AppConsultationsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/consultations/$id': {
+      id: '/app/consultations/$id'
+      path: '/consultations/$id'
+      fullPath: '/app/consultations/$id'
+      preLoaderRoute: typeof AppConsultationsIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app_/invite/$token': {
       id: '/app_/invite/$token'
       path: '/app/invite/$token'
@@ -791,6 +1035,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DeskPayViewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/o/$slug/book': {
+      id: '/o/$slug/book'
+      path: '/o/$slug/book'
+      fullPath: '/o/$slug/book'
+      preLoaderRoute: typeof OSlugBookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/law/documents/$id': {
+      id: '/api/law/documents/$id'
+      path: '/api/law/documents/$id'
+      fullPath: '/api/law/documents/$id'
+      preLoaderRoute: typeof ApiLawDocumentsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/law/documents/upload': {
+      id: '/api/law/documents/upload'
+      path: '/api/law/documents/upload'
+      fullPath: '/api/law/documents/upload'
+      preLoaderRoute: typeof ApiLawDocumentsUploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/requests/$id/messages': {
       id: '/api/requests/$id/messages'
       path: '/api/requests/$id/messages'
@@ -812,6 +1077,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV1RequestsIdRouteImport
       parentRoute: typeof ApiV1RequestsRoute
     }
+    '/app_/consultations/$id/call': {
+      id: '/app_/consultations/$id/call'
+      path: '/app/consultations/$id/call'
+      fullPath: '/app/consultations/$id/call'
+      preLoaderRoute: typeof AppConsultationsIdCallRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/admin/requests/$id': {
       id: '/api/v1/admin/requests/$id'
       path: '/$id'
@@ -823,19 +1095,35 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
-  AppModuleRoute: typeof AppModuleRoute
+  AppAppointmentsRoute: typeof AppAppointmentsRoute
   AppBillingRoute: typeof AppBillingRoute
+  AppDocumentsRoute: typeof AppDocumentsRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  AppTasksRoute: typeof AppTasksRoute
   AppTeamRoute: typeof AppTeamRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppCasesIdRoute: typeof AppCasesIdRoute
+  AppClientsIdRoute: typeof AppClientsIdRoute
+  AppConsultationsIdRoute: typeof AppConsultationsIdRoute
+  AppCasesIndexRoute: typeof AppCasesIndexRoute
+  AppClientsIndexRoute: typeof AppClientsIndexRoute
+  AppConsultationsIndexRoute: typeof AppConsultationsIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppModuleRoute: AppModuleRoute,
+  AppAppointmentsRoute: AppAppointmentsRoute,
   AppBillingRoute: AppBillingRoute,
+  AppDocumentsRoute: AppDocumentsRoute,
   AppSettingsRoute: AppSettingsRoute,
+  AppTasksRoute: AppTasksRoute,
   AppTeamRoute: AppTeamRoute,
   AppIndexRoute: AppIndexRoute,
+  AppCasesIdRoute: AppCasesIdRoute,
+  AppClientsIdRoute: AppClientsIdRoute,
+  AppConsultationsIdRoute: AppConsultationsIdRoute,
+  AppCasesIndexRoute: AppCasesIndexRoute,
+  AppClientsIndexRoute: AppClientsIndexRoute,
+  AppConsultationsIndexRoute: AppConsultationsIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -887,12 +1175,14 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   StartRoute: StartRouteWithChildren,
+  VerifyEmailRoute: VerifyEmailRoute,
   AdminKeysRoute: AdminKeysRoute,
   AdminLawRoute: AdminLawRoute,
   ApiMcpRoute: ApiMcpRoute,
   ClientKeysRoute: ClientKeysRoute,
   LawSignupRoute: LawSignupRoute,
   LawTermsRoute: LawTermsRoute,
+  MeetTokenRoute: MeetTokenRoute,
   LawIndexRoute: LawIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiFilesIdRoute: ApiFilesIdRoute,
@@ -905,8 +1195,12 @@ const rootRouteChildren: RootRouteChildren = {
   DeskCrmViewRoute: DeskCrmViewRoute,
   DeskLawViewRoute: DeskLawViewRoute,
   DeskPayViewRoute: DeskPayViewRoute,
+  OSlugBookRoute: OSlugBookRoute,
+  ApiLawDocumentsIdRoute: ApiLawDocumentsIdRoute,
+  ApiLawDocumentsUploadRoute: ApiLawDocumentsUploadRoute,
   ApiRequestsIdMessagesRoute: ApiRequestsIdMessagesRoute,
   ApiV1AdminRequestsRoute: ApiV1AdminRequestsRouteWithChildren,
+  AppConsultationsIdCallRoute: AppConsultationsIdCallRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

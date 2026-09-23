@@ -1,12 +1,11 @@
-import { CalendarDays, FileText, FolderOpen, Scale } from "lucide-react";
+import { CalendarDays, FileText, ListChecks, Scale, UserRound, Video } from "lucide-react";
 import type { ComponentType } from "react";
 
 /**
- * The practice modules of «مكتب المحامي». Phase 1 ships the office, team and
- * subscription; these arrive in phase 2 and show a "قريبًا" page meanwhile,
- * with a link to the matching view of the public demo (/desk/law/*).
+ * The practice modules of «مكتب المحامي» (phase 2) — the app navigation and
+ * the /law feature list read from here.
  */
-export type ModuleId = "appointments" | "clients" | "cases" | "documents";
+export type ModuleId = "appointments" | "consultations" | "clients" | "cases" | "tasks" | "documents";
 
 export type LawModule = {
   id: ModuleId;
@@ -15,8 +14,6 @@ export type LawModule = {
   title: string;
   blurb: string;
   points: string[];
-  /** The demo view that shows the idea (mock data). */
-  demo: string;
 };
 
 export const MODULES: readonly LawModule[] = [
@@ -24,37 +21,53 @@ export const MODULES: readonly LawModule[] = [
     id: "appointments",
     label: "المواعيد",
     icon: CalendarDays,
-    title: "المواعيد والحجوزات",
-    blurb: "تقويم المكتب لكل المحامين: استشارات، جلسات، ومواعيد العملاء في مكان واحد.",
-    points: ["تقويم أسبوعي لكل عضو في الفريق", "حجز استشارة من رابط تشاركه مع العميل", "تذكير قبل الموعد"],
-    demo: "/desk/law/book",
+    title: "المواعيد والتقويم",
+    blurb: "تقويم أسبوعي للمكتب يجمع الجلسات والمواعيد والاستشارات لكل عضو في الفريق.",
+    points: ["عرض أسبوعي على الحاسب ويومي على الجوال", "تصفية حسب المحامي", "ساعات العمل ومدة الموعد والفاصل بين المواعيد"],
+  },
+  {
+    id: "consultations",
+    label: "الاستشارات",
+    icon: Video,
+    title: "الاستشارات عن بُعد",
+    blurb: "استشارات بالفيديو أو بالهاتف أو حضوريًا، مع صفحة حجز إلكتروني لمكتبك يحجز منها العميل بنفسه.",
+    points: [
+      "مكالمة فيديو داخل المتصفح دون تطبيق، مع غرفة انتظار يسمح منها المحامي بدخول العميل",
+      "صفحة حجز عامة تعرض الأوقات المتاحة فعلًا",
+      "رابط خاص لكل عميل، وملاحظات خاصة بالمحامي بعد المكالمة",
+    ],
   },
   {
     id: "clients",
     label: "العملاء",
-    icon: FolderOpen,
+    icon: UserRound,
     title: "ملفات العملاء",
-    blurb: "ملف واحد لكل عميل: بياناته، قضاياه، مستنداته، ومواعيده.",
-    points: ["ملف موحّد لكل عميل", "سجل تواصل وملاحظات داخلية", "صلاحيات تحدد من يرى ماذا"],
-    demo: "/desk/law/crm",
+    blurb: "ملف واحد لكل عميل، فردًا أو منشأة: بياناته وقضاياه ومواعيده ومستنداته وسجل ملاحظاته.",
+    points: ["بحث بالاسم أو الجوال أو رقم الهوية", "وسوم لتصنيف العملاء", "سجل ملاحظات داخلي"],
   },
   {
     id: "cases",
     label: "القضايا",
     icon: Scale,
     title: "إدارة القضايا",
-    blurb: "تابع كل قضية من فتح الملف إلى الحكم: المراحل، الجلسات، والمهام.",
-    points: ["مراحل واضحة لكل قضية", "جلسات ومهام مسندة لأعضاء الفريق", "لوحة لما يستحق اليوم"],
-    demo: "/desk/law/cases",
+    blurb: "تابع كل قضية من الاستشارة إلى التنفيذ: المرحلة، الجلسات، المهام، الأتعاب والمستندات.",
+    points: ["مراحل واضحة من الاستشارة حتى الإغلاق", "جلسات بتاريخها وقاعتها ونتيجتها", "أتعاب ودفعات لا يراها إلا المحامون"],
+  },
+  {
+    id: "tasks",
+    label: "المهام",
+    icon: ListChecks,
+    title: "المهام",
+    blurb: "مهام مسندة لأعضاء الفريق، مرتبطة بقضية أو مستقلة، مع تاريخ استحقاق.",
+    points: ["مهامي ومهام اليوم في الرئيسية", "تنبيه للمهام المتأخرة", "إسناد لأي عضو في الفريق"],
   },
   {
     id: "documents",
     label: "المستندات",
     icon: FileText,
-    title: "العقود والمستندات",
-    blurb: "مستندات المكتب مرتبة حسب العميل والقضية، مع نماذج العقود.",
-    points: ["أرشفة حسب العميل والقضية", "نماذج عقود قابلة لإعادة الاستخدام", "مسودات تنتظر اعتماد المحامي"],
-    demo: "/desk/law/docs",
+    title: "المستندات",
+    blurb: "مستندات المكتب في مجلدات حسب العميل والقضية، محفوظة بصلاحيات المكتب.",
+    points: ["رفع حتى 10 ملفات في المرة", "فحص نوع الملف ومحتواه قبل الحفظ", "مساحة تخزين حسب الخطة"],
   },
 ];
 

@@ -21,6 +21,7 @@ import { DealWordmark } from "@/components/logo";
 import { Avatar } from "@/components/dash/ui";
 import { buttonClass } from "@/components/dash/button-class";
 import { MODULES } from "@/components/law/modules";
+import { VerifyEmailBanner } from "@/components/verify-email-banner";
 import { daysAr, dateAr, officeInitial } from "@/components/law/format";
 import { ROLE_LABELS, type Lifecycle } from "@/lib/saas/lifecycle";
 import { getPlan } from "@/lib/saas/plans";
@@ -45,7 +46,7 @@ type NavEntry = {
 
 const MAIN: NavEntry[] = [
   { to: "/app", label: "الرئيسية", icon: LayoutDashboard },
-  ...MODULES.map((m) => ({ to: `/app/${m.id}`, label: m.label, icon: m.icon, soon: true })),
+  ...MODULES.map((m) => ({ to: `/app/${m.id}`, label: m.label, icon: m.icon })),
 ];
 
 const OFFICE: NavEntry[] = [
@@ -165,7 +166,12 @@ export function LawAppFrame({
 
         <LifecycleBanner lifecycle={active.lifecycle} canPay={active.role === "owner" || active.role === "admin"} />
 
-        <main className="mx-auto max-w-[1240px] px-4 pt-6 pb-16 md:px-8 md:pt-8">{children}</main>
+        <main className="mx-auto max-w-[1240px] px-4 pt-6 pb-16 md:px-8 md:pt-8">
+          <div className="space-y-5 md:space-y-6">
+            <VerifyEmailBanner />
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );

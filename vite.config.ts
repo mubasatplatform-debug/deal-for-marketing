@@ -145,6 +145,10 @@ function authPopupPlugin(): Plugin {
 // `0.0.0.0:8080` is the live-preview contract — don't change host/port.
 // The dev server starts once `src/router.tsx` and `src/routes/` exist — see
 // AGENTS.md § "First scaffold".
+/** Permissions-Policy of the video-consultation pages (see routeRules below). */
+const CALL_PERMISSIONS =
+  "camera=(self), microphone=(self), display-capture=(self), geolocation=(), payment=()";
+
 /** Build for a standalone host (Render, a VPS) instead of the Grok/Vercel platform. */
 const standalone = process.env.DEAL_STANDALONE === "1";
 
@@ -200,6 +204,15 @@ export default defineConfig(({ command, isPreview }) => ({
                   "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
                 },
               },
+              // «مكتب المحامي» video consultations run in these pages (LiveKit in
+              // the page itself, no third-party iframe), so they — and only they —
+              // may use the camera, microphone and screen sharing. In-app
+              // navigation into them reloads once to pick this policy up
+              // (src/components/law/call/use-policy-reload.ts). There is no CSP
+              // yet; when one is added, connect-src must allow the LIVEKIT_URL
+              // host (wss://*.livekit.cloud) and its https origin.
+              "/meet/**": { headers: { "Permissions-Policy": CALL_PERMISSIONS } },
+              "/app/consultations/**": { headers: { "Permissions-Policy": CALL_PERMISSIONS } },
               // Media is replaced in place (same file names), so revalidate
               // weekly rather than marking it immutable.
               "/images/**": { headers: { "Cache-Control": "public, max-age=604800, stale-while-revalidate=86400" } },

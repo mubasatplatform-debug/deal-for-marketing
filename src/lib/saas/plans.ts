@@ -31,6 +31,8 @@ export type Plan = {
   price: Record<BillingCycle, number>;
   /** Members + pending invites allowed in the workspace. */
   seats: number;
+  /** Document storage for the whole office, in GB. DRAFT. */
+  storageGb: number;
   features: Record<FeatureFlag, boolean>;
   highlight?: boolean;
 };
@@ -62,6 +64,7 @@ export const PLANS: readonly Plan[] = [
     tagline: "للمحامي المستقل والمكتب الناشئ",
     price: { monthly: 199, yearly: 1990 },
     seats: 3,
+    storageGb: 2,
     features: {
       team: true,
       appointments: true,
@@ -80,6 +83,7 @@ export const PLANS: readonly Plan[] = [
     tagline: "للمكاتب التي تدير فريقًا وقضايا متعددة",
     price: { monthly: 499, yearly: 4990 },
     seats: 10,
+    storageGb: 10,
     highlight: true,
     features: {
       team: true,
@@ -99,6 +103,7 @@ export const PLANS: readonly Plan[] = [
     tagline: "لشركات المحاماة والفروع المتعددة",
     price: { monthly: 1299, yearly: 12990 },
     seats: 40,
+    storageGb: 50,
     features: {
       team: true,
       appointments: true,
@@ -121,7 +126,7 @@ export const FEATURE_LABELS: Record<FeatureFlag, string> = {
   clients: "ملفات العملاء",
   cases: "إدارة القضايا",
   documents: "العقود والمستندات",
-  videoSessions: "جلسات الفيديو",
+  videoSessions: "الاستشارات المرئية عن بُعد",
   aiDrafting: "مساعد الصياغة بالذكاء الاصطناعي",
   multiBranch: "تعدد الفروع",
   prioritySupport: "دعم بأولوية ومدير حساب",
@@ -143,6 +148,16 @@ export function getPlan(id: string): Plan {
 
 export function seatLimit(planId: string): number {
   return getPlan(planId).seats;
+}
+
+/** The office's document storage quota in bytes. */
+export function storageQuotaBytes(planId: string): number {
+  return getPlan(planId).storageGb * 1024 ** 3;
+}
+
+/** Whether the plan includes a feature (unknown plans fall back to basic). */
+export function planHas(planId: string, feature: FeatureFlag): boolean {
+  return getPlan(planId).features[feature];
 }
 
 /** Amounts in halalas (1 SAR = 100 halalas), rounded once, so totals always add up. */
