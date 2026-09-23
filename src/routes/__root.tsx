@@ -49,7 +49,7 @@ export const Route = createRootRoute({
         name: "description",
         content: "حيث يبقى التأثير — التأثير لا يأتي صدفة… نحن نصنعه. وكالة ديل للتسويق.",
       },
-      { name: "theme-color", content: "#f4f5f0" },
+      { name: "theme-color", content: "#050505" },
       ...standaloneMeta,
     ],
     links: [
@@ -66,7 +66,7 @@ export const Route = createRootRoute({
       <head>
         <HeadContent />
       </head>
-      <body className="bg-paper text-pine-deep font-dash">
+      <body className="bg-ink text-snow font-display">
         <PreviewHostBridge />
         <AuthProvider>
           <Outlet />

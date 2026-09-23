@@ -1,39 +1,15 @@
 import { cn } from "@/lib/utils";
 
-/**
- * Site logo: the DEAL wordmark in a pine tile (as in the dashboards' sidebar and
- * the account pages) next to the Arabic name. `tone="dark"` for pine bands.
- */
-export function DealLogo({
-  className,
-  onClick,
-  tone = "light",
-}: {
-  className?: string;
-  onClick?: () => void;
-  tone?: "light" | "dark";
-}) {
+export function DealLogo({ className, onClick }: { className?: string; onClick?: () => void }) {
   return (
     <a
       href="/"
       onClick={onClick}
-      className={cn("inline-flex min-h-11 items-center gap-2.5 select-none", className)}
-      aria-label="ديل للتسويق — DEAL FOR MARKETING، الرئيسية"
+      className={cn("flex items-center gap-3 select-none", className)}
+      aria-label="ديل DEAL FOR MARKETING"
     >
-      <span
-        className={cn(
-          "grid h-10 place-items-center rounded-xl px-3",
-          tone === "light" ? "bg-pine-deep text-lime" : "bg-lime text-pine-deep",
-        )}
-      >
-        <DealWordmark className="h-[17px] w-auto" />
-      </span>
-      <span className="flex flex-col leading-none">
-        <span className={cn("font-display text-[19px]", tone === "light" ? "text-pine-deep" : "text-snow")}>ديل</span>
-        <span className={cn("mt-1 text-[11px] font-bold", tone === "light" ? "text-slate" : "text-snow/60")}>
-          للتسويق
-        </span>
-      </span>
+      <span className="font-display text-xl text-lime md:text-2xl">ديل</span>
+      <img src="/images/logo-deal.png" alt="DEAL FOR MARKETING" className="h-8 w-auto md:h-9" />
     </a>
   );
 }

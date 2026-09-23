@@ -4,11 +4,19 @@ import { SiteChrome } from "@/components/site-chrome";
 import { organizationJsonLd, pageHead } from "@/lib/seo";
 import {
   About,
+  AiUse,
   Clients,
-  DealLineBand,
+  DealLineTeaser,
+  Footer,
   Hero,
+  Instant,
+  Lawyers,
   Leadership,
+  Pay,
+  Pledge,
+  Quote,
   Services,
+  Story,
   Systems,
   Works,
 } from "@/components/home-sections";
@@ -26,14 +34,22 @@ function Home() {
     <SiteChrome>
       <main>
         <Hero />
-        <Clients />
+        <IdentityBreak />
+        <Story />
         <Systems />
-        <DealLineBand />
+        <Instant />
+        <DealLineTeaser />
+        <Lawyers />
+        <AiUse />
+        <Pay />
+        <Pledge />
         <Services />
         <About />
         <Works />
+        <Clients />
         <Leadership />
-        <IdentityBreak />
+        <Quote />
+        <Footer />
       </main>
     </SiteChrome>
   );

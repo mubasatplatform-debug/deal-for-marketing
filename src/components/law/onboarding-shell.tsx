@@ -1,14 +1,15 @@
 import type { ReactNode } from "react";
-import { ArrowRight, Check, ShieldCheck } from "lucide-react";
-import { DealLogo } from "@/components/logo";
-import { Photo } from "@/components/site-ui";
+import { ArrowRight, Check } from "lucide-react";
+import { Grain, PlayMarks } from "@/components/brand-marks";
+import { DealWordmark } from "@/components/logo";
 import { TRIAL_DAYS } from "@/lib/saas/plans";
 import { cn } from "@/lib/utils";
 
 /**
- * Split layout for «مكتب المحامي» onboarding and invite acceptance — the same
- * construction as /login: the form on the light paper panel, a photograph
- * with the promise on the other side (a compact pine band on phones).
+ * Split layout for «مكتب المحامي» onboarding and invite acceptance: the form on
+ * the light paper panel, and the DEAL brand board on the other side (paper-grain
+ * lime, the play-triangle geometry, pine wordmark and baseline) — a compact
+ * lime band on phones. No stock photography.
  */
 export function OnboardingShell({
   step,
@@ -69,37 +70,37 @@ export function OnboardingShell({
         </div>
       </main>
 
-      <aside className="on-dark relative isolate order-first overflow-hidden bg-pine-deep text-snow lg:order-last lg:m-3 lg:min-h-[calc(100dvh-1.5rem)] lg:rounded-3xl">
-        <div aria-hidden="true" className="absolute inset-0 -z-10 hidden lg:block">
-          <Photo name="handshake" alt="" sizes="50vw" position="50% 50%" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_top,var(--color-pine-deep)_14%,color-mix(in_oklab,var(--color-pine-deep)_60%,transparent)_55%,color-mix(in_oklab,var(--color-pine-deep)_20%,transparent)_85%)]" />
+      <aside className="relative isolate order-first overflow-hidden bg-lime text-pine-deep lg:order-last lg:m-3 lg:min-h-[calc(100dvh-1.5rem)]">
+        <Grain id="onboarding-grain" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 end-0 hidden w-[62%] lg:block">
+          <PlayMarks tone="on-lime" />
         </div>
-        <div className="flex items-center justify-between px-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-8 lg:px-10 lg:pt-8">
-          <DealLogo tone="dark" />
-          <a href="/law" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-snow/75 hover:text-lime lg:hidden">
+        <div className="relative flex items-center justify-between px-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-8 lg:px-10 lg:pt-8">
+          <a href="/" aria-label="ديل — الرئيسية" className="inline-flex min-h-11 items-center lg:hidden">
+            <DealWordmark className="h-7 w-auto text-pine" />
+          </a>
+          <a href="/law" className="inline-flex min-h-11 items-center gap-1.5 font-display text-sm text-pine hover:opacity-75 lg:hidden">
             <ArrowRight className="size-4" aria-hidden="true" />
             مكتب المحامي
           </a>
         </div>
-        <div className="px-4 pt-3 pb-6 sm:px-8 lg:absolute lg:inset-x-0 lg:bottom-0 lg:px-10 lg:pt-0 lg:pb-10">
-          <p className="text-sm font-bold text-lime">{side.kicker}</p>
-          <p className="mt-1 font-display text-2xl leading-snug text-snow lg:mt-3 lg:text-[2.5rem] lg:leading-[1.3]">
+        <div className="relative px-4 pt-3 pb-6 sm:px-8 lg:absolute lg:inset-x-0 lg:bottom-0 lg:px-10 lg:pt-0 lg:pb-10">
+          <p className="font-display text-sm text-pine">{side.kicker} //</p>
+          <p className="mt-1 font-display text-2xl leading-snug text-pine-deep lg:mt-3 lg:text-[2.6rem] lg:leading-[1.3]">
             {side.title}
           </p>
           <ul className="mt-8 hidden max-w-md space-y-3 lg:block">
             {side.points.map((p) => (
-              <li key={p} className="flex items-start gap-3 text-snow/85">
-                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-lime text-pine-deep">
-                  <Check className="size-3.5" strokeWidth={3} aria-hidden="true" />
-                </span>
+              <li key={p} className="flex items-start gap-3 font-display text-pine-deep">
+                <span aria-hidden="true" className="mt-3 h-px w-6 shrink-0 bg-pine" />
                 <span className="leading-relaxed">{p}</span>
               </li>
             ))}
           </ul>
-          <p className="mt-8 hidden items-center gap-2 text-sm text-snow/60 lg:flex">
-            <ShieldCheck className="size-4 text-lime" aria-hidden="true" />
-            من ديل للتسويق — بريدة، القصيم
-          </p>
+          <div dir="ltr" className="mt-10 hidden items-center gap-3 lg:flex">
+            <DealWordmark className="h-8 w-auto shrink-0 text-pine" />
+            <span className="h-px flex-1 bg-pine" />
+          </div>
         </div>
       </aside>
     </div>

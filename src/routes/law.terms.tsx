@@ -1,11 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { FileWarning } from "lucide-react";
 import { SiteChrome } from "@/components/site-chrome";
-import { siteButton, wrap } from "@/components/site-classes";
-import { Eyebrow } from "@/components/site-ui";
 import { GRACE_DAYS, TRIAL_DAYS, VAT_RATE } from "@/lib/saas/plans";
 import { pageHead } from "@/lib/seo";
-import { cn } from "@/lib/utils";
 
 /**
  * «مكتب المحامي» terms of use — DRAFT FOR LEGAL REVIEW. Plain statements of
@@ -89,64 +85,34 @@ const sections: { title: string; body: string[] }[] = [
 function Terms() {
   return (
     <SiteChrome>
-      <main className="bg-paper pt-24 pb-20 md:pt-32 md:pb-28">
-        <div className={cn(wrap, "grid gap-10 lg:grid-cols-12 lg:gap-14")}>
-          <header className="lg:col-span-4">
-            <div className="lg:sticky lg:top-28">
-              <Eyebrow>مكتب المحامي</Eyebrow>
-              <h1 className="mt-4 font-display text-[2.3rem] leading-[1.25] text-pine-deep md:text-5xl">شروط الاستخدام</h1>
-              <p className="mt-3 text-sm text-slate">آخر تحديث: {UPDATED}</p>
-              <nav aria-label="أقسام الشروط" className="mt-8 hidden lg:block">
-                <ol className="space-y-1 border-s border-line">
-                  {sections.map((sec, i) => (
-                    <li key={sec.title}>
-                      <a
-                        href={`#t-${i + 1}`}
-                        className="-ms-px flex min-h-10 items-center border-s-2 border-transparent ps-4 text-[15px] font-semibold text-slate hover:border-pine hover:text-pine-deep"
-                      >
-                        {sec.title}
-                      </a>
-                    </li>
-                  ))}
-                </ol>
-              </nav>
-            </div>
-          </header>
-
-          <div className="lg:col-span-8">
-            <div role="note" className="mb-6 flex items-start gap-3 rounded-2xl bg-lime-50 p-5 ring-1 ring-lime/40">
-              <FileWarning className="mt-0.5 size-5 shrink-0 text-lime-600" aria-hidden="true" />
-              <p className="text-[15px] leading-relaxed text-pine-deep">
-                <strong>مسودة قيد المراجعة القانونية.</strong> تصف هذه الصفحة طريقة عمل الخدمة حاليًا، وستُستبدل بالنسخة
-                المعتمدة بعد مراجعتها.
-              </p>
-            </div>
-            <div className="rounded-3xl bg-surface p-6 ring-1 ring-line md:p-10">
-              <div className="space-y-10">
-                {sections.map((sec, i) => (
-                  <section key={sec.title} id={`t-${i + 1}`} aria-labelledby={`t-${i + 1}-h`} className="scroll-mt-28">
-                    <h2 id={`t-${i + 1}-h`} className="flex items-center gap-3 font-display text-xl text-pine-deep md:text-2xl">
-                      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-pine-50 font-ui text-sm font-bold text-pine">
-                        {i + 1}
-                      </span>
-                      {sec.title}
-                    </h2>
-                    <div className="mt-4 space-y-3 text-[16px] leading-loose text-slate">
-                      {sec.body.map((para) => (
-                        <p key={para}>{para}</p>
-                      ))}
-                    </div>
-                  </section>
+      <main className="bg-ink px-6 pt-24 pb-20 md:px-16">
+        <p className="text-kicker text-lime">مكتب المحامي //</p>
+        <h1 className="mt-4 font-display text-poster text-snow">شروط الاستخدام</h1>
+        <p className="mt-3 text-sm text-dim">آخر تحديث: {UPDATED}</p>
+        <p role="note" className="mt-8 max-w-2xl border-s-2 border-lime ps-4 text-sm leading-loose text-mist">
+          <strong className="font-display text-lime">مسودة قيد المراجعة القانونية.</strong> تصف هذه الصفحة طريقة عمل الخدمة
+          حاليًا، وستُستبدل بالنسخة المعتمدة بعد مراجعتها.
+        </p>
+        <div className="mt-12 max-w-2xl space-y-10">
+          {sections.map((sec, i) => (
+            <section key={sec.title} id={`t-${i + 1}`} aria-labelledby={`t-${i + 1}-h`} className="scroll-mt-24">
+              <h2 id={`t-${i + 1}-h`} className="flex items-baseline gap-3 font-display text-xl text-snow">
+                <span className="font-display text-sm text-lime">{String(i + 1).padStart(2, "0")}</span>
+                {sec.title}
+              </h2>
+              <div className="mt-3 space-y-3 text-sm leading-loose text-mist">
+                {sec.body.map((para) => (
+                  <p key={para}>{para}</p>
                 ))}
               </div>
-            </div>
-            <div className="mt-6 flex flex-col gap-4 rounded-3xl bg-pine-50 p-6 md:flex-row md:items-center md:justify-between md:p-8">
-              <p className="font-bold text-pine-deep">جاهز تجرب مكتب المحامي؟</p>
-              <a href="/law/signup" className={siteButton("primary")}>
-                ابدأ تجربتك المجانية {TRIAL_DAYS} يومًا
-              </a>
-            </div>
-          </div>
+            </section>
+          ))}
+          <a
+            href="/law/signup"
+            className="inline-flex h-12 items-center justify-center bg-lime px-8 font-display text-base text-ink transition-opacity hover:opacity-90"
+          >
+            ابدأ تجربتك المجانية {TRIAL_DAYS} يومًا
+          </a>
         </div>
       </main>
     </SiteChrome>
