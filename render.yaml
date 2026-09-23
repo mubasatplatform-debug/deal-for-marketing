@@ -43,5 +43,10 @@ services:
         sync: false
       - key: ANTHROPIC_API_KEY
         sync: false
+      # Or any OpenAI-compatible endpoint for Deal Line
+      - key: LLM_BASE_URL
+        sync: false
+      - key: LLM_API_KEY
+        sync: false
       - key: LEADS_WEBHOOK_URL
         sync: false

@@ -441,16 +441,25 @@ async function vercelOidcToken(): Promise<string | null> {
   }
 }
 
-/** xAI Grok — secondary engine, kept for deploys that only carry XAI_API_KEY. */
-async function callXai(messages: LineMessage[], apiKey: string): Promise<string> {
-  const res = await fetch("https://api.x.ai/v1/chat/completions", {
+/**
+ * Any OpenAI-compatible chat-completions endpoint: xAI directly, or a relay the
+ * team runs in front of another provider (LLM_BASE_URL / LLM_API_KEY / LLM_MODEL).
+ */
+async function callChatCompletions(
+  label: string,
+  baseUrl: string,
+  apiKey: string,
+  model: string,
+  messages: LineMessage[],
+): Promise<string> {
+  const res = await fetch(`${baseUrl.replace(/\/+$/, "")}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "grok-4.5",
+      model,
       temperature: 0.7,
       max_tokens: 700,
       response_format: { type: "json_object" },
@@ -460,7 +469,7 @@ async function callXai(messages: LineMessage[], apiKey: string): Promise<string>
   });
   if (!res.ok) {
     const errText = await res.text().catch(() => "");
-    throw new Error(`xAI ${res.status} ${errText.slice(0, 180)}`);
+    throw new Error(`${label} ${res.status} ${errText.slice(0, 180)}`);
   }
   const body = (await res.json()) as {
     choices?: { message?: { content?: string } }[];
@@ -468,13 +477,13 @@ async function callXai(messages: LineMessage[], apiKey: string): Promise<string>
   return body.choices?.[0]?.message?.content ?? "";
 }
 
-/** The first configured engine: Claude, then xAI; null means local router only. */
 /**
  * The first available engine, most direct first:
  * 1. ANTHROPIC_API_KEY → Claude on the Anthropic API (with refusal fallbacks);
  * 2. AI_GATEWAY_API_KEY → Claude through Vercel AI Gateway;
  * 3. XAI_API_KEY → xAI (the Grok platform injects this on its deploys);
- * 4. on the team's own Vercel deploy → Claude through AI Gateway via OIDC;
+ * 4. LLM_BASE_URL + LLM_API_KEY → any OpenAI-compatible endpoint (LLM_MODEL);
+ * 5. on the team's own Vercel deploy → Claude through AI Gateway via OIDC;
  * null → the local router answers.
  */
 async function modelEngine(): Promise<
@@ -484,7 +493,15 @@ async function modelEngine(): Promise<
   const gatewayKey = process.env.AI_GATEWAY_API_KEY?.trim();
   if (gatewayKey) return (messages) => callClaudeGateway(messages, gatewayKey);
   const xaiKey = process.env.XAI_API_KEY?.trim();
-  if (xaiKey) return (messages) => callXai(messages, xaiKey);
+  if (xaiKey)
+    return (messages) =>
+      callChatCompletions("xAI", "https://api.x.ai/v1", xaiKey, "grok-4.5", messages);
+  const llmBase = process.env.LLM_BASE_URL?.trim();
+  const llmKey = process.env.LLM_API_KEY?.trim();
+  if (llmBase && llmKey) {
+    const llmModel = process.env.LLM_MODEL?.trim() || "default";
+    return (messages) => callChatCompletions("LLM", llmBase, llmKey, llmModel, messages);
+  }
   const oidc = await vercelOidcToken();
   if (oidc) return (messages) => callClaudeGateway(messages, oidc);
   return null;
