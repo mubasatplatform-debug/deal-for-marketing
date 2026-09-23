@@ -38,3 +38,14 @@ export async function reserveHit(
 export function hashVisitorIp(ip: string, secret: string): string {
   return createHmac("sha256", secret).update(ip).digest("base64url").slice(0, 22);
 }
+
+/**
+ * Best-effort client IP from proxy headers. Headers the edge overwrites
+ * (Cloudflare in front of Render, Vercel's `x-real-ip`) come first because a
+ * visitor cannot forge them; `x-forwarded-for`'s first hop is the last resort.
+ */
+export function ipFromHeaders(h: Headers | undefined): string {
+  const pick = (name: string) => h?.get(name)?.trim() || "";
+  const forwarded = h?.get("x-forwarded-for")?.split(",")[0]?.trim() || "";
+  return (pick("cf-connecting-ip") || pick("true-client-ip") || pick("x-real-ip") || forwarded || "unknown").slice(0, 64);
+}

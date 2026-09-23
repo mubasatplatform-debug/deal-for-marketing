@@ -4,7 +4,7 @@ import { Card, CardHeader, EmptyState, Kpi, Num, Pill, Segmented, Skeleton, type
 import { formatAbsolute, formatRelative } from "@/components/admin/format";
 import type { TeamUsage } from "@/lib/api/keys";
 import { ScopeCode } from "./create-dialog";
-import { lastUsedText } from "./key-list";
+import { lastUsedText } from "./last-used";
 
 function statusTone(status: number): Tone {
   if (status >= 500) return "danger";

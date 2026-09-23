@@ -1,6 +1,6 @@
 import { getRequest } from "@tanstack/react-start/server";
 import { getSql } from "@/lib/db";
-import { hashVisitorIp, reserveHit } from "@/lib/rate-limit-core";
+import { hashVisitorIp, ipFromHeaders, reserveHit } from "@/lib/rate-limit-core";
 
 /**
  * Postgres-backed throttle — **server-only**. Serverless instances share no
@@ -20,11 +20,9 @@ export class RateLimitError extends Error {
 /** Dev/preview fallback only; deploys always have BETTER_AUTH_SECRET. */
 const DEV_VISITOR_SECRET = "deal-for-marketing:dev-visitor-key";
 
-/** Best-effort client IP from the proxy headers Vercel sets. */
+/** Best-effort client IP of the current request (see `ipFromHeaders`). */
 function clientIp(): string {
-  const h = getRequest()?.headers;
-  const forwarded = h?.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return h?.get("x-real-ip")?.trim() || forwarded || "unknown";
+  return ipFromHeaders(getRequest()?.headers);
 }
 
 /**

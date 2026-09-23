@@ -8,7 +8,7 @@ import { useCopy } from "./use-copy";
 
 const noop = () => () => {};
 /** The origin this app is served from; the canonical site URL during SSR. */
-export function useOrigin() {
+function useOrigin() {
   return useSyncExternalStore(
     noop,
     () => window.location.origin,

@@ -1,4 +1,5 @@
 import { getSql } from "@/lib/db";
+import { ipFromHeaders } from "@/lib/rate-limit-core";
 import { ApiError, missingScope } from "./errors";
 import { ADMIN_SCOPES, effectiveScopes, hasScope, type Scope } from "./scopes";
 import { bearerFromHeader, hashApiKey, isWellFormedKey } from "./secret.server";
@@ -29,14 +30,9 @@ export const AUTH_FAIL_WINDOW_SECONDS = 300;
 
 const unauthorized = (message: string) => new ApiError(401, "unauthorized", message);
 
-/**
- * Best-effort client IP from the request itself (the edge sets `x-real-ip`;
- * `x-forwarded-for`'s first hop is the fallback). Only ever stored as an HMAC.
- */
+/** Best-effort client IP (see `ipFromHeaders`). Only ever stored as an HMAC. */
 function requestIp(request: Request): string {
-  const real = request.headers.get("x-real-ip")?.trim();
-  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return (real || forwarded || "unknown").slice(0, 64);
+  return ipFromHeaders(request.headers);
 }
 
 /**

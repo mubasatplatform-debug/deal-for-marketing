@@ -6,11 +6,9 @@ import type { ApiKeyRow } from "@/lib/api/keys";
 import { MAX_ACTIVE_KEYS, isKeyActive } from "@/lib/api/scopes";
 import { cn } from "@/lib/utils";
 import { ScopeCode } from "./create-dialog";
+import { lastUsedText } from "./last-used";
 import { Dialog } from "./dialog";
 
-export function lastUsedText(iso: string | null, now: number) {
-  return iso ? formatRelative(new Date(iso), now) : "لم يُستخدم بعد";
-}
 
 /** The owner's keys: prefix, scopes, usage, and a confirmed revoke. */
 export function KeyList({
