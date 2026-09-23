@@ -97,9 +97,13 @@ export function AllKeysTable({ usage, loading, now }: { usage: TeamUsage | null;
 
 type Filter = "all" | "errors" | "mcp";
 
+/** Rows shown before "show more", so one noisy key can not bury the page. */
+const PAGE = 15;
+
 /** The last 100 authenticated calls (REST and MCP tool calls). */
 export function ActivityLog({ usage, loading, now }: { usage: TeamUsage | null; loading: boolean; now: number }) {
   const [filter, setFilter] = useState<Filter>("all");
+  const [limit, setLimit] = useState(PAGE);
   const events = useMemo(() => usage?.events ?? [], [usage]);
   const shown = useMemo(
     () =>
@@ -117,7 +121,10 @@ export function ActivityLog({ usage, loading, now }: { usage: TeamUsage | null; 
           <Segmented<Filter>
             label="تصفية السجل"
             value={filter}
-            onChange={setFilter}
+            onChange={(f) => {
+              setFilter(f);
+              setLimit(PAGE);
+            }}
             options={[
               { value: "all", label: "الكل", count: events.length },
               { value: "errors", label: "أخطاء", count: events.filter((e) => e.status >= 400).length },
@@ -150,7 +157,7 @@ export function ActivityLog({ usage, loading, now }: { usage: TeamUsage | null; 
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {shown.map((e) => (
+              {shown.slice(0, limit).map((e) => (
                 <tr key={e.id}>
                   <td className="px-5 py-2.5 whitespace-nowrap text-slate md:px-6" title={formatAbsolute(new Date(e.at))}>
                     {formatRelative(new Date(e.at), now)}
@@ -166,9 +173,9 @@ export function ActivityLog({ usage, loading, now }: { usage: TeamUsage | null; 
                       <Num>{e.status}</Num>
                     </Pill>
                   </td>
-                  <td className="px-5 py-2.5 md:px-6">
-                    <span className="font-semibold text-pine-deep">{e.key_name}</span>
-                    <span dir="ltr" className="ms-2 font-ui text-xs text-slate">
+                  <td className="px-5 py-2 md:px-6">
+                    <span className="block font-semibold text-pine-deep">{e.key_name}</span>
+                    <span dir="ltr" className="block text-end font-ui text-xs text-slate">
                       {e.owner_email}
                     </span>
                   </td>
@@ -176,6 +183,17 @@ export function ActivityLog({ usage, loading, now }: { usage: TeamUsage | null; 
               ))}
             </tbody>
           </table>
+          {shown.length > limit ? (
+            <div className="border-t border-line px-5 py-3 text-center md:px-6">
+              <button
+                type="button"
+                onClick={() => setLimit((l) => l + 25)}
+                className="inline-flex min-h-10 items-center rounded-xl px-4 text-[13px] font-semibold text-pine hover:bg-paper focus-visible:outline-2 focus-visible:outline-pine"
+              >
+                عرض المزيد · بقي <Num className="ms-1">{shown.length - limit}</Num>
+              </button>
+            </div>
+          ) : null}
         </div>
       )}
     </Card>
