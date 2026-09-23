@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNod
 import {
   AlertTriangle,
   Building2,
+  Eye,
   Globe,
   Link2,
   Lock,
@@ -26,6 +27,8 @@ import {
 } from "@/lib/admin";
 import { cn } from "@/lib/utils";
 import { sourceLabel } from "@/lib/attribution";
+import type { Thread } from "@/lib/thread";
+import { ThreadPanel } from "@/components/thread/thread-panel";
 import { SourcePill } from "./source";
 import {
   STATUS_ORDER,
@@ -57,6 +60,8 @@ export function RequestDrawer({
   onAssign,
   loadActivity,
   onAddNote,
+  loadThread,
+  onThreadRead,
 }: {
   row: AdminRequestRow;
   now: number;
@@ -71,6 +76,10 @@ export function RequestDrawer({
   onAssign: (assigneeId: string | null) => Promise<void>;
   loadActivity: () => Promise<RequestActivity>;
   onAddNote: (body: string) => Promise<NoteRow>;
+  /** The customer conversation (visible to the customer). */
+  loadThread: () => Promise<Thread>;
+  /** The team side of the thread was marked read. */
+  onThreadRead: () => void;
 }) {
   const panel = useRef<HTMLDivElement>(null);
   const closeRef = useRef(onClose);
@@ -290,7 +299,7 @@ export function RequestDrawer({
             </p>
           </section>
 
-          <SourceSection row={row} />
+          <ThreadSection row={row} wa={wa} load={loadThread} onRead={onThreadRead} />
 
           <NotesSection
             titleId={titleId}
@@ -301,6 +310,8 @@ export function RequestDrawer({
             onRetry={() => refresh()}
             onAdd={addNote}
           />
+
+          <SourceSection row={row} />
 
           <section className="border-t border-line px-6 py-5">
             <h3 className="text-[13px] font-bold text-pine-deep">السجل</h3>
@@ -527,12 +538,14 @@ function NotesSection({
   }
 
   return (
-    <section className="border-t border-line px-6 py-5">
+    <section className="border-t border-line bg-paper/60 px-6 py-5">
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-[13px] font-bold text-pine-deep">ملاحظات الفريق</h3>
-        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate">
+        <h3 className="text-[13px] font-bold text-pine-deep">
+          ملاحظات الفريق <span className="font-semibold text-slate">— لا يراها العميل</span>
+        </h3>
+        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-surface px-2 py-0.5 text-[11px] font-semibold text-slate ring-1 ring-line">
           <Lock className="size-3" aria-hidden="true" />
-          لا يراها العميل
+          داخلية
         </span>
       </div>
 
@@ -615,6 +628,66 @@ function NotesSection({
       ) : state === "ready" ? (
         <p className="mt-3 text-xs text-slate">لا ملاحظات بعد.</p>
       ) : null}
+    </section>
+  );
+}
+
+function ThreadSection({
+  row,
+  wa,
+  load,
+  onRead,
+}: {
+  row: AdminRequestRow;
+  wa: string | null;
+  load: () => Promise<Thread>;
+  onRead: () => void;
+}) {
+  return (
+    <section className="border-t border-line px-6 py-5" aria-labelledby={`req-${row.id}-thread`}>
+      <div className="flex items-center justify-between gap-3">
+        <h3 id={`req-${row.id}-thread`} className="text-[13px] font-bold text-pine-deep">
+          المحادثة مع العميل
+        </h3>
+        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-lime-50 px-2 py-0.5 text-[11px] font-bold text-lime-600 ring-1 ring-lime/40">
+          <Eye className="size-3" aria-hidden="true" />
+          يراها العميل
+        </span>
+      </div>
+      <p className="mt-1 text-xs leading-5 text-slate">
+        ما يُكتب ويُرفق هنا يظهر للعميل في حسابه، ويصله بريد بالرد.
+      </p>
+      <div className="mt-2">
+        <ThreadPanel
+          side="team"
+          variant="drawer"
+          requestId={row.id}
+          load={load}
+          onRead={onRead}
+          peerName={initialsName(row)}
+          unavailable={(t) =>
+            t.clientHasAccount ? null : (
+              <div className="rounded-xl bg-paper px-3.5 py-3 ring-1 ring-line">
+                <p className="text-[13px] font-semibold text-pine-deep">العميل ليس لديه حساب</p>
+                <p className="mt-0.5 text-xs leading-5 text-slate">
+                  أرسل الطلب دون تسجيل دخول، فلا يستطيع قراءة المحادثة. تواصل معه على جواله.
+                </p>
+                {wa ? (
+                  <a
+                    href={wa}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={cn(buttonClass("primary", "sm"), "mt-2.5")}
+                  >
+                    <MessageCircle className="size-3.5" />
+                    مراسلة على واتساب
+                  </a>
+                ) : null}
+              </div>
+            )
+          }
+        />
+      </div>
     </section>
   );
 }

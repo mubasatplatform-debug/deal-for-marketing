@@ -8,6 +8,7 @@ import {
   Inbox,
   KeyRound,
   LayoutGrid,
+  MessagesSquare,
   RotateCw,
   Search,
   SearchX,
@@ -36,6 +37,7 @@ import type {
   TeamMember,
 } from "@/lib/admin";
 import { sourceLabel } from "@/lib/attribution";
+import type { Thread } from "@/lib/thread";
 import { cn } from "@/lib/utils";
 import { LeadsChart, ServiceBars } from "./charts";
 import { CustomersList } from "./customers";
@@ -98,6 +100,8 @@ export type AdminPanelProps = {
   /** Internal notes + activity log of one request. */
   onLoadActivity: (id: number) => Promise<RequestActivity>;
   onAddNote: (id: number, body: string) => Promise<NoteRow>;
+  /** The customer conversation of one request. */
+  onLoadThread: (id: number) => Promise<Thread>;
   /** Every request, uncapped — used for CSV export when `rows` is truncated. */
   onLoadAll: () => Promise<AdminRequestRow[]>;
   onSignOut?: () => void;
@@ -117,6 +121,7 @@ export function AdminPanel({
   onAssign,
   onLoadActivity,
   onAddNote,
+  onLoadThread,
   onLoadAll,
   onSignOut,
   signingOut,
@@ -125,6 +130,9 @@ export function AdminPanel({
   /** Optimistic assignments, keyed by request id (null = unassigned). */
   const [assigned, setAssigned] = useState<Record<number, string | null>>({});
   const [assignee, setAssignee] = useState<AssigneeFilter>("all");
+  /** Requests whose thread was read in this session (unread badge cleared). */
+  const [readThreads, setReadThreads] = useState<Record<number, true>>({});
+  const [unreadOnly, setUnreadOnly] = useState(false);
   const [source, setSource] = useState("all");
   const [pending, setPending] = useState<number | null>(null);
   const [query, setQuery] = useState("");
@@ -141,6 +149,7 @@ export function AdminPanel({
       list.map((r) => {
         let next = r;
         if (overrides[r.id] && overrides[r.id] !== r.status) next = { ...next, status: overrides[r.id] };
+        if (readThreads[r.id] && r.team_unread) next = { ...next, team_unread: 0 };
         if (r.id in assigned && assigned[r.id] !== r.assignee_id) {
           const id = assigned[r.id];
           next = {
@@ -151,7 +160,7 @@ export function AdminPanel({
         }
         return next;
       }),
-    [overrides, assigned, team],
+    [overrides, assigned, team, readThreads],
   );
   const rows = useMemo(() => applyOverrides(sourceRows), [applyOverrides, sourceRows]);
 
@@ -172,9 +181,16 @@ export function AdminPanel({
   // Each filter's counts reflect the other filters, so the numbers always
   // match what a click would show.
   const scoped = useMemo(
-    () => searched.filter((r) => matchesAssignee(r, assignee, me) && matchesSource(r, source)),
-    [searched, assignee, source, me],
+    () =>
+      searched.filter(
+        (r) =>
+          matchesAssignee(r, assignee, me) &&
+          matchesSource(r, source) &&
+          (!unreadOnly || r.team_unread > 0),
+      ),
+    [searched, assignee, source, me, unreadOnly],
   );
+  const unreadRequests = useMemo(() => rows.filter((r) => r.team_unread > 0).length, [rows]);
   const counts = useMemo(() => {
     const c: Record<string, number> = {};
     for (const r of scoped) c[r.status] = (c[r.status] ?? 0) + 1;
@@ -199,8 +215,10 @@ export function AdminPanel({
     if (source !== "all" && !keys.includes(source)) keys.push(source);
     return keys;
   }, [totals.bySource, source]);
-  const filtersActive = query !== "" || filter !== "all" || assignee !== "all" || source !== "all";
+  const filtersActive =
+    query !== "" || filter !== "all" || assignee !== "all" || source !== "all" || unreadOnly;
   const clearFilters = () => {
+    setUnreadOnly(false);
     setQuery("");
     setFilter("all");
     setAssignee("all");
@@ -316,6 +334,16 @@ export function AdminPanel({
       icon: Inbox,
       active: section === "requests",
       badge: state === "ready" ? stats.fresh : undefined,
+    },
+    {
+      href: "#requests",
+      label: "رسائل العملاء",
+      icon: MessagesSquare,
+      badge: state === "ready" ? unreadRequests : undefined,
+      onClick: () => {
+        setUnreadOnly(true);
+        resetPaging();
+      },
     },
     { href: "#customers", label: "العملاء", icon: Users, active: section === "customers" },
     { href: "/admin/keys", label: "مفاتيح API", icon: KeyRound },
@@ -623,6 +651,34 @@ export function AdminPanel({
                     ))}
                   </Select>
                 </label>
+                <button
+                  type="button"
+                  aria-pressed={unreadOnly}
+                  disabled={loading}
+                  onClick={() => {
+                    setUnreadOnly((v) => !v);
+                    resetPaging();
+                  }}
+                  className={cn(
+                    "inline-flex h-9 items-center gap-1.5 rounded-xl px-3 text-[13px] font-semibold ring-1 transition-colors disabled:opacity-50",
+                    unreadOnly
+                      ? "bg-pine-deep text-snow ring-pine-deep"
+                      : "bg-surface text-slate ring-line hover:text-pine-deep",
+                  )}
+                >
+                  <MessagesSquare className={cn("size-3.5", unreadOnly && "text-lime")} />
+                  رسائل غير مقروءة
+                  {!loading ? (
+                    <Num
+                      className={cn(
+                        "rounded-full px-1.5 text-[11px] leading-5",
+                        unreadRequests ? "bg-lime text-pine-deep" : "bg-paper text-slate",
+                      )}
+                    >
+                      {unreadRequests}
+                    </Num>
+                  ) : null}
+                </button>
                 {filtersActive && !loading ? (
                   <Button size="sm" variant="ghost" icon={X} onClick={clearFilters} className="ms-auto">
                     مسح التصفية
@@ -720,6 +776,8 @@ export function AdminPanel({
           onAssign={(a) => changeAssignee(open.id, a)}
           loadActivity={() => onLoadActivity(open.id)}
           onAddNote={(body) => onAddNote(open.id, body)}
+          loadThread={() => onLoadThread(open.id)}
+          onThreadRead={() => setReadThreads((m) => ({ ...m, [open.id]: true }))}
         />
       ) : null}
     </DashShell>

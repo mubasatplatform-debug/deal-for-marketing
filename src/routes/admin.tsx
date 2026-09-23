@@ -19,6 +19,7 @@ import {
   type TeamMember,
 } from "@/lib/admin";
 import { pageHead } from "@/lib/seo";
+import { getTeamThread } from "@/lib/thread";
 
 export const Route = createFileRoute("/admin")({
   head: () => pageHead({ title: "لوحة الفريق", noindex: true }),
@@ -91,6 +92,7 @@ function Admin() {
     [],
   );
 
+  const loadThread = useCallback((id: number) => getTeamThread({ data: { id } }), []);
   const loadAll = useCallback(() => exportAllRequests(), []);
 
   // Success navigates away; on failure re-enable the button and say so, so it
@@ -146,6 +148,7 @@ function Admin() {
       onAssign={setAssignee}
       onLoadActivity={loadActivity}
       onAddNote={addNote}
+      onLoadThread={loadThread}
       onLoadAll={loadAll}
       onSignOut={onSignOut}
       signingOut={signingOut}

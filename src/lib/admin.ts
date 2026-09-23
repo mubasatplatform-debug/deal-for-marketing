@@ -35,6 +35,9 @@ export type AdminRequestRow = {
   utm_campaign: string | null;
   referrer_host: string | null;
   landing_path: string | null;
+  /** Thread messages in total, and customer messages the team has not read. */
+  message_count: number;
+  team_unread: number;
 };
 
 export const ADMIN_FORBIDDEN = "Forbidden";
@@ -47,7 +50,7 @@ export const ADMIN_FORBIDDEN = "Forbidden";
  * X accounts are never admins: the broker gives them synthetic, unverified
  * emails that anyone could collide with.
  */
-async function assertAdmin(userId: string): Promise<void> {
+export async function assertAdmin(userId: string): Promise<void> {
   const allowed = (process.env.ADMIN_EMAILS ?? "")
     .split(",")
     .map((e) => e.trim().toLowerCase())
@@ -100,7 +103,10 @@ function selectRequests(sql: Sql, limit: number | null) {
     select r.id, r.service_slug, r.service_title, r.contact_name, r.phone, r.company, r.brief,
            r.status, r.created_at, r.notified_at, u.email as account_email,
            r.assignee_id, coalesce(nullif(au.name, ''), au.email) as assignee_name,
-           r.source, r.utm_source, r.utm_medium, r.utm_campaign, r.referrer_host, r.landing_path
+           r.source, r.utm_source, r.utm_medium, r.utm_campaign, r.referrer_host, r.landing_path,
+           (select count(*) from request_messages m where m.request_id = r.id)::int as message_count,
+           (select count(*) from request_messages m
+             where m.request_id = r.id and m.role = 'client' and m.id > r.team_read_msg_id)::int as team_unread
     from requests r
     left join "user" u on u.id = r.user_id
     left join "user" au on au.id = r.assignee_id
