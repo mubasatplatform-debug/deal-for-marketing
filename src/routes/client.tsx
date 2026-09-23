@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ClientDashboard, type DashboardState } from "@/components/client/dashboard";
-import { SiteChrome } from "@/components/site-chrome";
 import { authEnabled, signOut } from "@/lib/auth/client";
 import { hasGateSessionMarker } from "@/lib/auth/gate-session-marker";
 import { RedirectToSignIn } from "@/lib/auth/gates";
@@ -44,14 +43,12 @@ function ClientHome() {
   if (!isPending && !user) return <RedirectToSignIn to="/login?redirect=/client" />;
 
   return (
-    <SiteChrome>
-      <ClientDashboard
-        user={user}
-        rows={rows}
-        state={isPending ? "loading" : state}
-        onRetry={load}
-        onSignOut={canSignOut ? () => signOut("/") : undefined}
-      />
-    </SiteChrome>
+    <ClientDashboard
+      user={user}
+      rows={rows}
+      state={isPending ? "loading" : state}
+      onRetry={load}
+      onSignOut={canSignOut ? () => void signOut("/").catch(() => {}) : undefined}
+    />
   );
 }

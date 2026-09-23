@@ -59,6 +59,8 @@ export function DashShell({
 
   return (
     <div className="min-h-dvh bg-paper font-dash text-pine-deep">
+      {/* Overscroll and short pages show paper, not the marketing site's ink. */}
+      <style>{"html,body{background:var(--color-paper)}"}</style>
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 start-0 z-30 hidden w-64 flex-col bg-pine-deep lg:flex">
         <Sidebar area={area} nav={nav} user={user} onSignOut={onSignOut} />

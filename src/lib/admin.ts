@@ -6,6 +6,7 @@ import { requestStatus } from "@/lib/content";
 
 export type AdminRequestRow = {
   id: number;
+  service_slug: string;
   service_title: string;
   contact_name: string;
   phone: string;
@@ -47,7 +48,7 @@ export const listAllRequests = createServerFn({ method: "GET" })
     await assertAdmin(context.userId);
     const sql = await getSql();
     return sql<AdminRequestRow>`
-      select r.id, r.service_title, r.contact_name, r.phone, r.company, r.brief,
+      select r.id, r.service_slug, r.service_title, r.contact_name, r.phone, r.company, r.brief,
              r.status, r.created_at, r.notified_at, u.email as account_email
       from requests r
       left join "user" u on u.id = r.user_id
