@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, Check, Loader2, LogOut } from "lucide-react";
 import { DealSignIn, type SignInMode } from "@/components/deal-sign-in";
 import { DealLogo } from "@/components/logo";
-import { LimeWave } from "@/components/lime-wave";
+import { Photo } from "@/components/site-ui";
 import { authEnabled, signOut } from "@/lib/auth/client";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { mobile, phone } from "@/lib/content";
@@ -103,14 +103,22 @@ function Login() {
             </a>
             .
           </p>
-          <p className="mt-2 text-center text-xs leading-relaxed text-slate">
-            نسيت كلمة المرور أو تحتاج مساعدة؟{" "}
+          <p className="mt-2 flex flex-wrap items-center justify-center gap-x-4 text-xs leading-relaxed text-slate">
             <a
-              href={`https://wa.me/${mobile.wa}?text=${encodeURIComponent("أحتاج مساعدة في الدخول لحسابي في ديل")}`}
-              className="font-semibold text-pine underline underline-offset-4"
+              href="/forgot-password"
+              className="inline-flex min-h-11 items-center font-semibold text-pine underline underline-offset-4"
             >
-              راسلنا واتساب
+              نسيت كلمة المرور؟
             </a>
+            <span className="inline-flex min-h-11 items-center gap-1">
+              تحتاج مساعدة؟
+              <a
+                href={`https://wa.me/${mobile.wa}?text=${encodeURIComponent("أحتاج مساعدة في الدخول لحسابي في ديل")}`}
+                className="font-semibold text-pine underline underline-offset-4"
+              >
+                راسلنا واتساب
+              </a>
+            </span>
           </p>
           <a
             href="/start"
@@ -121,61 +129,59 @@ function Login() {
         </div>
       </main>
 
-      {/* Brand panel — on phones a compact band above the form. */}
-      <aside className="relative isolate order-first overflow-hidden bg-ink text-snow lg:order-last lg:min-h-dvh">
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-[radial-gradient(120%_80%_at_0%_100%,rgba(36,72,76,0.85),transparent_60%),radial-gradient(70%_60%_at_100%_0%,rgba(194,207,48,0.10),transparent_70%)]"
-        />
-        <div className="flex items-center justify-between px-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-8 lg:px-14 lg:pt-8">
-          <DealLogo />
+      {/* Brand panel — on phones a compact pine band above the form; from lg a full-height photograph. */}
+      <aside className="on-dark relative isolate order-first overflow-hidden bg-pine-deep text-snow lg:order-last lg:m-3 lg:min-h-[calc(100dvh-1.5rem)] lg:rounded-3xl">
+        <div aria-hidden="true" className="absolute inset-0 -z-10 hidden lg:block">
+          <Photo name="team-talk" alt="" sizes="52vw" position="62% 40%" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_top,var(--color-pine-deep)_12%,color-mix(in_oklab,var(--color-pine-deep)_55%,transparent)_52%,transparent_80%)]" />
+        </div>
+        <div className="flex items-center justify-between px-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-8 lg:px-10 lg:pt-8">
+          <DealLogo tone="dark" />
           <a
             href="/"
-            className="inline-flex min-h-11 items-center gap-1.5 font-display text-sm text-mist hover:text-lime lg:hidden"
+            className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-snow/75 hover:text-lime lg:hidden"
           >
             <ArrowRight className="size-4" aria-hidden="true" />
             الموقع
           </a>
         </div>
 
-        <div className="px-4 pt-6 pb-8 sm:px-8 lg:flex lg:min-h-[calc(100dvh-6rem)] lg:flex-col lg:justify-center lg:px-14 lg:pt-0 lg:pb-32">
-          <p className="text-kicker text-lime">حساب العميل //</p>
-          <p className="mt-2 font-display text-2xl leading-snug text-snow lg:mt-5 lg:text-5xl lg:leading-[1.25]">
+        <div className="px-4 pt-4 pb-7 sm:px-8 lg:absolute lg:inset-x-0 lg:bottom-0 lg:px-10 lg:pt-0 lg:pb-10">
+          <p className="text-sm font-bold text-lime">حساب العميل</p>
+          <p className="mt-1 font-display text-2xl leading-snug text-snow lg:mt-3 lg:text-[2.6rem] lg:leading-[1.3]">
             كل طلباتك مع ديل
             <br className="hidden lg:block" /> في مكان واحد.
           </p>
 
-          <ul className="mt-10 hidden max-w-md space-y-4 lg:block">
+          <ul className="mt-8 hidden max-w-md space-y-3 lg:block">
             {perks.map((p) => (
-              <li key={p} className="flex items-start gap-3 text-mist">
-                <span className="mt-1 grid size-6 shrink-0 place-items-center bg-lime text-ink">
-                  <Check className="size-4" strokeWidth={3} aria-hidden="true" />
+              <li key={p} className="flex items-start gap-3 text-snow/85">
+                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-lime text-pine-deep">
+                  <Check className="size-3.5" strokeWidth={3} aria-hidden="true" />
                 </span>
                 <span className="leading-relaxed">{p}</span>
               </li>
             ))}
           </ul>
 
-          <div className="mt-12 hidden gap-8 text-sm lg:flex">
-            <div>
-              <p className="text-dim">هاتف</p>
-              <a href={`tel:${phone.tel}`} dir="ltr" className="mt-1 inline-block font-ui text-lg text-snow hover:text-lime">
+          <div className="mt-8 hidden gap-3 text-sm lg:flex">
+            <a href={`tel:${phone.tel}`} className="rounded-2xl bg-white/10 px-4 py-3 backdrop-blur-sm hover:bg-white/15">
+              <span className="block text-xs text-snow/60">هاتف</span>
+              <span dir="ltr" className="mt-0.5 block font-ui text-lg font-bold text-snow">
                 {phone.display}
-              </a>
-            </div>
-            <div>
-              <p className="text-dim">جوال وواتساب</p>
-              <a
-                href={`https://wa.me/${mobile.wa}`}
-                dir="ltr"
-                className="mt-1 inline-block font-ui text-lg text-snow hover:text-lime"
-              >
+              </span>
+            </a>
+            <a
+              href={`https://wa.me/${mobile.wa}`}
+              className="rounded-2xl bg-white/10 px-4 py-3 backdrop-blur-sm hover:bg-white/15"
+            >
+              <span className="block text-xs text-snow/60">جوال وواتساب</span>
+              <span dir="ltr" className="mt-0.5 block font-ui text-lg font-bold text-snow">
                 {mobile.display}
-              </a>
-            </div>
+              </span>
+            </a>
           </div>
         </div>
-        <LimeWave className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-24 lg:block" />
       </aside>
     </div>
   );
