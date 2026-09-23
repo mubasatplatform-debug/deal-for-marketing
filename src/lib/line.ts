@@ -93,8 +93,13 @@ const inputSchema = z.object({
       }),
     )
     .min(1)
-    .max(16),
+    // A full session is LINE_MAX_TURNS user turns plus one reply each.
+    .max(LINE_MAX_TURNS * 2),
 });
+
+/** Per-visitor ceiling on Deal Line calls, and a daily ceiling on paid model calls. */
+const LINE_IP_LIMIT_PER_HOUR = 40;
+const LINE_DAILY_MODEL_CAP = Number(process.env.LINE_DAILY_CAP) || 1500;
 
 const catalog = services
   .map((s) => `${s.slug} — ${s.title}: ${s.body}`)
@@ -102,7 +107,7 @@ const catalog = services
 
 const SYSTEM = `أنت خط ديل — خدمة العملاء والكول سنتر لوكالة ديل DEAL (القصيم، بريدة).
 
-الصوت: سعودي جدًا، عفوي، ياخذ ويعطي. نجدية/قصيمية إذا الزائر منها. مو فصحى روبوت، مو تزيين. لا تذكر أنك نموذج لغوي. لا أسعار. لا وعود تنفيذ فوري.
+الصوت: سعودي جدًا، عفوي، ياخذ ويعطي. نجدية/قصيمية إذا الزائر منها. مو فصحى روبوت، مو تزيين. إذا سُئلت فقل بوضوح إنك مساعد ذكاء اصطناعي تجريبي من ديل. لا أسعار. لا وعود تنفيذ فوري.
 
 وضعان:
 
@@ -369,10 +374,25 @@ export const routeLine = createServerFn({ method: "POST" })
       return { ok: false, error: "أرسل رسالة أولاً." };
     }
 
+    // Unauthenticated and spends the owner's model quota, so: same-site only,
+    // throttled per visitor, and capped per day (then the local router answers).
+    const { assertSameSiteRequest } = await import("@/lib/auth/isolation.server");
+    const { clientIp, recentHits, takeHit, RateLimitError } = await import("@/lib/rate-limit.server");
+    assertSameSiteRequest();
+    try {
+      await takeHit(`line:${clientIp()}`, LINE_IP_LIMIT_PER_HOUR, 3600);
+    } catch (err) {
+      if (err instanceof RateLimitError) {
+        return { ok: false, error: "الخط مزدحم منك. جرّب بعد ساعة أو اتصل بنا مباشرة." };
+      }
+      throw err;
+    }
+
     const apiKey = process.env.XAI_API_KEY;
-    if (!apiKey) {
+    if (!apiKey || (await recentHits("line:model", 86400)) >= LINE_DAILY_MODEL_CAP) {
       return { ok: true, turn: localRoute(data.messages) };
     }
+    await takeHit("line:model", Number.MAX_SAFE_INTEGER, 86400);
 
     try {
       const raw = await callXai(data.messages, apiKey);

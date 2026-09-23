@@ -45,3 +45,22 @@ export const authMiddleware = createMiddleware({ type: "function" })
     const userId = await requireUserId(context.bearerToken);
     return next({ context: { userId } });
   });
+
+/**
+ * Like `authMiddleware`, but a signed-out caller is allowed through with
+ * `context.userId === null` instead of a 401. For public writes (the lead form)
+ * that should still be linked to the account when one exists. Never use it on a
+ * read: a null user id must not widen any query.
+ */
+export const optionalAuthMiddleware = createMiddleware({ type: "function" })
+  .client(async ({ next }) => {
+    const { getBearerToken } = await import("./client");
+    return next({ sendContext: { bearerToken: getBearerToken() ?? undefined } });
+  })
+  .server(async ({ next, context }) => {
+    const { assertSameSiteRequest } = await import("./isolation.server");
+    const { getSessionUser } = await import("./verify.server");
+    assertSameSiteRequest();
+    const user = await getSessionUser(context.bearerToken).catch(() => null);
+    return next({ context: { userId: user?.id ?? null } });
+  });

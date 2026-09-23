@@ -28,7 +28,7 @@ function ClientHome() {
       </SiteChrome>
     );
   }
-  if (!user) return <RedirectToSignIn to="/login" />;
+  if (!user) return <RedirectToSignIn to="/login?redirect=/client" />;
 
   return (
     <SiteChrome>
