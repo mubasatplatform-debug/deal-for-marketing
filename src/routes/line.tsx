@@ -6,7 +6,7 @@ export const Route = createFileRoute("/line")({ component: LinePage });
 
 function LinePage() {
   return (
-    <SiteChrome>
+    <SiteChrome footer={false}>
       <main className="bg-ink pt-16 md:pt-18">
         <DealLine />
       </main>

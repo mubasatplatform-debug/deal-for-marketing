@@ -2,7 +2,7 @@ export function IdentityBreak() {
   return (
     <section
       id="mark"
-      aria-label="حيث يبقي التأثير — DEAL"
+      aria-label="حيث يبقى التأثير — DEAL"
       className="relative isolate overflow-hidden bg-lime text-ink"
     >
       <Grain />
@@ -12,10 +12,10 @@ export function IdentityBreak() {
 
       <div className="relative z-10 flex min-h-[18rem] flex-col justify-center px-6 pt-14 pb-6 md:min-h-[26rem] md:px-16 md:pt-20 md:pb-8">
         <div className="mx-auto max-w-xl text-center">
-          <h2 className="text-balance font-display text-[clamp(1.7rem,5vw,3.6rem)] font-semibold leading-tight text-snow">
-            حيث يبقي التأثير
+          <h2 className="text-balance font-display text-[clamp(1.7rem,5vw,3.6rem)] font-semibold leading-tight text-ink">
+            حيث يبقى التأثير
           </h2>
-          <p dir="ltr" className="font-script mt-3 text-[clamp(1.35rem,3vw,2.15rem)] leading-none text-ink">
+          <p dir="ltr" lang="en" className="font-script mt-3 text-[clamp(1.35rem,3vw,2.15rem)] leading-none text-ink">
             Where Impact Stays
           </p>
         </div>

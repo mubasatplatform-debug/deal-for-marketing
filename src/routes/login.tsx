@@ -4,9 +4,25 @@ import { DealSignIn } from "@/components/deal-sign-in";
 import { LimeWave } from "@/components/lime-wave";
 import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
 
-export const Route = createFileRoute("/login")({ component: Login });
+/** Only same-origin relative paths ("/x" — not "//host", "/\\host" or anything with whitespace/control chars). */
+function safeRedirect(value: unknown): string | undefined {
+  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return undefined;
+  // eslint-disable-next-line no-control-regex
+  if (/[\\\s\u0000-\u001f]/.test(value)) return undefined;
+  return value;
+}
+
+export const Route = createFileRoute("/login")({
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
+    redirect: safeRedirect(search.redirect),
+  }),
+  component: Login,
+});
 
 function Login() {
+  const { redirect } = Route.useSearch();
+  const callbackURL = redirect ?? "/start";
+
   return (
     <main className="relative isolate min-h-dvh overflow-hidden bg-ink px-6 pt-10 pb-24">
       <div className="flex items-center justify-between">
@@ -31,7 +47,7 @@ function Login() {
             </div>
           </SignedIn>
           <SignedOut>
-            <DealSignIn callbackURL="/start" />
+            <DealSignIn callbackURL={callbackURL} />
           </SignedOut>
         </div>
       </div>

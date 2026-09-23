@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 export function DealLogo({ className, onClick }: { className?: string; onClick?: () => void }) {
   return (
     <a
-      href="#top"
+      href="/"
       onClick={onClick}
       className={cn("flex items-center gap-3 select-none", className)}
       aria-label="ديل DEAL FOR MARKETING"

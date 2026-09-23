@@ -13,6 +13,9 @@ import {
 } from "@/lib/line";
 import { cn } from "@/lib/utils";
 
+/** Server accepts at most this many messages; always send (and keep) the latest ones. */
+const LINE_MAX_MESSAGES = LINE_MAX_TURNS * 2;
+
 function loadSession(): LineSession {
   try {
     const raw = sessionStorage.getItem(LINE_SESSION_KEY);
@@ -20,7 +23,7 @@ function loadSession(): LineSession {
     const parsed = JSON.parse(raw) as LineSession;
     if (!Array.isArray(parsed.messages)) return { messages: [], file: null };
     return {
-      messages: parsed.messages.slice(0, 16),
+      messages: parsed.messages.slice(-LINE_MAX_MESSAGES),
       file: parsed.file ?? null,
     };
   } catch {
@@ -47,6 +50,8 @@ export function DealLine() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [fileOpen, setFileOpen] = useState(false);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const sheetTrigger = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const s = loadSession();
@@ -66,6 +71,20 @@ export function DealLine() {
     el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [messages, busy]);
 
+  useEffect(() => {
+    if (!fileOpen) return;
+    const trigger = sheetTrigger.current;
+    sheetRef.current?.focus();
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key === "Escape") setFileOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      trigger?.focus();
+    };
+  }, [fileOpen]);
+
   const userTurns = messages.filter((m) => m.role === "user").length;
   const remaining = Math.max(0, LINE_MAX_TURNS - userTurns);
   const capped = remaining === 0;
@@ -79,7 +98,7 @@ export function DealLine() {
     setErr("");
     setBusy(true);
     try {
-      const res = await routeLine({ data: { messages: next } });
+      const res = await routeLine({ data: { messages: next.slice(-LINE_MAX_MESSAGES) } });
       if (!res.ok) {
         setErr(res.error);
         return;
@@ -167,7 +186,7 @@ export function DealLine() {
       </header>
 
       <div className="grid min-h-0 flex-1 md:grid-cols-[minmax(0,1fr)_22rem] lg:grid-cols-[minmax(0,1fr)_26rem]">
-        <section className="flex min-h-0 flex-col border-hair md:border-l">
+        <section className="flex min-h-0 flex-col border-hair md:border-e">
           <div ref={scroller} className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-6 md:px-10">
             {messages.length === 0 && !busy ? (
               <EmptyStarters onPick={(t) => void send(t)} />
@@ -187,7 +206,11 @@ export function DealLine() {
                 {busy ? <Typing /> : null}
               </>
             )}
-            {err ? <p className="text-sm text-lime">{err}</p> : null}
+            {err ? (
+              <p role="alert" className="text-sm text-lime">
+                {err}
+              </p>
+            ) : null}
           </div>
 
           <form
@@ -207,7 +230,7 @@ export function DealLine() {
               onChange={(e) => setText(e.target.value)}
               onKeyDown={onKey}
               placeholder={capped ? "بلغت حد الجلسة — حوّل الملف أو ابدأ من جديد." : "اكتب بلهجتك…"}
-              className="w-full resize-none bg-transparent font-display text-base leading-relaxed text-snow outline-none placeholder:text-dim"
+              className="w-full resize-none bg-transparent font-display text-base leading-relaxed text-snow placeholder:text-dim focus-visible:outline-offset-4"
             />
             <div className="mt-3 flex items-center justify-between gap-3">
               <p className="font-ui text-micro tracking-widest text-dim">
@@ -231,9 +254,12 @@ export function DealLine() {
 
       <div className="shrink-0 border-t border-hair md:hidden">
         <button
+          ref={sheetTrigger}
           type="button"
+          aria-haspopup="dialog"
+          aria-expanded={fileOpen}
           onClick={() => setFileOpen(true)}
-          className="flex h-14 w-full items-center justify-between bg-card px-5 text-right"
+          className="flex h-14 w-full items-center justify-between bg-card px-5 text-start"
         >
           <span className="font-display text-sm text-snow">ملف الثبوت</span>
           <span className="font-display text-xs text-lime">{file ? file.route_label || "يتكوّن" : "فارغ"}</span>
@@ -243,11 +269,18 @@ export function DealLine() {
       {fileOpen ? (
         <div className="fixed inset-0 z-50 flex items-end bg-ink/70 md:hidden" onClick={() => setFileOpen(false)}>
           <div
-            className="max-h-[78dvh] w-full overflow-y-auto bg-ink pb-[env(safe-area-inset-bottom)]"
+            ref={sheetRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="line-file-title"
+            tabIndex={-1}
+            className="max-h-[78dvh] w-full overflow-y-auto bg-ink pb-[env(safe-area-inset-bottom)] focus:outline-none"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="sticky top-0 flex h-14 items-center justify-between border-b border-hair bg-ink px-5">
-              <p className="font-display text-sm text-snow">ملف الثبوت</p>
+              <p id="line-file-title" className="font-display text-sm text-snow">
+                ملف الثبوت
+              </p>
               <button type="button" onClick={() => setFileOpen(false)} className="inline-flex h-11 items-center font-display text-sm text-lime">
                 إغلاق
               </button>
@@ -270,7 +303,7 @@ function EmptyStarters({ onPick }: { onPick: (text: string) => void }) {
             <button
               type="button"
               onClick={() => onPick(s.text)}
-              className="flex min-h-24 w-full flex-col items-start p-5 text-right hover:bg-card"
+              className="flex min-h-24 w-full flex-col items-start p-5 text-start hover:bg-card"
             >
               <span className="font-display text-xs text-lime">{s.label}</span>
               <span className="mt-2 text-sm leading-relaxed text-snow">{s.text}</span>
@@ -354,7 +387,7 @@ function Row({ k, v, accent }: { k: string; v?: string; accent?: boolean }) {
   return (
     <div className="flex items-baseline justify-between gap-4">
       <dt className="font-display text-xs text-dim">{k}</dt>
-      <dd className={cn("text-left font-display text-sm", accent ? "text-lime" : "text-snow")}>
+      <dd className={cn("text-end font-display text-sm", accent ? "text-lime" : "text-snow")}>
         {v ? (
           <span key={v} className="file-in">
             {v}

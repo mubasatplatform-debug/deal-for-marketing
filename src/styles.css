@@ -81,6 +81,11 @@
     background: var(--color-lime);
     color: var(--color-ink);
   }
+
+  :focus-visible {
+    outline: 2px solid var(--color-lime);
+    outline-offset: 2px;
+  }
 }
 
 @keyframes ken {

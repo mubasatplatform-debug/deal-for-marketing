@@ -13,7 +13,7 @@ export const Route = createRootRoute({
       { title: APP_NAME },
       {
         name: "description",
-        content: "حيث يبقي التأثير — التأثير لا يأتي صدفة… نحن نصنعه. وكالة ديل للتسويق.",
+        content: "حيث يبقى التأثير — التأثير لا يأتي صدفة… نحن نصنعه. وكالة ديل للتسويق.",
       },
       { name: "theme-color", content: "#050505" },
     ],

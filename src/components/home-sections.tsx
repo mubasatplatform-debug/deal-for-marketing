@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { ArrowLink } from "@/components/arrow-link";
 import { LimeWave } from "@/components/lime-wave";
 import { Reveal } from "@/components/reveal";
@@ -120,12 +121,12 @@ export function Hero() {
           </span>
         </p>
         <h1 className="text-balance font-display text-hero font-semibold text-lime md:text-6xl">
-          حيث يبقي <span className="block md:inline">التأثير</span>
+          حيث يبقى <span className="block md:inline">التأثير</span>
         </h1>
         <p className="mt-6 max-w-md text-pretty font-display text-lg leading-relaxed text-snow md:text-xl">
           التأثير لا يأتي صدفة… نحن نصنعه
         </p>
-        <p dir="ltr" className="mt-3 font-ui text-sm text-mist">
+        <p dir="ltr" lang="en" className="mt-3 font-ui text-sm text-mist">
           Impact doesn’t come by chance — we make it.
         </p>
 
@@ -353,27 +354,27 @@ export function Services() {
           type="button"
           aria-label="الخدمة التالية"
           onClick={() => setI((n) => (n + 1) % agency.length)}
-          className="absolute right-0 bottom-0 flex size-16 items-center justify-center bg-lime text-ink md:size-20"
+          className="absolute start-0 bottom-0 flex size-16 items-center justify-center bg-lime text-ink md:size-20"
         >
-          <svg viewBox="0 0 24 24" className="size-8" fill="none" stroke="currentColor" strokeWidth="1.7">
-            <path d="M4 14l5-5 4 4 7-8" />
-            <path d="M14 5h6v6" />
-          </svg>
+          <ArrowLeft className="size-8" strokeWidth={1.7} aria-hidden="true" />
         </button>
       </Reveal>
 
       <Reveal className="px-8 pt-10 text-center md:px-16">
-        <div className="flex items-baseline justify-center gap-4">
-          <h2 className="font-display text-2xl text-snow md:text-4xl">{s.title}</h2>
-          <span className="font-display text-sm text-lime">{String(i + 1).padStart(2, "0")}</span>
+        <div aria-live="polite">
+          <div className="flex items-baseline justify-center gap-4">
+            <h2 className="font-display text-2xl text-snow md:text-4xl">{s.title}</h2>
+            <span className="font-display text-sm text-lime">{String(i + 1).padStart(2, "0")}</span>
+          </div>
+          <p className="mx-auto mt-5 max-w-lg text-pretty text-base leading-loose text-mist">{s.body}</p>
         </div>
-        <p className="mx-auto mt-5 max-w-lg text-pretty text-base leading-loose text-mist">{s.body}</p>
         <div className="mt-8 flex justify-center gap-2">
           {agency.map((item, idx) => (
             <button
               key={item.slug}
               type="button"
               aria-label={item.title}
+              aria-current={idx === i ? "true" : undefined}
               onClick={() => setI(idx)}
               className="flex h-11 w-8 items-center justify-center"
             >
@@ -426,7 +427,7 @@ export function Works() {
           متكاملة
         </h2>
         <p className="mt-4 font-display text-2xl text-snow">تصنع نتائج ملموسة.</p>
-        <p dir="ltr" className="mt-2 font-ui text-sm text-mist">
+        <p dir="ltr" lang="en" className="mt-2 font-ui text-sm text-mist">
           Creative work. Measurable impact.
         </p>
       </Reveal>
@@ -444,12 +445,12 @@ export function Works() {
               />
             </Reveal>
             <div className="relative bg-card px-8 py-10 text-center">
-              <span className="absolute top-6 left-6 font-ui text-xs tracking-widest text-lime">0{idx + 1}</span>
+              <span className="absolute top-6 end-6 font-ui text-xs tracking-widest text-lime">0{idx + 1}</span>
               <h3 className="font-display text-2xl text-snow md:text-3xl">{w.ar}</h3>
-              <p dir="ltr" className="mt-3 font-ui text-lg text-snow/90">
+              <p dir="ltr" lang="en" className="mt-3 font-ui text-lg text-snow/90">
                 {w.title}
               </p>
-              <p dir="ltr" className="mt-2 font-ui text-sm text-mist">
+              <p dir="ltr" lang="en" className="mt-2 font-ui text-sm text-mist">
                 {w.cats}
               </p>
             </div>
@@ -470,7 +471,7 @@ export function Clients() {
           <p className="mt-4 font-display text-xl text-mist">علامات نبني معها حضورًا يبقى.</p>
           <ul className="mx-auto mt-10 grid max-w-3xl grid-cols-2 gap-px bg-hair sm:grid-cols-3">
             {clients.map((c) => (
-              <li key={c} dir="ltr" className="bg-ink py-8 font-ui text-sm tracking-[0.28em] text-mist">
+              <li key={c} dir="ltr" lang="en" className="bg-ink py-8 font-ui text-sm tracking-[0.28em] text-mist">
                 {c}
               </li>
             ))}
@@ -532,10 +533,12 @@ export function Quote() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,color-mix(in_oklab,var(--color-ink)_62%,transparent)_0%,color-mix(in_oklab,var(--color-ink)_90%,transparent)_75%)]" />
       <Reveal className="relative z-10 px-8 pb-28 text-center md:px-16">
         <p className="text-kicker text-lime">كلمة رئيس مجلس الإدارة //</p>
-        <blockquote className="mx-auto mt-8 max-w-2xl font-display text-2xl leading-relaxed text-snow md:text-3xl">
-          «{q.text}»
-        </blockquote>
-        <p className="mt-8 font-display text-lime">— {q.by}</p>
+        <div aria-live="polite">
+          <blockquote className="mx-auto mt-8 max-w-2xl font-display text-2xl leading-relaxed text-snow md:text-3xl">
+            «{q.text}»
+          </blockquote>
+          <p className="mt-8 font-display text-lime">— {q.by}</p>
+        </div>
         <div className="mt-10 flex items-center justify-center gap-6 text-mist">
           <button
             type="button"
@@ -572,7 +575,7 @@ export function Footer() {
           info@dealadv.sa
         </a>
 
-        <div className="mt-14 space-y-8 text-right">
+        <div className="mt-14 space-y-8 text-start">
           <div>
             <p className="text-sm text-dim">هاتف</p>
             <a href={`tel:${phone.tel}`} className="mt-2 inline-flex items-center gap-2 text-lg text-snow" dir="ltr">
@@ -593,7 +596,7 @@ export function Footer() {
           </div>
         </div>
 
-        <ul className="mt-14 space-y-3 text-right text-mist">
+        <ul className="mt-14 space-y-3 text-start text-mist">
           <li>
             <a href="#top" className="hover:text-lime">
               • الرئيسية
@@ -611,7 +614,7 @@ export function Footer() {
           </li>
           <li>
             <a href="#works" className="hover:text-lime">
-              • اعمالنا
+              • أعمالنا
             </a>
           </li>
           <li>
@@ -627,6 +630,11 @@ export function Footer() {
           <li>
             <a href="#contact" className="hover:text-lime">
               • تواصل معنا
+            </a>
+          </li>
+          <li>
+            <a href="/privacy" className="hover:text-lime">
+              • سياسة الخصوصية
             </a>
           </li>
         </ul>
