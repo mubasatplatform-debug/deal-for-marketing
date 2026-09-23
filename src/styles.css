@@ -267,6 +267,9 @@
 }
 .menu-root.is-open .menu-panel {
   transform: translate3d(0, 0, 0);
+  /* Only when open: on the parked (off-screen) panel this 1px edge leaked into
+     the viewport as a lime line down the left side of every page. */
+  box-shadow: 1px 0 0 0 rgba(198, 255, 61, 0.35);
 }
 .menu-root.is-open .menu-scrim {
   opacity: 1;

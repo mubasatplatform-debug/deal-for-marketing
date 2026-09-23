@@ -149,6 +149,11 @@ function authPopupPlugin(): Plugin {
 const standalone = process.env.DEAL_STANDALONE === "1";
 
 export default defineConfig(({ command, isPreview }) => ({
+  // Build-time flag for src/routes/__root.tsx: standalone builds own their share
+  // tags + manifest link; platform builds leave both to the injector.
+  define: {
+    __DEAL_STANDALONE__: JSON.stringify(standalone),
+  },
   server: {
     host: "0.0.0.0",
     port: 8080,
@@ -177,9 +182,12 @@ export default defineConfig(({ command, isPreview }) => ({
             // Grok platform middleware (install page, platform manifest and the
             // injected Grok badge), which only belongs on Grok-hosted deploys.
             preset: standalone ? "node-server" : "vercel",
-            // Auto-registers server/middleware/* (the PWA install page +
-            // manifest + head-tag middleware). Nitro v3 defaults serverDir to
-            // false, so removing this silently unwires /?install=1 on deploys.
+            // Platform builds: auto-registers server/middleware/* (the PWA
+            // install page + manifest + head-tag middleware). Nitro v3 defaults
+            // serverDir to false, so dropping "./server" silently unwires
+            // /?install=1 on deploys. Standalone builds deliberately opt out
+            // (that middleware is Grok-hosted chrome). Keep "./server" on this
+            // line: scripts/grok-pwa-plugin.test.mjs guards it.
             serverDir: standalone ? false : "./server",
             // Baseline hardening. No CSP / frame-ancestors yet: the Grok live
             // preview frames the app and injects its extensions script.

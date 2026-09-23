@@ -5,8 +5,17 @@ import { DealLogo } from "@/components/logo";
 import { SiteFooter } from "@/components/site-footer";
 import { nav } from "@/lib/content";
 import { cn } from "@/lib/utils";
-import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
+import { authEnabled, signOut } from "@/lib/auth/client";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { mobile, phone } from "@/lib/content";
+
+/** The one label for the signed-in customer area (/client) across the site (also used in start.$slug.tsx). */
+const ACCOUNT_LABEL = "حسابي";
+
+/** `/login` that brings the visitor back to where they were. */
+function loginHref(path: string) {
+  return path && path !== "/" && !path.startsWith("/login") ? `/login?redirect=${encodeURIComponent(path)}` : "/login";
+}
 
 type Chrome = {
   menu: boolean;
@@ -73,9 +82,15 @@ export function SiteChrome({ children, footer }: { children: ReactNode; footer?:
             <span className="h-px w-full bg-snow" />
           </span>
         </button>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
+          <a
+            href="/start"
+            className="hidden h-10 items-center bg-lime px-5 font-display text-sm text-ink transition-opacity hover:opacity-90 md:inline-flex"
+          >
+            اطلب خدمتك
+          </a>
           <AuthSlot />
-          <DealLogo />
+          <DealLogo className="ms-1 md:ms-2" />
         </div>
       </header>
 
@@ -106,21 +121,31 @@ export function SiteChrome({ children, footer }: { children: ReactNode; footer?:
 }
 
 function AuthSlot() {
-  const { isPending } = useCurrentUserState();
-  if (isPending) return <span className="inline-block h-8 w-14 bg-hair" />;
+  const { user, isPending } = useCurrentUserState();
+  const pathname = useRouterState({ select: (st) => st.location.pathname });
+  // Same footprint in every state, so the header never shifts while the session resolves.
+  const base =
+    "inline-flex h-10 min-w-[4.5rem] items-center justify-center gap-2 border px-3 font-display text-sm transition-colors";
+  if (isPending) return <span aria-hidden="true" className={cn(base, "border-hair")} />;
+  if (!user) {
+    return (
+      <a href={loginHref(pathname)} className={cn(base, "border-hair text-snow hover:border-lime hover:text-lime")}>
+        دخول
+      </a>
+    );
+  }
+  const initial = (user.displayName ?? user.primaryEmail ?? "؟").trim().charAt(0).toUpperCase();
   return (
-    <>
-      <SignedOut>
-        <a href="/login" className="inline-flex h-11 items-center px-2 font-display text-sm text-lime">
-          دخول
-        </a>
-      </SignedOut>
-      <SignedIn>
-        <div className="max-w-40 text-snow [&_button]:text-lime [&_span]:truncate">
-          <UserButton />
-        </div>
-      </SignedIn>
-    </>
+    <a
+      href="/client"
+      aria-current={pathname === "/client" ? "page" : undefined}
+      className={cn(base, "border-lime/60 text-lime hover:border-lime")}
+    >
+      <span aria-hidden="true" className="grid size-6 place-items-center bg-lime font-ui text-xs font-bold text-ink">
+        {initial}
+      </span>
+      {ACCOUNT_LABEL}
+    </a>
   );
 }
 
@@ -128,6 +153,10 @@ function MenuOverlay() {
   const { menu, close, trigger } = useChrome();
   const nav0 = useRef<HTMLAnchorElement>(null);
   const wasOpen = useRef(false);
+  const { user, isPending } = useCurrentUserState();
+  const pathname = useRouterState({ select: (st) => st.location.pathname });
+  const [signingOut, setSigningOut] = useState(false);
+  const links = nav.filter((item) => item.href !== "/client");
 
   useEffect(() => {
     if (menu) {
@@ -161,7 +190,7 @@ function MenuOverlay() {
         role="dialog"
         aria-modal="true"
         aria-label="القائمة"
-        className="menu-panel absolute inset-y-0 left-0 flex w-[min(20rem,86vw)] flex-col bg-ink shadow-[1px_0_0_0_rgba(198,255,61,0.35)]">
+        className="menu-panel absolute inset-y-0 left-0 flex w-[min(20rem,86vw)] flex-col bg-ink">
         <div dir="ltr" className="flex shrink-0 items-center justify-between px-4 pt-[max(0.75rem,env(safe-area-inset-top))]">
           <button
             type="button"
@@ -177,7 +206,7 @@ function MenuOverlay() {
         </div>
 
         <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-3 pt-6 pb-4 text-start">
-          {nav.map((item, idx) => (
+          {links.map((item, idx) => (
             <a
               key={item.href}
               ref={idx === 0 ? nav0 : undefined}
@@ -191,11 +220,59 @@ function MenuOverlay() {
           <a
             href="/#services"
             onClick={close}
-            className="menu-link mt-2 flex min-h-12 w-full items-center justify-end px-3 font-display text-xl font-semibold text-lime active:bg-lime active:text-ink"
+            className="menu-link flex min-h-12 w-full items-center justify-end px-3 font-display text-xl font-semibold text-snow active:bg-lime active:text-ink"
           >
             خدماتنا
           </a>
         </nav>
+
+        <div className="shrink-0 space-y-3 border-t border-hair px-6 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] text-start">
+          {isPending ? (
+            <span aria-hidden="true" className="block h-12 bg-hair/60" />
+          ) : user ? (
+            <div className="flex items-center gap-2">
+              <a
+                href="/client"
+                onClick={close}
+                className="flex h-12 flex-1 items-center justify-center bg-lime font-display text-ink"
+              >
+                {ACCOUNT_LABEL}
+              </a>
+              {authEnabled ? (
+                <button
+                  type="button"
+                  disabled={signingOut}
+                  onClick={() => {
+                    setSigningOut(true);
+                    void signOut("/").catch(() => setSigningOut(false));
+                  }}
+                  className="h-12 border border-hair px-4 font-display text-sm text-mist hover:text-snow disabled:opacity-60"
+                >
+                  {signingOut ? "جارٍ الخروج…" : "تسجيل الخروج"}
+                </button>
+              ) : null}
+            </div>
+          ) : (
+            <a
+              href={loginHref(pathname)}
+              onClick={close}
+              className="flex h-12 items-center justify-center border border-lime font-display text-lime"
+            >
+              دخول / حساب جديد
+            </a>
+          )}
+          <div className="flex items-center justify-between gap-3 text-sm">
+            <a href={`tel:${phone.tel}`} className="inline-flex min-h-11 items-center gap-2 text-mist hover:text-lime">
+              اتصال
+              <span dir="ltr" className="font-ui text-snow">
+                {phone.display}
+              </span>
+            </a>
+            <a href={`https://wa.me/${mobile.wa}`} className="inline-flex min-h-11 items-center text-lime hover:opacity-80">
+              واتساب
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -12,16 +12,26 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ClientRouteImport } from './routes/client'
+import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as LineRouteImport } from './routes/line'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as StartRouteImport } from './routes/start'
+import { Route as AdminKeysRouteImport } from './routes/admin_.keys'
+import { Route as ApiMcpRouteImport } from './routes/api/mcp'
+import { Route as ClientKeysRouteImport } from './routes/client_.keys'
 import { Route as StartIndexRouteImport } from './routes/start.index'
 import { Route as StartSlugRouteImport } from './routes/start.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiV1SplatRouteImport } from './routes/api/v1/$'
+import { Route as ApiV1RequestsRouteImport } from './routes/api/v1/requests'
+import { Route as ApiV1ServicesRouteImport } from './routes/api/v1/services'
 import { Route as DeskCrmViewRouteImport } from './routes/desk.crm.$view'
 import { Route as DeskLawViewRouteImport } from './routes/desk.law.$view'
 import { Route as DeskPayViewRouteImport } from './routes/desk.pay.$view'
+import { Route as ApiV1AdminRequestsRouteImport } from './routes/api/v1/admin/requests'
+import { Route as ApiV1RequestsIdRouteImport } from './routes/api/v1/requests.$id'
+import { Route as ApiV1AdminRequestsIdRouteImport } from './routes/api/v1/admin/requests.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -36,6 +46,11 @@ const AdminRoute = AdminRouteImport.update({
 const ClientRoute = ClientRouteImport.update({
   id: '/client',
   path: '/client',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevelopersRoute = DevelopersRouteImport.update({
+  id: '/developers',
+  path: '/developers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LineRoute = LineRouteImport.update({
@@ -58,6 +73,21 @@ const StartRoute = StartRouteImport.update({
   path: '/start',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminKeysRoute = AdminKeysRouteImport.update({
+  id: '/admin_/keys',
+  path: '/admin/keys',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMcpRoute = ApiMcpRouteImport.update({
+  id: '/api/mcp',
+  path: '/api/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientKeysRoute = ClientKeysRouteImport.update({
+  id: '/client_/keys',
+  path: '/client/keys',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StartIndexRoute = StartIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -71,6 +101,21 @@ const StartSlugRoute = StartSlugRouteImport.update({
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1SplatRoute = ApiV1SplatRouteImport.update({
+  id: '/api/v1/$',
+  path: '/api/v1/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1RequestsRoute = ApiV1RequestsRouteImport.update({
+  id: '/api/v1/requests',
+  path: '/api/v1/requests',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1ServicesRoute = ApiV1ServicesRouteImport.update({
+  id: '/api/v1/services',
+  path: '/api/v1/services',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DeskCrmViewRoute = DeskCrmViewRouteImport.update({
@@ -88,51 +133,96 @@ const DeskPayViewRoute = DeskPayViewRouteImport.update({
   path: '/desk/pay/$view',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV1AdminRequestsRoute = ApiV1AdminRequestsRouteImport.update({
+  id: '/api/v1/admin/requests',
+  path: '/api/v1/admin/requests',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1RequestsIdRoute = ApiV1RequestsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiV1RequestsRoute,
+} as any)
+const ApiV1AdminRequestsIdRoute = ApiV1AdminRequestsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiV1AdminRequestsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/client': typeof ClientRoute
+  '/developers': typeof DevelopersRoute
   '/line': typeof LineRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/start': typeof StartRouteWithChildren
+  '/admin/keys': typeof AdminKeysRoute
+  '/api/mcp': typeof ApiMcpRoute
+  '/client/keys': typeof ClientKeysRoute
   '/start/$slug': typeof StartSlugRoute
   '/start/': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/v1/$': typeof ApiV1SplatRoute
+  '/api/v1/requests': typeof ApiV1RequestsRouteWithChildren
+  '/api/v1/services': typeof ApiV1ServicesRoute
   '/desk/crm/$view': typeof DeskCrmViewRoute
   '/desk/law/$view': typeof DeskLawViewRoute
   '/desk/pay/$view': typeof DeskPayViewRoute
+  '/api/v1/admin/requests': typeof ApiV1AdminRequestsRouteWithChildren
+  '/api/v1/requests/$id': typeof ApiV1RequestsIdRoute
+  '/api/v1/admin/requests/$id': typeof ApiV1AdminRequestsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/client': typeof ClientRoute
+  '/developers': typeof DevelopersRoute
   '/line': typeof LineRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/admin/keys': typeof AdminKeysRoute
+  '/api/mcp': typeof ApiMcpRoute
+  '/client/keys': typeof ClientKeysRoute
   '/start/$slug': typeof StartSlugRoute
   '/start': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/v1/$': typeof ApiV1SplatRoute
+  '/api/v1/requests': typeof ApiV1RequestsRouteWithChildren
+  '/api/v1/services': typeof ApiV1ServicesRoute
   '/desk/crm/$view': typeof DeskCrmViewRoute
   '/desk/law/$view': typeof DeskLawViewRoute
   '/desk/pay/$view': typeof DeskPayViewRoute
+  '/api/v1/admin/requests': typeof ApiV1AdminRequestsRouteWithChildren
+  '/api/v1/requests/$id': typeof ApiV1RequestsIdRoute
+  '/api/v1/admin/requests/$id': typeof ApiV1AdminRequestsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/client': typeof ClientRoute
+  '/developers': typeof DevelopersRoute
   '/line': typeof LineRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/start': typeof StartRouteWithChildren
+  '/admin_/keys': typeof AdminKeysRoute
+  '/api/mcp': typeof ApiMcpRoute
+  '/client_/keys': typeof ClientKeysRoute
   '/start/$slug': typeof StartSlugRoute
   '/start/': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/v1/$': typeof ApiV1SplatRoute
+  '/api/v1/requests': typeof ApiV1RequestsRouteWithChildren
+  '/api/v1/services': typeof ApiV1ServicesRoute
   '/desk/crm/$view': typeof DeskCrmViewRoute
   '/desk/law/$view': typeof DeskLawViewRoute
   '/desk/pay/$view': typeof DeskPayViewRoute
+  '/api/v1/admin/requests': typeof ApiV1AdminRequestsRouteWithChildren
+  '/api/v1/requests/$id': typeof ApiV1RequestsIdRoute
+  '/api/v1/admin/requests/$id': typeof ApiV1AdminRequestsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -140,59 +230,97 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/client'
+    | '/developers'
     | '/line'
     | '/login'
     | '/privacy'
     | '/start'
+    | '/admin/keys'
+    | '/api/mcp'
+    | '/client/keys'
     | '/start/$slug'
     | '/start/'
     | '/api/auth/$'
+    | '/api/v1/$'
+    | '/api/v1/requests'
+    | '/api/v1/services'
     | '/desk/crm/$view'
     | '/desk/law/$view'
     | '/desk/pay/$view'
+    | '/api/v1/admin/requests'
+    | '/api/v1/requests/$id'
+    | '/api/v1/admin/requests/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
     | '/client'
+    | '/developers'
     | '/line'
     | '/login'
     | '/privacy'
+    | '/admin/keys'
+    | '/api/mcp'
+    | '/client/keys'
     | '/start/$slug'
     | '/start'
     | '/api/auth/$'
+    | '/api/v1/$'
+    | '/api/v1/requests'
+    | '/api/v1/services'
     | '/desk/crm/$view'
     | '/desk/law/$view'
     | '/desk/pay/$view'
+    | '/api/v1/admin/requests'
+    | '/api/v1/requests/$id'
+    | '/api/v1/admin/requests/$id'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/client'
+    | '/developers'
     | '/line'
     | '/login'
     | '/privacy'
     | '/start'
+    | '/admin_/keys'
+    | '/api/mcp'
+    | '/client_/keys'
     | '/start/$slug'
     | '/start/'
     | '/api/auth/$'
+    | '/api/v1/$'
+    | '/api/v1/requests'
+    | '/api/v1/services'
     | '/desk/crm/$view'
     | '/desk/law/$view'
     | '/desk/pay/$view'
+    | '/api/v1/admin/requests'
+    | '/api/v1/requests/$id'
+    | '/api/v1/admin/requests/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   ClientRoute: typeof ClientRoute
+  DevelopersRoute: typeof DevelopersRoute
   LineRoute: typeof LineRoute
   LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
   StartRoute: typeof StartRouteWithChildren
+  AdminKeysRoute: typeof AdminKeysRoute
+  ApiMcpRoute: typeof ApiMcpRoute
+  ClientKeysRoute: typeof ClientKeysRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiV1SplatRoute: typeof ApiV1SplatRoute
+  ApiV1RequestsRoute: typeof ApiV1RequestsRouteWithChildren
+  ApiV1ServicesRoute: typeof ApiV1ServicesRoute
   DeskCrmViewRoute: typeof DeskCrmViewRoute
   DeskLawViewRoute: typeof DeskLawViewRoute
   DeskPayViewRoute: typeof DeskPayViewRoute
+  ApiV1AdminRequestsRoute: typeof ApiV1AdminRequestsRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -216,6 +344,13 @@ declare module '@tanstack/react-router' {
       path: '/client'
       fullPath: '/client'
       preLoaderRoute: typeof ClientRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/developers': {
+      id: '/developers'
+      path: '/developers'
+      fullPath: '/developers'
+      preLoaderRoute: typeof DevelopersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/line': {
@@ -246,6 +381,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/keys': {
+      id: '/admin_/keys'
+      path: '/admin/keys'
+      fullPath: '/admin/keys'
+      preLoaderRoute: typeof AdminKeysRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mcp': {
+      id: '/api/mcp'
+      path: '/api/mcp'
+      fullPath: '/api/mcp'
+      preLoaderRoute: typeof ApiMcpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/client_/keys': {
+      id: '/client_/keys'
+      path: '/client/keys'
+      fullPath: '/client/keys'
+      preLoaderRoute: typeof ClientKeysRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/start/': {
       id: '/start/'
       path: '/'
@@ -265,6 +421,27 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/$': {
+      id: '/api/v1/$'
+      path: '/api/v1/$'
+      fullPath: '/api/v1/$'
+      preLoaderRoute: typeof ApiV1SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/requests': {
+      id: '/api/v1/requests'
+      path: '/api/v1/requests'
+      fullPath: '/api/v1/requests'
+      preLoaderRoute: typeof ApiV1RequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/services': {
+      id: '/api/v1/services'
+      path: '/api/v1/services'
+      fullPath: '/api/v1/services'
+      preLoaderRoute: typeof ApiV1ServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/desk/crm/$view': {
@@ -288,6 +465,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DeskPayViewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/admin/requests': {
+      id: '/api/v1/admin/requests'
+      path: '/api/v1/admin/requests'
+      fullPath: '/api/v1/admin/requests'
+      preLoaderRoute: typeof ApiV1AdminRequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/requests/$id': {
+      id: '/api/v1/requests/$id'
+      path: '/$id'
+      fullPath: '/api/v1/requests/$id'
+      preLoaderRoute: typeof ApiV1RequestsIdRouteImport
+      parentRoute: typeof ApiV1RequestsRoute
+    }
+    '/api/v1/admin/requests/$id': {
+      id: '/api/v1/admin/requests/$id'
+      path: '/$id'
+      fullPath: '/api/v1/admin/requests/$id'
+      preLoaderRoute: typeof ApiV1AdminRequestsIdRouteImport
+      parentRoute: typeof ApiV1AdminRequestsRoute
+    }
   }
 }
 
@@ -303,18 +501,49 @@ const StartRouteChildren: StartRouteChildren = {
 
 const StartRouteWithChildren = StartRoute._addFileChildren(StartRouteChildren)
 
+interface ApiV1RequestsRouteChildren {
+  ApiV1RequestsIdRoute: typeof ApiV1RequestsIdRoute
+}
+
+const ApiV1RequestsRouteChildren: ApiV1RequestsRouteChildren = {
+  ApiV1RequestsIdRoute: ApiV1RequestsIdRoute,
+}
+
+const ApiV1RequestsRouteWithChildren = ApiV1RequestsRoute._addFileChildren(
+  ApiV1RequestsRouteChildren,
+)
+
+interface ApiV1AdminRequestsRouteChildren {
+  ApiV1AdminRequestsIdRoute: typeof ApiV1AdminRequestsIdRoute
+}
+
+const ApiV1AdminRequestsRouteChildren: ApiV1AdminRequestsRouteChildren = {
+  ApiV1AdminRequestsIdRoute: ApiV1AdminRequestsIdRoute,
+}
+
+const ApiV1AdminRequestsRouteWithChildren =
+  ApiV1AdminRequestsRoute._addFileChildren(ApiV1AdminRequestsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   ClientRoute: ClientRoute,
+  DevelopersRoute: DevelopersRoute,
   LineRoute: LineRoute,
   LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
   StartRoute: StartRouteWithChildren,
+  AdminKeysRoute: AdminKeysRoute,
+  ApiMcpRoute: ApiMcpRoute,
+  ClientKeysRoute: ClientKeysRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiV1SplatRoute: ApiV1SplatRoute,
+  ApiV1RequestsRoute: ApiV1RequestsRouteWithChildren,
+  ApiV1ServicesRoute: ApiV1ServicesRoute,
   DeskCrmViewRoute: DeskCrmViewRoute,
   DeskLawViewRoute: DeskLawViewRoute,
   DeskPayViewRoute: DeskPayViewRoute,
+  ApiV1AdminRequestsRoute: ApiV1AdminRequestsRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

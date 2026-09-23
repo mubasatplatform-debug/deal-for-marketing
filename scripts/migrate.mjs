@@ -9,8 +9,12 @@
  * The read is non-recursive, so the opt-in auth schema under migrations/auth/
  * is not applied to an app that never asked for sign-in.
  *
+ * Also runs before the server on a standalone host (`npm start`, Render).
+ *
  * No DATABASE_URL (local / preview builds) -> skip; the PGLite fallback applies
- * the same files at startup instead (see src/lib/db.ts).
+ * the same files at startup instead (see src/lib/db.ts). A standalone
+ * production host is the exception: there the fallback is an in-memory
+ * database that loses every lead and session on restart, so exit non-zero.
  */
 import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -18,8 +22,31 @@ import { dirname, join } from "node:path";
 import pg from "pg";
 import { pendingMigrations } from "./migration-plan.mjs";
 
-const databaseUrl = process.env.DATABASE_URL;
+// Whitespace-only counts as unset, matching src/lib/db.ts.
+const rawDatabaseUrl = process.env.DATABASE_URL;
+const databaseUrl = rawDatabaseUrl && rawDatabaseUrl.trim() ? rawDatabaseUrl : undefined;
+
+/**
+ * A durable database is mandatory on a standalone deploy (DEAL_STANDALONE=1),
+ * or on any production run that is not the Vercel / Grok platform build (the
+ * platform injects DATABASE_URL itself; its local/preview builds use PGLite).
+ */
+const requiresDatabase =
+  process.env.DEAL_STANDALONE === "1" ||
+  (process.env.NODE_ENV === "production" &&
+    process.env.VERCEL !== "1" &&
+    !process.env.GROK_PROJECT_ID);
+
 if (!databaseUrl) {
+  if (requiresDatabase) {
+    console.error(
+      "[migrate] DATABASE_URL is not set on a standalone production deploy — refusing to " +
+        "start.\n[migrate] Without it the app would fall back to an in-memory PGLite and " +
+        "silently lose every lead and session on restart.\n[migrate] Set DATABASE_URL " +
+        "(e.g. a Neon or Render Postgres connection string) in the host's environment.",
+    );
+    process.exit(1);
+  }
   console.log(
     "[migrate] DATABASE_URL not set — skipping (the PGLite fallback migrates itself).",
   );

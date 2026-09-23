@@ -485,7 +485,11 @@ test("renders the manifest with the per-app name", () => {
 // fail silently (published apps would just render the app for ?install=1).
 test("vite config keeps the nitro serverDir wiring", () => {
   const viteConfig = readFileSync(join(TEMPLATE_ROOT, "vite.config.ts"), "utf8");
-  assert.match(viteConfig, /serverDir:\s*"\.\/server"/);
+  // The property line itself must still select "./server" for platform builds.
+  // A standalone opt-out may precede it (`standalone ? false : "./server"`,
+  // DEAL_STANDALONE=1 for Render/VPS hosts, which skip the Grok middleware on
+  // purpose), but dropping or renaming "./server" must still fail here.
+  assert.match(viteConfig, /^\s*serverDir:[^\n]*"\.\/server",?\s*$/m);
   assert.match(viteConfig, /grokPwaPlugin\(\)/);
 });
 

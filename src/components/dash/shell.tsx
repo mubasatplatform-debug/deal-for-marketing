@@ -18,6 +18,8 @@ type ShellProps = {
   nav: NavItem[];
   user: { name: string; email?: string | null };
   onSignOut?: () => void;
+  /** A sign-out is in flight: the button is disabled until it fails or leaves. */
+  signingOut?: boolean;
   title: string;
   subtitle?: ReactNode;
   actions?: ReactNode;
@@ -27,13 +29,16 @@ type ShellProps = {
 /**
  * Application frame for every DEAL dashboard: pine sidebar at the inline
  * start (right in RTL), a light paper canvas, and a sticky top bar. On small
- * screens the sidebar becomes a focus-managed drawer.
+ * screens the sidebar becomes a modal drawer: the rest of the page is
+ * `inert` while it is open (so Tab stays inside), and focus returns to the
+ * menu button when it closes.
  */
 export function DashShell({
   area,
   nav,
   user,
   onSignOut,
+  signingOut,
   title,
   subtitle,
   actions,
@@ -62,8 +67,17 @@ export function DashShell({
       {/* Overscroll and short pages show paper, not the marketing site's ink. */}
       <style>{"html,body{background:var(--color-paper)}"}</style>
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 start-0 z-30 hidden w-64 flex-col bg-pine-deep lg:flex">
-        <Sidebar area={area} nav={nav} user={user} onSignOut={onSignOut} />
+      <aside
+        inert={open}
+        className="fixed inset-y-0 start-0 z-30 hidden w-64 flex-col bg-pine-deep lg:flex"
+      >
+        <Sidebar
+          area={area}
+          nav={nav}
+          user={user}
+          onSignOut={onSignOut}
+          signingOut={signingOut}
+        />
       </aside>
 
       {/* Mobile drawer */}
@@ -91,12 +105,19 @@ export function DashShell({
             >
               <X className="size-5" />
             </button>
-            <Sidebar area={area} nav={nav} user={user} onSignOut={onSignOut} />
+            <Sidebar
+              area={area}
+              nav={nav}
+              user={user}
+              onSignOut={onSignOut}
+              signingOut={signingOut}
+            />
           </div>
         </div>
       ) : null}
 
-      <div className="lg:ps-64">
+      {/* Everything behind the open drawer is inert: no focus, no clicks, hidden from AT. */}
+      <div inert={open} className="lg:ps-64">
         <header className="sticky top-0 z-20 border-b border-line bg-paper/85 backdrop-blur-md">
           <div className="mx-auto flex h-16 max-w-[1320px] items-center gap-3 px-4 md:px-8">
             <button
@@ -135,7 +156,8 @@ function Sidebar({
   nav,
   user,
   onSignOut,
-}: Pick<ShellProps, "area" | "nav" | "user" | "onSignOut">) {
+  signingOut,
+}: Pick<ShellProps, "area" | "nav" | "user" | "onSignOut" | "signingOut">) {
   return (
     <>
       <div className="px-6 pt-6 pb-8">
@@ -184,9 +206,11 @@ function Sidebar({
         {onSignOut ? (
           <button
             type="button"
-            aria-label="تسجيل الخروج"
+            aria-label={signingOut ? "جارٍ تسجيل الخروج" : "تسجيل الخروج"}
+            aria-busy={signingOut || undefined}
+            disabled={signingOut}
             onClick={onSignOut}
-            className="grid size-8 place-items-center rounded-lg text-snow/60 hover:bg-white/10 hover:text-snow"
+            className="grid size-8 place-items-center rounded-lg text-snow/60 hover:bg-white/10 hover:text-snow disabled:cursor-wait disabled:opacity-50"
           >
             <LogOut className="size-4" />
           </button>

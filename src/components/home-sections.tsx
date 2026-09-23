@@ -236,12 +236,21 @@ export function Hero() {
           Impact doesn’t come by chance — we make it.
         </p>
 
-        <div className="mt-12 flex flex-col items-center gap-5">
-          <ArrowLink href="/line" className="text-base">
-            جرّب خط ديل
-          </ArrowLink>
-          <ArrowLink href="/start">اطلب خدمتك</ArrowLink>
-          <ArrowLink href="#contact">تواصل معنا</ArrowLink>
+        <div className="mt-10 flex flex-col items-center gap-4">
+          <a
+            href="/start"
+            className="inline-flex h-12 min-w-52 items-center justify-center bg-lime px-8 font-display text-base text-ink transition-opacity hover:opacity-90"
+          >
+            اطلب خدمتك
+          </a>
+          <div className="flex items-center gap-6">
+            <ArrowLink href="/line">
+              جرّب خط ديل
+            </ArrowLink>
+            <ArrowLink href="#contact">
+              تواصل معنا
+            </ArrowLink>
+          </div>
         </div>
       </div>
 
@@ -472,6 +481,9 @@ export function Services() {
             <span className="font-display text-sm text-lime">{String(i + 1).padStart(2, "0")}</span>
           </div>
           <p className="mx-auto mt-5 max-w-lg text-pretty text-base leading-loose text-mist">{s.body}</p>
+          <ArrowLink href={`/start/${s.slug}`} className="mt-4">
+            اطلب هذه الخدمة
+          </ArrowLink>
         </div>
         <div className="mt-8 flex justify-center gap-2">
           {agency.map((item, idx) => (
@@ -481,7 +493,7 @@ export function Services() {
               aria-label={item.title}
               aria-current={idx === i ? "true" : undefined}
               onClick={() => setI(idx)}
-              className="flex h-11 w-8 items-center justify-center"
+              className="flex size-11 items-center justify-center"
             >
               <span className={cn("h-1 w-6", idx === i ? "bg-lime" : "bg-hair")} />
             </button>
@@ -654,7 +666,7 @@ export function Quote() {
             type="button"
             aria-label="السابق"
             onClick={() => setI((n) => (n - 1 + quotes.length) % quotes.length)}
-            className="size-10 text-snow hover:text-lime"
+            className="size-11 text-snow hover:text-lime"
           >
             →
           </button>
@@ -662,7 +674,7 @@ export function Quote() {
             type="button"
             aria-label="التالي"
             onClick={() => setI((n) => (n + 1) % quotes.length)}
-            className="size-10 text-snow hover:text-lime"
+            className="size-11 text-snow hover:text-lime"
           >
             ←
           </button>
@@ -688,17 +700,17 @@ export function Footer() {
         <div className="mt-14 space-y-8 text-start">
           <div>
             <p className="text-sm text-dim">هاتف</p>
-            <a href={`tel:${phone.tel}`} className="mt-2 inline-flex items-center gap-2 text-lg text-snow" dir="ltr">
-              {phone.display}
-              <span className="text-lime">•</span>
+            <a href={`tel:${phone.tel}`} className="inline-flex min-h-11 items-center gap-2 font-ui text-lg text-snow hover:text-lime">
+              <span dir="ltr">{phone.display}</span>
             </a>
-            <p className="mt-5 text-sm text-dim">جوال وواتساب</p>
-            <a href={`tel:${mobile.tel}`} className="mt-2 inline-flex items-center gap-2 text-lg text-snow" dir="ltr">
-              {mobile.display}
-              <span className="text-lime">•</span>
-            </a>
-            <a href={phone.wa} className="mt-2 block text-sm text-lime">
-              واتساب مباشر
+            <p className="mt-4 text-sm text-dim">جوال وواتساب</p>
+            <a
+              href={`https://wa.me/${mobile.wa}`}
+              aria-label={`واتساب ${mobile.display}`}
+              className="inline-flex min-h-11 items-center gap-2 font-ui text-lg text-snow hover:text-lime"
+            >
+              <span dir="ltr">{mobile.display}</span>
+              <span className="font-display text-sm text-lime">واتساب</span>
             </a>
           </div>
           <div>
@@ -711,44 +723,49 @@ export function Footer() {
           </div>
         </div>
 
-        <ul className="mt-14 space-y-3 text-start text-mist">
+        <ul className="mt-14 space-y-1 text-start text-mist">
           <li>
-            <a href="#top" className="hover:text-lime">
+            <a href="#top" className="inline-flex min-h-11 items-center hover:text-lime">
               • الرئيسية
             </a>
           </li>
           <li>
-            <a href="/line" className="hover:text-lime">
+            <a href="/line" className="inline-flex min-h-11 items-center hover:text-lime">
               • خط ديل
             </a>
           </li>
           <li>
-            <a href="#instant" className="hover:text-lime">
+            <a href="#instant" className="inline-flex min-h-11 items-center hover:text-lime">
               • الحل اللحظي
             </a>
           </li>
           <li>
-            <a href="#works" className="hover:text-lime">
+            <a href="#works" className="inline-flex min-h-11 items-center hover:text-lime">
               • أعمالنا
             </a>
           </li>
           <li>
-            <a href="#clients" className="hover:text-lime">
+            <a href="#clients" className="inline-flex min-h-11 items-center hover:text-lime">
               • عملاؤنا
             </a>
           </li>
           <li>
-            <a href="#about" className="hover:text-lime">
+            <a href="#about" className="inline-flex min-h-11 items-center hover:text-lime">
               • من نحن
             </a>
           </li>
           <li>
-            <a href="#contact" className="hover:text-lime">
+            <a href="#contact" className="inline-flex min-h-11 items-center hover:text-lime">
               • تواصل معنا
             </a>
           </li>
           <li>
-            <a href="/privacy" className="hover:text-lime">
+            <a href="/start" className="inline-flex min-h-11 items-center hover:text-lime">
+              • اطلب خدمتك
+            </a>
+          </li>
+          <li>
+            <a href="/privacy" className="inline-flex min-h-11 items-center hover:text-lime">
               • سياسة الخصوصية
             </a>
           </li>
@@ -756,9 +773,7 @@ export function Footer() {
 
         <div className="mt-12 flex items-end justify-between">
           <SocialRow />
-          <p dir="ltr" className="font-ui text-xs text-dim">
-            Copyright © 2026
-          </p>
+          <p className="text-xs text-dim">© 2026 ديل للتسويق</p>
         </div>
       </Reveal>
     </footer>
