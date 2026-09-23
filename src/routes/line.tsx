@@ -17,7 +17,8 @@ export const Route = createFileRoute("/line")({
 function LinePage() {
   return (
     <SiteChrome footer={false}>
-      <main className="bg-ink pt-16 md:pt-18">
+      {/* The chrome's fixed edge tick would sit on top of the Line header; hide it on this page only. */}
+      <main className="bg-ink pt-16 md:pt-18 [:root:has(&)_.edge-tick]:hidden">
         <DealLine />
       </main>
     </SiteChrome>
