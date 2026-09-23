@@ -85,6 +85,7 @@ function PasswordSignIn({
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [notice, setNotice] = useState("");
   const [errors, setErrors] = useState<Errors>({});
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -106,6 +107,7 @@ function PasswordSignIn({
   function setMode(next: SignInMode) {
     setModeState(next);
     setErr("");
+    setNotice("");
     setErrors({});
     onModeChange?.(next);
   }
@@ -124,6 +126,7 @@ function PasswordSignIn({
     e.preventDefault();
     if (busy) return;
     setErr("");
+    setNotice("");
     const found = validate();
     setErrors(found);
     if (found.name) return nameRef.current?.focus();
@@ -136,7 +139,7 @@ function PasswordSignIn({
       problem =
         mode === "in"
           ? await signInWithPassword(email.trim(), password)
-          : await signUpWithPassword(name.trim(), email.trim(), password);
+          : await signUpWithPassword(name.trim(), email.trim(), password, callbackURL);
     } catch {
       problem = "تعذر الاتصال، تحقق من الإنترنت وحاول مرة أخرى.";
     }
@@ -147,6 +150,11 @@ function PasswordSignIn({
         setPassword("");
         passwordRef.current?.focus();
       }
+      return;
+    }
+    if (mode === "up") {
+      setNotice("أرسلنا رابط تأكيد إلى بريدك.");
+      window.setTimeout(() => window.location.assign(callbackURL), 700);
       return;
     }
     // Full navigation so the new session cookie is read from the start.
@@ -286,6 +294,15 @@ function PasswordSignIn({
                 </button>
               </>
             ) : null}
+          </div>
+        ) : null}
+
+        {notice ? (
+          <div
+            role="status"
+            className="rounded-xl border border-pine/15 bg-pine-50 px-4 py-3 text-sm leading-relaxed text-pine-deep"
+          >
+            {notice}
           </div>
         ) : null}
 

@@ -53,12 +53,25 @@ export async function signInWithPassword(email: string, password: string): Promi
 }
 
 /** Create an account with email + password; resolves to an Arabic error message or null. */
-export async function signUpWithPassword(name: string, email: string, password: string): Promise<string | null> {
-  const { error } = await authClient.signUp.email({ name, email, password });
+export async function signUpWithPassword(
+  name: string,
+  email: string,
+  password: string,
+  callbackURL = "/client",
+): Promise<string | null> {
+  const { error } = await authClient.signUp.email({ name, email, password, callbackURL });
   if (!error) return null;
   if (error.status === 422 || /exist/i.test(error.message ?? "")) return "هذا البريد مسجّل مسبقًا — سجّل الدخول.";
   if (/password/i.test(error.message ?? "")) return "كلمة المرور قصيرة — ٨ أحرف على الأقل.";
   return "تعذر إنشاء الحساب، حاول مرة أخرى.";
+}
+
+/** Resend the account verification email for the signed-in user's address. */
+export async function sendAccountVerificationEmail(email: string, callbackURL = "/client"): Promise<string | null> {
+  const { error } = await authClient.sendVerificationEmail({ email, callbackURL });
+  if (!error) return null;
+  if (/verified/i.test(error.message ?? "")) return "هذا البريد مؤكد بالفعل.";
+  return "تعذر إرسال رابط التأكيد، حاول مرة أخرى.";
 }
 
 /**

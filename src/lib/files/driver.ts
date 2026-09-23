@@ -21,6 +21,14 @@ export function storageDriverFor(env: Record<string, string | undefined>): Stora
  * ASCII-only copy so no store or URL layer has to handle other scripts.
  */
 export function blobPathFor(requestId: number, fileId: string, safeName: string): string {
-  const ascii = safeName.replace(/[^A-Za-z0-9._-]/g, "_").replace(/_+/g, "_") || "file";
-  return `requests/${requestId}/${fileId}/${ascii}`;
+  return `requests/${requestId}/${fileId}/${asciiName(safeName)}`;
+}
+
+/** Blob pathname for a «مكتب المحامي» document: one prefix per office. */
+export function lawBlobPathFor(workspaceId: string, fileId: string, safeName: string): string {
+  return `law/${workspaceId}/${fileId}/${asciiName(safeName)}`;
+}
+
+function asciiName(safeName: string): string {
+  return safeName.replace(/[^A-Za-z0-9._-]/g, "_").replace(/_+/g, "_") || "file";
 }

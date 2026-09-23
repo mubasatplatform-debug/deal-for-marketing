@@ -178,6 +178,18 @@ const grokOAuthPlugin = authConfigured
     })
   : null;
 
+function appVerificationUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (parsed.pathname.endsWith("/api/auth/verify-email")) {
+      parsed.pathname = parsed.pathname.replace(/\/api\/auth\/verify-email$/, "/verify-email");
+    }
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
 export const auth = betterAuth({
   baseURL,
   // Deployed apps inject BETTER_AUTH_SECRET. Preview: process-stable secret on
@@ -221,6 +233,19 @@ export const auth = betterAuth({
   // /reset-password?token=…); a completed reset signs out every other session.
   ...(emailAndPasswordEnabled
     ? {
+        emailVerification: {
+          sendOnSignUp: true,
+          autoSignInAfterVerification: true,
+          expiresIn: 24 * 60 * 60,
+          sendVerificationEmail: async ({ user, url }: { user: { email: string; name: string }; url: string }) => {
+            const { sendVerificationEmail } = await import("@/lib/mail.server");
+            await sendVerificationEmail({
+              to: user.email,
+              name: user.name,
+              url: appVerificationUrl(url),
+            });
+          },
+        },
         emailAndPassword: {
           enabled: true,
           resetPasswordTokenExpiresIn: 3600,

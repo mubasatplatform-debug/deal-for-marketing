@@ -14,6 +14,7 @@ import {
 import { Toaster, toast } from "sonner";
 import { DashShell, type NavItem } from "@/components/dash/shell";
 import { Button, Card } from "@/components/dash/ui";
+import { VerifyEmailBanner } from "@/components/verify-email-banner";
 import {
   createApiKey,
   getKeysOverview,
@@ -154,24 +155,27 @@ export function ClientKeysPage({ user, onSignOut }: { user: ShellUser; onSignOut
       actions={<NewKeyButton onClick={() => setCreating(true)} disabled={keys.state !== "ready" || atLimit} />}
     >
       {toaster}
-      <div className="grid items-start gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_22rem]">
-        <div className="min-w-0">
-          {keys.state === "error" ? (
-            <LoadError onRetry={keys.load} />
-          ) : (
-            <KeyList
-              keys={keys.data?.keys ?? []}
-              loading={keys.state === "loading"}
-              now={keys.now}
-              onNew={() => setCreating(true)}
-              onRevoke={keys.revoke}
-            />
-          )}
+      <div className="space-y-5 md:space-y-6">
+        <VerifyEmailBanner />
+        <div className="grid items-start gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_22rem]">
+          <div className="min-w-0">
+            {keys.state === "error" ? (
+              <LoadError onRetry={keys.load} />
+            ) : (
+              <KeyList
+                keys={keys.data?.keys ?? []}
+                loading={keys.state === "loading"}
+                now={keys.now}
+                onNew={() => setCreating(true)}
+                onRevoke={keys.revoke}
+              />
+            )}
+          </div>
+          <aside aria-label="الربط والأمان" className="space-y-4 lg:sticky lg:top-24">
+            <ConnectCard />
+            <SafetyCard />
+          </aside>
         </div>
-        <aside aria-label="الربط والأمان" className="space-y-4 lg:sticky lg:top-24">
-          <ConnectCard />
-          <SafetyCard />
-        </aside>
       </div>
       {creating && keys.data ? (
         <CreateKeyDialog grantable={keys.data.grantable} onCreate={keys.create} onClose={() => setCreating(false)} />

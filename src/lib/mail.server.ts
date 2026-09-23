@@ -33,6 +33,32 @@ export async function sendPasswordResetEmail(input: {
   }
 }
 
+export async function sendVerificationEmail(input: {
+  to: string;
+  name: string;
+  url: string;
+}): Promise<void> {
+  const endpoint = process.env.MAIL_RELAY_URL?.trim();
+  const token = process.env.MAIL_RELAY_TOKEN?.trim();
+  if (!endpoint || !token) {
+    console.warn(
+      "[mail] MAIL_RELAY_URL / MAIL_RELAY_TOKEN not set — verification email not sent",
+    );
+    return;
+  }
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ action: "verify", to: input.to, name: input.name, url: input.url }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) console.error(`[mail] verification email relay answered ${res.status}`);
+  } catch (err) {
+    console.error("[mail] verification email relay failed:", err);
+  }
+}
+
 export type ThreadNotice = {
   /** `'team'`: the relay's fixed owner inbox; otherwise one customer email. */
   to: string[] | "team";
@@ -149,4 +175,58 @@ export function sendWorkspaceInviteEmail(input: {
  */
 export function sendTeamAlert(subject: string, text: string): Promise<boolean> {
   return postRelay({ action: "alert", subject, text }, "team alert");
+}
+
+export type ConsultMailKind = "requested" | "confirmed" | "cancelled" | "reminder";
+
+/**
+ * «مكتب المحامي» consultation notice. Relay contract (action 'consult'):
+ *
+ *   {
+ *     "action":   "consult",
+ *     "to":       "<one email address>",
+ *     "kind":     "requested" | "confirmed" | "cancelled" | "reminder",
+ *     "audience": "client" | "office",
+ *     "office":   "<office name>",
+ *     "lawyer":   "<lawyer display name, or '' when not assigned>",
+ *     "when":     "<ISO 8601 UTC start, e.g. 2026-10-01T07:30:00.000Z — show in Asia/Riyadh>",
+ *     "mode":     "video" | "in_office" | "phone",
+ *     "url":      "https://<origin>/…"
+ *   }
+ *
+ * `url` by audience/kind:
+ *   client  requested  -> /meet/<token>   (status page; the same link becomes the call once confirmed)
+ *   client  confirmed  -> /meet/<token>   (join link; the button opens 10 min before)
+ *   client  reminder   -> /meet/<token>
+ *   client  cancelled  -> /o/<slug>/book  (book another time)
+ *   office  requested  -> /app/consultations/<id>  (a new online booking to confirm; sent to
+ *                         the office owners/admins and the assigned lawyer, one email each)
+ *
+ * The relay should ignore fields it does not know. Never throws; callers
+ * never let a failed send block the booking or the status change.
+ */
+export function sendConsultEmail(input: {
+  to: string;
+  kind: ConsultMailKind;
+  audience: "client" | "office";
+  office: string;
+  lawyer: string;
+  when: string;
+  mode: "video" | "in_office" | "phone";
+  url: string;
+}): Promise<boolean> {
+  return postRelay(
+    {
+      action: "consult",
+      to: input.to,
+      kind: input.kind,
+      audience: input.audience,
+      office: input.office,
+      lawyer: input.lawyer,
+      when: input.when,
+      mode: input.mode,
+      url: input.url,
+    },
+    `consult ${input.kind} email`,
+  );
 }

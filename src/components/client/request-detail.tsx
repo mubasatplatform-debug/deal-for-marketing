@@ -5,6 +5,7 @@ import { DashShell } from "@/components/dash/shell";
 import { Button, Card, Num, Skeleton } from "@/components/dash/ui";
 import { buttonClass } from "@/components/dash/button-class";
 import { ThreadPanel } from "@/components/thread/thread-panel";
+import { VerifyEmailBanner } from "@/components/verify-email-banner";
 import type { ClientRequestDetail, Thread } from "@/lib/thread";
 import { cn } from "@/lib/utils";
 import { CLIENT_NAV } from "./nav";
@@ -78,63 +79,66 @@ export function ClientRequestDetail({
         </Link>
       }
     >
-      {state === "error" ? (
-        <Problem
-          icon={AlertCircle}
-          title="تعذّر تحميل الطلب"
-          body="قد يكون الاتصال ضعيفًا للحظات. طلبك ورسائلك محفوظة لدينا."
-          action={
-            <Button icon={RotateCw} onClick={onRetry}>
-              إعادة المحاولة
-            </Button>
-          }
-        />
-      ) : state === "missing" ? (
-        <Problem
-          icon={SearchX}
-          title="لم نجد هذا الطلب في حسابك"
-          body="قد يكون الرابط غير صحيح، أو أن الطلب أُرسل من حساب آخر."
-          action={
-            <Link to="/client" className={buttonClass("primary")}>
-              العودة إلى طلباتي
-            </Link>
-          }
-        />
-      ) : (
-        <div className="grid items-start gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_22rem]">
-          <div className="order-2 min-w-0 lg:order-1">
-            <Card className="overflow-hidden">
-              <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3.5 md:px-6">
-                <div className="min-w-0">
-                  <h2 className="text-[15px] font-bold text-pine-deep">المحادثة مع فريق ديل</h2>
-                  <p className="mt-0.5 text-[12px] text-slate">
-                    رسائلك وملفاتك محفوظة مع هذا الطلب، ويراها فريق ديل فقط.
-                  </p>
-                </div>
-              </header>
-              {state === "ready" && request && thread ? (
-                <ThreadPanel
-                  side="client"
-                  requestId={request.id}
-                  initial={thread}
-                  load={load}
-                  peerName="فريق ديل"
-                />
-              ) : (
-                <div className="space-y-4 px-4 py-8 md:px-6" aria-hidden="true">
-                  <Skeleton className="h-14 w-2/3 rounded-2xl" />
-                  <Skeleton className="ms-auto h-10 w-1/2 rounded-2xl" />
-                  <Skeleton className="h-12 w-full rounded-2xl" />
-                </div>
-              )}
-            </Card>
-          </div>
+      <div className="space-y-5 md:space-y-6">
+        <VerifyEmailBanner />
+        {state === "error" ? (
+          <Problem
+            icon={AlertCircle}
+            title="تعذّر تحميل الطلب"
+            body="قد يكون الاتصال ضعيفًا للحظات. طلبك ورسائلك محفوظة لدينا."
+            action={
+              <Button icon={RotateCw} onClick={onRetry}>
+                إعادة المحاولة
+              </Button>
+            }
+          />
+        ) : state === "missing" ? (
+          <Problem
+            icon={SearchX}
+            title="لم نجد هذا الطلب في حسابك"
+            body="قد يكون الرابط غير صحيح، أو أن الطلب أُرسل من حساب آخر."
+            action={
+              <Link to="/client" className={buttonClass("primary")}>
+                العودة إلى طلباتي
+              </Link>
+            }
+          />
+        ) : (
+          <div className="grid items-start gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_22rem]">
+            <div className="order-2 min-w-0 lg:order-1">
+              <Card className="overflow-hidden">
+                <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3.5 md:px-6">
+                  <div className="min-w-0">
+                    <h2 className="text-[15px] font-bold text-pine-deep">المحادثة مع فريق ديل</h2>
+                    <p className="mt-0.5 text-[12px] text-slate">
+                      رسائلك وملفاتك محفوظة مع هذا الطلب، ويراها فريق ديل فقط.
+                    </p>
+                  </div>
+                </header>
+                {state === "ready" && request && thread ? (
+                  <ThreadPanel
+                    side="client"
+                    requestId={request.id}
+                    initial={thread}
+                    load={load}
+                    peerName="فريق ديل"
+                  />
+                ) : (
+                  <div className="space-y-4 px-4 py-8 md:px-6" aria-hidden="true">
+                    <Skeleton className="h-14 w-2/3 rounded-2xl" />
+                    <Skeleton className="ms-auto h-10 w-1/2 rounded-2xl" />
+                    <Skeleton className="h-12 w-full rounded-2xl" />
+                  </div>
+                )}
+              </Card>
+            </div>
 
-          <aside aria-label="حالة الطلب" className="order-1 space-y-4 lg:sticky lg:top-24 lg:order-2">
-            {request ? <StatusCard request={request} /> : <Skeleton className="h-48 w-full rounded-2xl" />}
-          </aside>
-        </div>
-      )}
+            <aside aria-label="حالة الطلب" className="order-1 space-y-4 lg:sticky lg:top-24 lg:order-2">
+              {request ? <StatusCard request={request} /> : <Skeleton className="h-48 w-full rounded-2xl" />}
+            </aside>
+          </div>
+        )}
+      </div>
     </DashShell>
   );
 }

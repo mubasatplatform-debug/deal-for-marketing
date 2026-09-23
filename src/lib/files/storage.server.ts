@@ -1,4 +1,4 @@
-import { storageDriverFor, blobPathFor, type StorageDriver } from "./driver";
+import { storageDriverFor, blobPathFor, lawBlobPathFor, type StorageDriver } from "./driver";
 
 /**
  * Attachment byte storage — **server-only**. Two drivers behind one surface
@@ -32,11 +32,27 @@ export async function storeBytes(input: {
   mime: string;
   bytes: Uint8Array;
 }): Promise<StoredRef> {
+  return storeBytesAt(blobPathFor(input.requestId, input.fileId, input.name), input.mime, input.bytes);
+}
+
+/** Same as `storeBytes`, for a «مكتب المحامي» document (office-scoped path). */
+export async function storeLawBytes(input: {
+  workspaceId: string;
+  fileId: string;
+  name: string;
+  mime: string;
+  bytes: Uint8Array;
+}): Promise<StoredRef> {
+  return storeBytesAt(lawBlobPathFor(input.workspaceId, input.fileId, input.name), input.mime, input.bytes);
+}
+
+async function storeBytesAt(pathname: string, mime: string, bytes: Uint8Array): Promise<StoredRef> {
+  const input = { mime, bytes };
   const token = blobToken();
   if (!token) return { storage: "db", data: input.bytes, blobPath: null };
   const { put } = await import("@vercel/blob");
   const res = await put(
-    blobPathFor(input.requestId, input.fileId, input.name),
+    pathname,
     Buffer.from(input.bytes.buffer, input.bytes.byteOffset, input.bytes.byteLength),
     {
       access: "private",

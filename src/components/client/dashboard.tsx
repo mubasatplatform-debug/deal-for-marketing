@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { AlertCircle, ArrowLeft, MessagesSquare, Plus, RotateCw } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { DashShell } from "@/components/dash/shell";
+import { VerifyEmailBanner } from "@/components/verify-email-banner";
 import { CLIENT_NAV } from "./nav";
 import { Button, Card, Kpi, Skeleton } from "@/components/dash/ui";
 import { buttonClass } from "@/components/dash/button-class";
@@ -78,43 +79,46 @@ export function ClientDashboard({
         </Link>
       }
     >
-      <div className="grid items-start gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_22rem]">
-        <div className="min-w-0 space-y-5 md:space-y-6">
-          {state === "loading" ? (
-            <>
-              <ActiveRequestSkeleton />
-              <KpiRow loading />
-              <RequestListSkeleton />
-            </>
-          ) : null}
+      <div className="space-y-5 md:space-y-6">
+        <VerifyEmailBanner />
+        <div className="grid items-start gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_22rem]">
+          <div className="min-w-0 space-y-5 md:space-y-6">
+            {state === "loading" ? (
+              <>
+                <ActiveRequestSkeleton />
+                <KpiRow loading />
+                <RequestListSkeleton />
+              </>
+            ) : null}
 
-          {state === "error" ? <LoadError onRetry={onRetry} /> : null}
+            {state === "error" ? <LoadError onRetry={onRetry} /> : null}
 
-          {ready && rows.length === 0 ? <FirstRequest /> : null}
+            {ready && rows.length === 0 ? <FirstRequest /> : null}
 
-          {ready && rows.length > 0 ? (
-            <>
-              <UnreadBanner rows={rows} />
-              {hero ? (
-                <ActiveRequest row={hero} others={active.length - 1} now={now} onOpen={setOpenId} />
-              ) : null}
-              {rows.length > 1 ? (
-                <KpiRow total={rows.length} active={active.length} delivered={delivered} />
-              ) : null}
-              <RequestList
-                rows={rows}
-                now={now}
-                openId={openId}
-                onToggle={(id) => setOpenId((cur) => (cur === id ? null : id))}
-              />
-            </>
-          ) : null}
+            {ready && rows.length > 0 ? (
+              <>
+                <UnreadBanner rows={rows} />
+                {hero ? (
+                  <ActiveRequest row={hero} others={active.length - 1} now={now} onOpen={setOpenId} />
+                ) : null}
+                {rows.length > 1 ? (
+                  <KpiRow total={rows.length} active={active.length} delivered={delivered} />
+                ) : null}
+                <RequestList
+                  rows={rows}
+                  now={now}
+                  openId={openId}
+                  onToggle={(id) => setOpenId((cur) => (cur === id ? null : id))}
+                />
+              </>
+            ) : null}
+          </div>
+
+          <aside aria-label="الدعم" className="space-y-4 lg:sticky lg:top-24">
+            <SupportCard latestId={hero?.id ?? rows[0]?.id} latestService={hero?.service_title ?? rows[0]?.service_title} />
+            <GuestNote />
+          </aside>
         </div>
-
-        <aside aria-label="الدعم" className="space-y-4 lg:sticky lg:top-24">
-          <SupportCard latestId={hero?.id ?? rows[0]?.id} latestService={hero?.service_title ?? rows[0]?.service_title} />
-          <GuestNote />
-        </aside>
       </div>
     </DashShell>
   );

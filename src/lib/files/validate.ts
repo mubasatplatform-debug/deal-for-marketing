@@ -225,12 +225,17 @@ export type CheckedFile =
  * bytes. `bytes` may be only the head of the file when `size` is given
  * (the browser pre-check); the server always passes the whole file.
  */
-export function checkFile(rawName: string, bytes: Uint8Array, size = bytes.byteLength): CheckedFile {
+export function checkFile(
+  rawName: string,
+  bytes: Uint8Array,
+  size = bytes.byteLength,
+  maxBytes = MAX_FILE_BYTES,
+): CheckedFile {
   const name = sanitizeFileName(rawName);
   const kind = kindFromName(name);
   if (!kind) return { ok: false, name, problem: "type" };
   if (size <= 0) return { ok: false, name, problem: "empty" };
-  if (size > MAX_FILE_BYTES) return { ok: false, name, problem: "size" };
+  if (size > maxBytes) return { ok: false, name, problem: "size" };
   if (!matchesMagic(kind, bytes)) return { ok: false, name, problem: "content" };
   return { ok: true, name, kind, mime: FILE_KINDS[kind].mime };
 }
