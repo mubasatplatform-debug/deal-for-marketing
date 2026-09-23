@@ -1,6 +1,8 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { useRouterState } from "@tanstack/react-router";
 import { Instagram, Youtube } from "lucide-react";
 import { DealLogo } from "@/components/logo";
+import { SiteFooter } from "@/components/site-footer";
 import { nav } from "@/lib/content";
 import { cn } from "@/lib/utils";
 import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
@@ -10,7 +12,10 @@ type Chrome = {
   menu: boolean;
   open: () => void;
   close: () => void;
+  trigger: RefObject<HTMLButtonElement | null>;
 };
+
+const MENU_ID = "site-menu";
 
 const ChromeCtx = createContext<Chrome | null>(null);
 
@@ -20,8 +25,15 @@ export function useChrome() {
   return v;
 }
 
-export function SiteChrome({ children }: { children: ReactNode }) {
+/**
+ * `footer` defaults to showing the compact SiteFooter on every page except the
+ * home page ("/"), which renders its own full footer.
+ */
+export function SiteChrome({ children, footer }: { children: ReactNode; footer?: boolean }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const showFooter = footer ?? pathname !== "/";
   const [menu, setMenu] = useState(false);
+  const trigger = useRef<HTMLButtonElement>(null);
   const [showTop, setShowTop] = useState(false);
 
   useEffect(() => {
@@ -38,7 +50,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
 
   const open = useCallback(() => setMenu(true), []);
   const close = useCallback(() => setMenu(false), []);
-  const value: Chrome = { menu, open, close };
+  const value: Chrome = { menu, open, close, trigger };
 
   return (
     <ChromeCtx.Provider value={value}>
@@ -47,8 +59,11 @@ export function SiteChrome({ children }: { children: ReactNode }) {
         className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-hair/60 bg-ink px-5 md:h-18 md:px-8"
       >
         <button
+          ref={trigger}
           type="button"
           aria-label="القائمة"
+          aria-expanded={menu}
+          aria-controls={MENU_ID}
           onClick={value.open}
           className="flex size-11 items-center justify-center text-snow touch-manipulation"
         >
@@ -66,7 +81,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
 
       <span
         aria-hidden="true"
-        className="edge-tick pointer-events-none fixed top-24 left-3 z-40 h-16 w-px bg-lime/80 md:left-5"
+        className="edge-tick pointer-events-none fixed top-24 end-3 z-40 h-16 w-px bg-lime/80 md:end-5"
       />
 
       <button
@@ -74,7 +89,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
         aria-label="العودة للأعلى"
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         className={cn(
-          "fixed bottom-24 left-3 z-40 flex size-12 items-center justify-center bg-ink text-lime outline outline-hair transition-opacity duration-300 md:left-5",
+          "fixed bottom-24 end-3 z-40 flex size-12 items-center justify-center bg-ink text-lime outline outline-hair transition-opacity duration-300 focus-visible:outline-2 focus-visible:outline-lime md:end-5",
           showTop ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       >
@@ -85,6 +100,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
 
       <MenuOverlay />
       {children}
+      {showFooter ? <SiteFooter /> : null}
     </ChromeCtx.Provider>
   );
 }
@@ -109,7 +125,18 @@ function AuthSlot() {
 }
 
 function MenuOverlay() {
-  const { menu, close } = useChrome();
+  const { menu, close, trigger } = useChrome();
+  const nav0 = useRef<HTMLAnchorElement>(null);
+  const wasOpen = useRef(false);
+
+  useEffect(() => {
+    if (menu) {
+      nav0.current?.focus();
+    } else if (wasOpen.current) {
+      trigger.current?.focus();
+    }
+    wasOpen.current = menu;
+  }, [menu, trigger]);
 
   useEffect(() => {
     if (!menu) return;
@@ -129,7 +156,12 @@ function MenuOverlay() {
         onClick={close}
         className="menu-scrim absolute inset-0 bg-ink/70"
       />
-      <div className="menu-panel absolute inset-y-0 left-0 flex w-[min(20rem,86vw)] flex-col bg-ink shadow-[1px_0_0_0_rgba(198,255,61,0.35)]">
+      <div
+        id={MENU_ID}
+        role="dialog"
+        aria-modal="true"
+        aria-label="القائمة"
+        className="menu-panel absolute inset-y-0 left-0 flex w-[min(20rem,86vw)] flex-col bg-ink shadow-[1px_0_0_0_rgba(198,255,61,0.35)]">
         <div dir="ltr" className="flex shrink-0 items-center justify-between px-4 pt-[max(0.75rem,env(safe-area-inset-top))]">
           <button
             type="button"
@@ -144,10 +176,11 @@ function MenuOverlay() {
           <DealLogo onClick={close} />
         </div>
 
-        <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-3 pt-6 pb-4 text-right">
-          {nav.map((item) => (
+        <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-3 pt-6 pb-4 text-start">
+          {nav.map((item, idx) => (
             <a
               key={item.href}
+              ref={idx === 0 ? nav0 : undefined}
               href={item.href}
               onClick={close}
               className="menu-link flex min-h-12 w-full items-center justify-end px-3 font-display text-xl font-semibold text-snow active:bg-lime active:text-ink"
@@ -156,7 +189,7 @@ function MenuOverlay() {
             </a>
           ))}
           <a
-            href="#services"
+            href="/#services"
             onClick={close}
             className="menu-link mt-2 flex min-h-12 w-full items-center justify-end px-3 font-display text-xl font-semibold text-lime active:bg-lime active:text-ink"
           >

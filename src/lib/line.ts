@@ -93,8 +93,13 @@ const inputSchema = z.object({
       }),
     )
     .min(1)
-    .max(16),
+    // A full session is LINE_MAX_TURNS user turns plus one reply each.
+    .max(LINE_MAX_TURNS * 2),
 });
+
+/** Per-visitor ceiling on Deal Line calls, and a daily ceiling on paid model calls. */
+const LINE_IP_LIMIT_PER_HOUR = 40;
+const LINE_DAILY_MODEL_CAP = Number(process.env.LINE_DAILY_CAP) || 1500;
 
 const catalog = services
   .map((s) => `${s.slug} — ${s.title}: ${s.body}`)
@@ -102,7 +107,7 @@ const catalog = services
 
 const SYSTEM = `أنت خط ديل — خدمة العملاء والكول سنتر لوكالة ديل DEAL (القصيم، بريدة).
 
-الصوت: سعودي جدًا، عفوي، ياخذ ويعطي. نجدية/قصيمية إذا الزائر منها. مو فصحى روبوت، مو تزيين. لا تذكر أنك نموذج لغوي. لا أسعار. لا وعود تنفيذ فوري.
+الصوت: سعودي جدًا، عفوي، ياخذ ويعطي. نجدية/قصيمية إذا الزائر منها. مو فصحى روبوت، مو تزيين. إذا سُئلت فقل بوضوح إنك مساعد ذكاء اصطناعي تجريبي من ديل. لا أسعار. لا وعود تنفيذ فوري.
 
 وضعان:
 
@@ -331,6 +336,71 @@ function localRoute(messages: LineMessage[]): LineTurn {
   });
 }
 
+/** JSON Schema of one Deal Line turn, for Claude structured outputs. */
+const turnJsonSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: [
+    "reply",
+    "dialect",
+    "dialect_label",
+    "intent",
+    "route",
+    "route_label",
+    "service_slug",
+    "company",
+    "brief_so_far",
+    "next_need",
+    "ready",
+    "confidence",
+    "stack",
+  ],
+  properties: {
+    reply: { type: "string" },
+    dialect: { type: "string", enum: [...dialects] },
+    dialect_label: { type: "string" },
+    intent: { type: "string" },
+    route: { type: "string", enum: [...routes] },
+    route_label: { type: "string" },
+    service_slug: { type: "string", enum: [...serviceSlugs] },
+    company: { type: "string" },
+    brief_so_far: { type: "string" },
+    next_need: { type: "string" },
+    ready: { type: "boolean" },
+    confidence: { type: "integer" },
+    stack: { type: "array", items: { type: "string" } },
+  },
+} as const;
+
+/**
+ * Claude (Anthropic) — the primary engine. Structured outputs guarantee the
+ * turn JSON; `fallbacks: "default"` lets the API re-run a declined request on
+ * Anthropic's recommended fallback model instead of returning a refusal.
+ * Returns null when the whole chain refuses, so the caller can fall back.
+ */
+async function callClaude(messages: LineMessage[]): Promise<string | null> {
+  const { default: Anthropic } = await import("@anthropic-ai/sdk");
+  const client = new Anthropic({ timeout: 28_000, maxRetries: 1 });
+  const response = await client.beta.messages.create({
+    model: "claude-opus-5",
+    // A turn is a short JSON object; the cap bounds spend on an open endpoint.
+    max_tokens: 2000,
+    betas: ["server-side-fallback-2026-07-01"],
+    fallbacks: "default",
+    // Chat is latency-sensitive and each turn is routine: keep thinking light.
+    output_config: {
+      effort: "low",
+      format: { type: "json_schema", schema: turnJsonSchema },
+    },
+    system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
+    messages,
+  });
+  if (response.stop_reason === "refusal") return null;
+  const text = response.content.find((b) => b.type === "text");
+  return text && text.type === "text" ? text.text : null;
+}
+
+/** xAI Grok — secondary engine, kept for deploys that only carry XAI_API_KEY. */
 async function callXai(messages: LineMessage[], apiKey: string): Promise<string> {
   const res = await fetch("https://api.x.ai/v1/chat/completions", {
     method: "POST",
@@ -357,6 +427,14 @@ async function callXai(messages: LineMessage[], apiKey: string): Promise<string>
   return body.choices?.[0]?.message?.content ?? "";
 }
 
+/** The first configured engine: Claude, then xAI; null means local router only. */
+function modelEngine(): ((messages: LineMessage[]) => Promise<string | null>) | null {
+  if (process.env.ANTHROPIC_API_KEY?.trim()) return callClaude;
+  const xaiKey = process.env.XAI_API_KEY?.trim();
+  if (xaiKey) return (messages) => callXai(messages, xaiKey);
+  return null;
+}
+
 export const routeLine = createServerFn({ method: "POST" })
   .validator((input: unknown) => inputSchema.parse(input))
   .handler(async ({ data }): Promise<{ ok: true; turn: LineTurn } | { ok: false; error: string }> => {
@@ -369,13 +447,29 @@ export const routeLine = createServerFn({ method: "POST" })
       return { ok: false, error: "أرسل رسالة أولاً." };
     }
 
-    const apiKey = process.env.XAI_API_KEY;
-    if (!apiKey) {
-      return { ok: true, turn: localRoute(data.messages) };
+    // Unauthenticated and spends the owner's model quota, so: same-site only,
+    // throttled per visitor, and capped per day (then the local router answers).
+    const { assertSameSiteRequest } = await import("@/lib/auth/isolation.server");
+    const { clientIp, recentHits, takeHit, RateLimitError } = await import("@/lib/rate-limit.server");
+    assertSameSiteRequest();
+    try {
+      await takeHit(`line:${clientIp()}`, LINE_IP_LIMIT_PER_HOUR, 3600);
+    } catch (err) {
+      if (err instanceof RateLimitError) {
+        return { ok: false, error: "الخط مزدحم منك. جرّب بعد ساعة أو اتصل بنا مباشرة." };
+      }
+      throw err;
     }
 
+    const engine = modelEngine();
+    if (!engine || (await recentHits("line:model", 86400)) >= LINE_DAILY_MODEL_CAP) {
+      return { ok: true, turn: localRoute(data.messages) };
+    }
+    await takeHit("line:model", Number.MAX_SAFE_INTEGER, 86400);
+
     try {
-      const raw = await callXai(data.messages, apiKey);
+      const raw = await engine(data.messages);
+      if (!raw) return { ok: true, turn: localRoute(data.messages) };
       const turn = parseTurn(raw);
       if (!turn.dialect_label) turn.dialect_label = dialectLabels[turn.dialect];
       if (!turn.route_label) turn.route_label = routeLabels[turn.route];

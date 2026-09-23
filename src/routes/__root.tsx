@@ -13,21 +13,19 @@ export const Route = createRootRoute({
       { title: APP_NAME },
       {
         name: "description",
-        content: "حيث يبقي التأثير — التأثير لا يأتي صدفة… نحن نصنعه. وكالة ديل للتسويق.",
+        content: "حيث يبقى التأثير — التأثير لا يأتي صدفة… نحن نصنعه. وكالة ديل للتسويق.",
       },
       { name: "theme-color", content: "#050505" },
+      { property: "og:locale", content: "ar_SA" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
       { rel: "stylesheet", href: appCss },
       { rel: "manifest", href: "/__grok/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/__grok/icon-180.png" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Great+Vibes&family=Manrope:wght@400;500;600;700;800&display=swap",
-      },
+      // Brand fonts are self-hosted (no third-party request, no Google outage).
+      { rel: "preload", href: "/fonts/Deal-Font.woff2", as: "font", type: "font/woff2", crossOrigin: "anonymous" },
+      { rel: "stylesheet", href: "/fonts/fonts.css" },
     ],
   }),
   component: () => (

@@ -175,6 +175,23 @@ export default defineConfig(({ command, isPreview }) => ({
             // manifest + head-tag middleware). Nitro v3 defaults serverDir to
             // false, so removing this silently unwires /?install=1 on deploys.
             serverDir: "./server",
+            // Baseline hardening. No CSP / frame-ancestors yet: the Grok live
+            // preview frames the app and injects its extensions script.
+            routeRules: {
+              "/**": {
+                headers: {
+                  "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+                  "X-Content-Type-Options": "nosniff",
+                  "Referrer-Policy": "strict-origin-when-cross-origin",
+                  "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+                },
+              },
+              // Media is replaced in place (same file names), so revalidate
+              // weekly rather than marking it immutable.
+              "/images/**": { headers: { "Cache-Control": "public, max-age=604800, stale-while-revalidate=86400" } },
+              "/video/**": { headers: { "Cache-Control": "public, max-age=604800, stale-while-revalidate=86400" } },
+              "/fonts/**": { headers: { "Cache-Control": "public, max-age=2592000, stale-while-revalidate=86400" } },
+            },
           }),
         ]
       : []),

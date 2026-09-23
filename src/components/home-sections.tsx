@@ -1,32 +1,133 @@
 import { useEffect, useRef, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { ArrowLink } from "@/components/arrow-link";
 import { LimeWave } from "@/components/lime-wave";
 import { Reveal } from "@/components/reveal";
 import { SocialRow } from "@/components/site-chrome";
-import { agency, clients, phone, quotes, systems, works } from "@/lib/content";
+import { agency, clients, mobile, phone, quotes, systems, works } from "@/lib/content";
 import { cn } from "@/lib/utils";
+
+/** Responsive variants generated under /public/images as `<name>-<w>.avif|webp`, JPEG fallback `<name>.jpg`. */
+type Media = { widths: readonly number[]; width: number; height: number };
+
+const SHOT = { widths: [800, 1600, 2400], width: 2400, height: 1380 } as const;
+const WIDE = { widths: [800, 1600], width: 1600, height: 900 } as const;
+const FOUR_THREE = { widths: [800, 1600], width: 1600, height: 1200 } as const;
+
+const media: Record<string, Media> = {
+  hero: { widths: [720, 1008], width: 1008, height: 1792 },
+  "chairman-now": { widths: [400, 800], width: 800, height: 800 },
+  "ops-inbox": SHOT,
+  "desk-home": SHOT,
+  "ops-ai": SHOT,
+  "pay-home": SHOT,
+  service: FOUR_THREE,
+  quote: WIDE,
+  about: WIDE,
+  "work-app": { widths: [800, 1200], width: 1200, height: 1600 },
+  "work-beat": FOUR_THREE,
+  "work-desert": WIDE,
+  "work-event": WIDE,
+  "work-luxe": WIDE,
+  "work-shop": FOUR_THREE,
+};
+
+/** `object-cover` boxes render wider than the viewport on short screens, so sizes follow the cover width. */
+const SIZES = {
+  full: "100vw",
+  clip: "110vw",
+  shot: "(min-width: 891px) 100vw, (min-width: 768px) 891px, (min-width: 612px) 100vw, 612px",
+  quote: "(min-width: 1300px) 100vw, 1300px",
+  about: "(min-width: 1200px) 100vw, (min-width: 768px) 1200px, 970px",
+  chairman: "(min-width: 768px) 296px, 232px",
+} as const;
+
+function Pic({
+  src,
+  alt,
+  sizes,
+  className,
+  priority = false,
+}: {
+  src: string;
+  alt: string;
+  sizes: string;
+  className?: string;
+  priority?: boolean;
+}) {
+  const name = src.replace(/^\/images\//, "").replace(/\.jpg$/, "");
+  const m = media[name];
+  const img = (
+    <img
+      src={src}
+      alt={alt}
+      width={m?.width}
+      height={m?.height}
+      loading={priority ? "eager" : "lazy"}
+      decoding={priority ? undefined : "async"}
+      fetchPriority={priority ? "high" : undefined}
+      className={className}
+    />
+  );
+  if (!m) return img;
+  const set = (ext: string) => m.widths.map((w) => `/images/${name}-${w}.${ext} ${w}w`).join(", ");
+  return (
+    <picture>
+      <source type="image/avif" srcSet={set("avif")} sizes={sizes} />
+      <source type="image/webp" srcSet={set("webp")} sizes={sizes} />
+      {img}
+    </picture>
+  );
+}
+
+/** Decorative autoplay loops are skipped for reduced motion and Save-Data; the image underneath stays. */
+function motionAllowed() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+  const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+  return !conn?.saveData;
+}
+
+function afterLoadIdle(cb: () => void) {
+  let idle = 0;
+  let timer = 0;
+  const run = () => {
+    const hasIdle = typeof (window.requestIdleCallback as unknown) === "function";
+    if (hasIdle) idle = window.requestIdleCallback(cb, { timeout: 3000 });
+    else timer = window.setTimeout(cb, 1500);
+  };
+  if (document.readyState === "complete") run();
+  else window.addEventListener("load", run, { once: true });
+  return () => {
+    window.removeEventListener("load", run);
+    if (idle) window.cancelIdleCallback(idle);
+    if (timer) window.clearTimeout(timer);
+  };
+}
 
 function LiveVideo({
   src,
-  poster,
   className,
   eager = false,
 }: {
   src: string;
-  poster: string;
   className?: string;
+  /** Attach after window load + idle instead of when scrolled near. */
   eager?: boolean;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
-  const [on, setOn] = useState(eager);
+  const [on, setOn] = useState(false);
 
   useEffect(() => {
-    if (eager) return;
+    if (!motionAllowed()) return;
+    if (eager) return afterLoadIdle(() => setOn(true));
     const el = ref.current;
     if (!el) return;
     const io = new IntersectionObserver(
       ([e]) => {
-        if (e.isIntersecting) setOn(true);
+        if (e.isIntersecting) {
+          setOn(true);
+          io.disconnect();
+        }
       },
       { rootMargin: "280px" },
     );
@@ -38,12 +139,18 @@ function LiveVideo({
     if (!on) return;
     const v = ref.current;
     if (!v) return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     const play = () => {
-      v.play().catch(() => undefined);
+      if (mq.matches) v.pause();
+      else v.play().catch(() => undefined);
     };
     play();
     v.addEventListener("canplay", play);
-    return () => v.removeEventListener("canplay", play);
+    mq.addEventListener("change", play);
+    return () => {
+      v.removeEventListener("canplay", play);
+      mq.removeEventListener("change", play);
+    };
   }, [src, on]);
 
   return (
@@ -53,8 +160,9 @@ function LiveVideo({
       muted
       loop
       playsInline
-      preload={eager ? "metadata" : "none"}
-      poster={poster}
+      preload="none"
+      aria-hidden="true"
+      tabIndex={-1}
       className={className}
     >
       {on ? <source src={src} type="video/mp4" /> : null}
@@ -85,11 +193,10 @@ function Marquee() {
 
 function Shot({ src, alt }: { src: string; alt: string }) {
   return (
-    <img
+    <Pic
       src={src}
       alt={alt}
-      loading="lazy"
-      decoding="async"
+      sizes={SIZES.shot}
       className="h-[22rem] w-full object-cover object-top md:h-[32rem]"
     />
   );
@@ -98,15 +205,15 @@ function Shot({ src, alt }: { src: string; alt: string }) {
 export function Hero() {
   return (
     <section id="top" className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-ink">
-      <img
+      <Pic
         src="/images/hero.jpg"
         alt=""
-        fetchPriority="high"
+        sizes={SIZES.full}
+        priority
         className="absolute inset-0 h-full w-full object-cover grayscale"
       />
       <LiveVideo
         src="/video/hero.mp4"
-        poster="/images/hero.jpg"
         eager
         className="live-vid absolute inset-0 h-full w-full object-cover grayscale"
       />
@@ -120,12 +227,12 @@ export function Hero() {
           </span>
         </p>
         <h1 className="text-balance font-display text-hero font-semibold text-lime md:text-6xl">
-          حيث يبقي <span className="block md:inline">التأثير</span>
+          حيث يبقى <span className="block md:inline">التأثير</span>
         </h1>
         <p className="mt-6 max-w-md text-pretty font-display text-lg leading-relaxed text-snow md:text-xl">
           التأثير لا يأتي صدفة… نحن نصنعه
         </p>
-        <p dir="ltr" className="mt-3 font-ui text-sm text-mist">
+        <p dir="ltr" lang="en" className="mt-3 font-ui text-sm text-mist">
           Impact doesn’t come by chance — we make it.
         </p>
 
@@ -342,38 +449,37 @@ export function Services() {
   return (
     <section id="services" className="bg-ink pb-8">
       <Reveal kind="clip-in" className="relative">
-        <img
+        <Pic
           src="/images/service.jpg"
           alt=""
-          loading="lazy"
-          decoding="async"
+          sizes={SIZES.clip}
           className="h-72 w-full object-cover grayscale md:h-[28rem]"
         />
         <button
           type="button"
           aria-label="الخدمة التالية"
           onClick={() => setI((n) => (n + 1) % agency.length)}
-          className="absolute right-0 bottom-0 flex size-16 items-center justify-center bg-lime text-ink md:size-20"
+          className="absolute start-0 bottom-0 flex size-16 items-center justify-center bg-lime text-ink md:size-20"
         >
-          <svg viewBox="0 0 24 24" className="size-8" fill="none" stroke="currentColor" strokeWidth="1.7">
-            <path d="M4 14l5-5 4 4 7-8" />
-            <path d="M14 5h6v6" />
-          </svg>
+          <ArrowLeft className="size-8" strokeWidth={1.7} aria-hidden="true" />
         </button>
       </Reveal>
 
       <Reveal className="px-8 pt-10 text-center md:px-16">
-        <div className="flex items-baseline justify-center gap-4">
-          <h2 className="font-display text-2xl text-snow md:text-4xl">{s.title}</h2>
-          <span className="font-display text-sm text-lime">{String(i + 1).padStart(2, "0")}</span>
+        <div aria-live="polite">
+          <div className="flex items-baseline justify-center gap-4">
+            <h2 className="font-display text-2xl text-snow md:text-4xl">{s.title}</h2>
+            <span className="font-display text-sm text-lime">{String(i + 1).padStart(2, "0")}</span>
+          </div>
+          <p className="mx-auto mt-5 max-w-lg text-pretty text-base leading-loose text-mist">{s.body}</p>
         </div>
-        <p className="mx-auto mt-5 max-w-lg text-pretty text-base leading-loose text-mist">{s.body}</p>
         <div className="mt-8 flex justify-center gap-2">
           {agency.map((item, idx) => (
             <button
               key={item.slug}
               type="button"
               aria-label={item.title}
+              aria-current={idx === i ? "true" : undefined}
               onClick={() => setI(idx)}
               className="flex h-11 w-8 items-center justify-center"
             >
@@ -389,9 +495,14 @@ export function Services() {
 export function About() {
   return (
     <section id="about" className="relative isolate mt-10 min-h-[34rem] overflow-hidden md:min-h-[42rem]">
+      <Pic
+        src="/images/about.jpg"
+        alt=""
+        sizes={SIZES.about}
+        className="live-vid absolute inset-0 h-full w-full object-cover grayscale"
+      />
       <LiveVideo
         src="/video/about.mp4"
-        poster="/images/about.jpg"
         className="live-vid absolute inset-0 h-full w-full object-cover grayscale"
       />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_50%,color-mix(in_oklab,var(--color-ink)_48%,transparent)_0%,color-mix(in_oklab,var(--color-ink)_86%,transparent)_68%)]" />
@@ -426,7 +537,7 @@ export function Works() {
           متكاملة
         </h2>
         <p className="mt-4 font-display text-2xl text-snow">تصنع نتائج ملموسة.</p>
-        <p dir="ltr" className="mt-2 font-ui text-sm text-mist">
+        <p dir="ltr" lang="en" className="mt-2 font-ui text-sm text-mist">
           Creative work. Measurable impact.
         </p>
       </Reveal>
@@ -435,21 +546,20 @@ export function Works() {
         {works.map((w, idx) => (
           <article key={w.title} className="work-card">
             <Reveal kind="clip-in">
-              <img
+              <Pic
                 src={w.image}
                 alt={w.ar}
-                loading="lazy"
-                decoding="async"
+                sizes={SIZES.clip}
                 className="h-72 w-full object-cover grayscale md:h-[30rem]"
               />
             </Reveal>
             <div className="relative bg-card px-8 py-10 text-center">
-              <span className="absolute top-6 left-6 font-ui text-xs tracking-widest text-lime">0{idx + 1}</span>
+              <span className="absolute top-6 end-6 font-ui text-xs tracking-widest text-lime">0{idx + 1}</span>
               <h3 className="font-display text-2xl text-snow md:text-3xl">{w.ar}</h3>
-              <p dir="ltr" className="mt-3 font-ui text-lg text-snow/90">
+              <p dir="ltr" lang="en" className="mt-3 font-ui text-lg text-snow/90">
                 {w.title}
               </p>
-              <p dir="ltr" className="mt-2 font-ui text-sm text-mist">
+              <p dir="ltr" lang="en" className="mt-2 font-ui text-sm text-mist">
                 {w.cats}
               </p>
             </div>
@@ -470,7 +580,7 @@ export function Clients() {
           <p className="mt-4 font-display text-xl text-mist">علامات نبني معها حضورًا يبقى.</p>
           <ul className="mx-auto mt-10 grid max-w-3xl grid-cols-2 gap-px bg-hair sm:grid-cols-3">
             {clients.map((c) => (
-              <li key={c} dir="ltr" className="bg-ink py-8 font-ui text-sm tracking-[0.28em] text-mist">
+              <li key={c} dir="ltr" lang="en" className="bg-ink py-8 font-ui text-sm tracking-[0.28em] text-mist">
                 {c}
               </li>
             ))}
@@ -499,9 +609,10 @@ export function Leadership() {
       <Reveal className="mx-auto mt-14 max-w-sm">
         <div className="relative mx-auto size-64 md:size-80">
           <span className="absolute inset-0 rounded-full bg-lime" />
-          <img
+          <Pic
             src="/images/chairman-now.jpg"
             alt="خالد العنزي أبو فيصل، رئيس مجلس إدارة ديل"
+            sizes={SIZES.chairman}
             className="absolute inset-3 rounded-full object-cover object-[center_28%]"
           />
         </div>
@@ -528,14 +639,16 @@ export function Quote() {
 
   return (
     <section className="relative isolate overflow-hidden py-24">
-      <img src="/images/quote.jpg" alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover grayscale" />
+      <Pic src="/images/quote.jpg" alt="" sizes={SIZES.quote} className="absolute inset-0 h-full w-full object-cover grayscale" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,color-mix(in_oklab,var(--color-ink)_62%,transparent)_0%,color-mix(in_oklab,var(--color-ink)_90%,transparent)_75%)]" />
       <Reveal className="relative z-10 px-8 pb-28 text-center md:px-16">
         <p className="text-kicker text-lime">كلمة رئيس مجلس الإدارة //</p>
-        <blockquote className="mx-auto mt-8 max-w-2xl font-display text-2xl leading-relaxed text-snow md:text-3xl">
-          «{q.text}»
-        </blockquote>
-        <p className="mt-8 font-display text-lime">— {q.by}</p>
+        <div aria-live="polite">
+          <blockquote className="mx-auto mt-8 max-w-2xl font-display text-2xl leading-relaxed text-snow md:text-3xl">
+            «{q.text}»
+          </blockquote>
+          <p className="mt-8 font-display text-lime">— {q.by}</p>
+        </div>
         <div className="mt-10 flex items-center justify-center gap-6 text-mist">
           <button
             type="button"
@@ -572,11 +685,16 @@ export function Footer() {
           info@dealadv.sa
         </a>
 
-        <div className="mt-14 space-y-8 text-right">
+        <div className="mt-14 space-y-8 text-start">
           <div>
             <p className="text-sm text-dim">هاتف</p>
             <a href={`tel:${phone.tel}`} className="mt-2 inline-flex items-center gap-2 text-lg text-snow" dir="ltr">
               {phone.display}
+              <span className="text-lime">•</span>
+            </a>
+            <p className="mt-5 text-sm text-dim">جوال وواتساب</p>
+            <a href={`tel:${mobile.tel}`} className="mt-2 inline-flex items-center gap-2 text-lg text-snow" dir="ltr">
+              {mobile.display}
               <span className="text-lime">•</span>
             </a>
             <a href={phone.wa} className="mt-2 block text-sm text-lime">
@@ -593,7 +711,7 @@ export function Footer() {
           </div>
         </div>
 
-        <ul className="mt-14 space-y-3 text-right text-mist">
+        <ul className="mt-14 space-y-3 text-start text-mist">
           <li>
             <a href="#top" className="hover:text-lime">
               • الرئيسية
@@ -611,7 +729,7 @@ export function Footer() {
           </li>
           <li>
             <a href="#works" className="hover:text-lime">
-              • اعمالنا
+              • أعمالنا
             </a>
           </li>
           <li>
@@ -627,6 +745,11 @@ export function Footer() {
           <li>
             <a href="#contact" className="hover:text-lime">
               • تواصل معنا
+            </a>
+          </li>
+          <li>
+            <a href="/privacy" className="hover:text-lime">
+              • سياسة الخصوصية
             </a>
           </li>
         </ul>

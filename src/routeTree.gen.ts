@@ -10,9 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ClientRouteImport } from './routes/client'
 import { Route as LineRouteImport } from './routes/line'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as StartRouteImport } from './routes/start'
 import { Route as StartIndexRouteImport } from './routes/start.index'
 import { Route as StartSlugRouteImport } from './routes/start.$slug'
@@ -24,6 +26,11 @@ import { Route as DeskPayViewRouteImport } from './routes/desk.pay.$view'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClientRoute = ClientRouteImport.update({
@@ -39,6 +46,11 @@ const LineRoute = LineRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StartRoute = StartRouteImport.update({
@@ -79,9 +91,11 @@ const DeskPayViewRoute = DeskPayViewRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/client': typeof ClientRoute
   '/line': typeof LineRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/start': typeof StartRouteWithChildren
   '/start/$slug': typeof StartSlugRoute
   '/start/': typeof StartIndexRoute
@@ -92,9 +106,11 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/client': typeof ClientRoute
   '/line': typeof LineRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/start/$slug': typeof StartSlugRoute
   '/start': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -105,9 +121,11 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/client': typeof ClientRoute
   '/line': typeof LineRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/start': typeof StartRouteWithChildren
   '/start/$slug': typeof StartSlugRoute
   '/start/': typeof StartIndexRoute
@@ -120,9 +138,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/client'
     | '/line'
     | '/login'
+    | '/privacy'
     | '/start'
     | '/start/$slug'
     | '/start/'
@@ -133,9 +153,11 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/client'
     | '/line'
     | '/login'
+    | '/privacy'
     | '/start/$slug'
     | '/start'
     | '/api/auth/$'
@@ -145,9 +167,11 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/client'
     | '/line'
     | '/login'
+    | '/privacy'
     | '/start'
     | '/start/$slug'
     | '/start/'
@@ -159,9 +183,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   ClientRoute: typeof ClientRoute
   LineRoute: typeof LineRoute
   LoginRoute: typeof LoginRoute
+  PrivacyRoute: typeof PrivacyRoute
   StartRoute: typeof StartRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   DeskCrmViewRoute: typeof DeskCrmViewRoute
@@ -176,6 +202,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/client': {
@@ -197,6 +230,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/start': {
@@ -265,9 +305,11 @@ const StartRouteWithChildren = StartRoute._addFileChildren(StartRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   ClientRoute: ClientRoute,
   LineRoute: LineRoute,
   LoginRoute: LoginRoute,
+  PrivacyRoute: PrivacyRoute,
   StartRoute: StartRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   DeskCrmViewRoute: DeskCrmViewRoute,

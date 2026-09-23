@@ -28,6 +28,24 @@
   --color-mist: #c6c6c6;
   --color-dim: #8d8d8d;
   --color-lime: #c2cf30;
+  /* The identity's second green: DEAL wordmark, script line and filled mark
+     on the lime band (brand board). pine-deep/pine-soft are its dark-UI
+     surfaces and tints — never introduce another green. */
+  --color-pine: #24484c;
+  --color-pine-deep: #102628;
+  --color-pine-soft: #3d6a6e;
+  /* Product (dashboard) surfaces: a light, calm canvas built only from the
+     identity — white paper, pine text, lime as the single accent. */
+  --color-paper: #f4f5f0;
+  --color-surface: #ffffff;
+  --color-line: #e3e6dc;
+  --color-line-strong: #cfd4c6;
+  --color-slate: #5e6f6d;
+  --color-pine-50: #eaf0ef;
+  --color-pine-100: #d4e1df;
+  --color-lime-50: #f4f7dc;
+  --color-lime-600: #8e9a12;
+  --font-dash: "Cairo", "Manrope", sans-serif;
   --color-card: #141414;
   --color-hair: #2a2a2a;
   --font-display: "deal-font", "Cairo", sans-serif;
@@ -50,7 +68,7 @@
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   body {
@@ -59,7 +77,7 @@
     font-family: var(--font-display);
     font-synthesis: none;
     line-height: 1.7;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   h1,
@@ -80,6 +98,11 @@
   ::selection {
     background: var(--color-lime);
     color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-lime);
+    outline-offset: 2px;
   }
 }
 
