@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ClientRouteImport } from './routes/client'
+import { Route as LineRouteImport } from './routes/line'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as StartRouteImport } from './routes/start'
+import { Route as StartIndexRouteImport } from './routes/start.index'
 import { Route as StartSlugRouteImport } from './routes/start.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as DeskCrmViewRouteImport } from './routes/desk.crm.$view'
@@ -29,6 +31,11 @@ const ClientRoute = ClientRouteImport.update({
   path: '/client',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LineRoute = LineRouteImport.update({
+  id: '/line',
+  path: '/line',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -38,6 +45,11 @@ const StartRoute = StartRouteImport.update({
   id: '/start',
   path: '/start',
   getParentRoute: () => rootRouteImport,
+} as any)
+const StartIndexRoute = StartIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => StartRoute,
 } as any)
 const StartSlugRoute = StartSlugRouteImport.update({
   id: '/$slug',
@@ -68,9 +80,11 @@ const DeskPayViewRoute = DeskPayViewRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/client': typeof ClientRoute
+  '/line': typeof LineRoute
   '/login': typeof LoginRoute
   '/start': typeof StartRouteWithChildren
   '/start/$slug': typeof StartSlugRoute
+  '/start/': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/desk/crm/$view': typeof DeskCrmViewRoute
   '/desk/law/$view': typeof DeskLawViewRoute
@@ -79,9 +93,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/client': typeof ClientRoute
+  '/line': typeof LineRoute
   '/login': typeof LoginRoute
-  '/start': typeof StartRouteWithChildren
   '/start/$slug': typeof StartSlugRoute
+  '/start': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/desk/crm/$view': typeof DeskCrmViewRoute
   '/desk/law/$view': typeof DeskLawViewRoute
@@ -91,9 +106,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/client': typeof ClientRoute
+  '/line': typeof LineRoute
   '/login': typeof LoginRoute
   '/start': typeof StartRouteWithChildren
   '/start/$slug': typeof StartSlugRoute
+  '/start/': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/desk/crm/$view': typeof DeskCrmViewRoute
   '/desk/law/$view': typeof DeskLawViewRoute
@@ -104,9 +121,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/client'
+    | '/line'
     | '/login'
     | '/start'
     | '/start/$slug'
+    | '/start/'
     | '/api/auth/$'
     | '/desk/crm/$view'
     | '/desk/law/$view'
@@ -115,9 +134,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/client'
+    | '/line'
     | '/login'
-    | '/start'
     | '/start/$slug'
+    | '/start'
     | '/api/auth/$'
     | '/desk/crm/$view'
     | '/desk/law/$view'
@@ -126,9 +146,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/client'
+    | '/line'
     | '/login'
     | '/start'
     | '/start/$slug'
+    | '/start/'
     | '/api/auth/$'
     | '/desk/crm/$view'
     | '/desk/law/$view'
@@ -138,6 +160,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ClientRoute: typeof ClientRoute
+  LineRoute: typeof LineRoute
   LoginRoute: typeof LoginRoute
   StartRoute: typeof StartRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -162,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClientRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/line': {
+      id: '/line'
+      path: '/line'
+      fullPath: '/line'
+      preLoaderRoute: typeof LineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -175,6 +205,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/start'
       preLoaderRoute: typeof StartRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/start/': {
+      id: '/start/'
+      path: '/'
+      fullPath: '/start/'
+      preLoaderRoute: typeof StartIndexRouteImport
+      parentRoute: typeof StartRoute
     }
     '/start/$slug': {
       id: '/start/$slug'
@@ -216,10 +253,12 @@ declare module '@tanstack/react-router' {
 
 interface StartRouteChildren {
   StartSlugRoute: typeof StartSlugRoute
+  StartIndexRoute: typeof StartIndexRoute
 }
 
 const StartRouteChildren: StartRouteChildren = {
   StartSlugRoute: StartSlugRoute,
+  StartIndexRoute: StartIndexRoute,
 }
 
 const StartRouteWithChildren = StartRoute._addFileChildren(StartRouteChildren)
@@ -227,6 +266,7 @@ const StartRouteWithChildren = StartRoute._addFileChildren(StartRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ClientRoute: ClientRoute,
+  LineRoute: LineRoute,
   LoginRoute: LoginRoute,
   StartRoute: StartRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

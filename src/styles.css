@@ -3,7 +3,21 @@
 @font-face {
   font-family: "deal-font";
   src: url("/fonts/Deal-Font.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "deal-font";
+  src: url("/fonts/Deal-Font.woff2") format("woff2");
   font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "deal-font";
+  src: url("/fonts/Deal-Font.woff2") format("woff2");
+  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
@@ -11,22 +25,22 @@
 @theme {
   --color-ink: #050505;
   --color-snow: #f5f5f5;
-  --color-mist: #9a9a9a;
-  --color-dim: #6e6e6e;
+  --color-mist: #c6c6c6;
+  --color-dim: #8d8d8d;
   --color-lime: #c2cf30;
   --color-card: #141414;
   --color-hair: #2a2a2a;
   --font-display: "deal-font", "Cairo", sans-serif;
-  --font-ui: "Manrope", sans-serif;
+  --font-ui: "Manrope", "Cairo", sans-serif;
   --font-slab: "Roboto Slab", serif;
   --font-script: "Great Vibes", cursive;
   --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --text-poster: 2.65rem;
-  --text-poster--line-height: 1.28;
-  --text-hero: 2.15rem;
-  --text-hero--line-height: 1.35;
+  --text-poster: 2.35rem;
+  --text-poster--line-height: 1.32;
+  --text-hero: 2.4rem;
+  --text-hero--line-height: 1.28;
   --text-kicker: 0.95rem;
-  --text-kicker--line-height: 1.5;
+  --text-kicker--line-height: 1.55;
   --text-micro: 0.62rem;
   --text-micro--line-height: 1.4;
 }
@@ -43,7 +57,19 @@
     background: var(--color-ink);
     color: var(--color-snow);
     font-family: var(--font-display);
+    font-synthesis: none;
+    line-height: 1.7;
     overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 
   button:not(:disabled),
@@ -206,31 +232,36 @@
 }
 
 .menu-link {
+  transition: color 0.12s ease, background-color 0.12s ease;
+}
+
+.menu-panel {
+  transform: translate3d(-100%, 0, 0);
+  contain: layout paint;
+}
+.menu-scrim {
   opacity: 0;
-  transform: translateX(-24px);
-  transition:
-    opacity 0.5s var(--ease-expo),
-    transform 0.5s var(--ease-expo),
-    color 0.2s ease;
 }
-.open .menu-link {
+.menu-root.is-open .menu-panel {
+  transform: translate3d(0, 0, 0);
+}
+.menu-root.is-open .menu-scrim {
   opacity: 1;
-  transform: none;
 }
-.open .menu-link:nth-child(1) {
-  transition-delay: 0.12s;
+
+@media (prefers-reduced-motion: no-preference) {
+  .menu-panel {
+    transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .menu-scrim {
+    transition: opacity 160ms linear;
+  }
 }
-.open .menu-link:nth-child(2) {
-  transition-delay: 0.18s;
-}
-.open .menu-link:nth-child(3) {
-  transition-delay: 0.24s;
-}
-.open .menu-link:nth-child(4) {
-  transition-delay: 0.3s;
-}
-.open .menu-link:nth-child(5) {
-  transition-delay: 0.36s;
+
+html.menu-lock,
+html.menu-lock body {
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 .marquee-track {
@@ -245,6 +276,53 @@
 
 .lime-pulse {
   animation: lime-glow 3.2s ease-in-out infinite;
+}
+
+.identity-geo {
+  animation: identity-drift 28s var(--ease-expo) infinite alternate;
+  transform-origin: 78% 50%;
+}
+
+@keyframes identity-drift {
+  from {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.045) translate3d(-1.2%, 0.6%, 0);
+  }
+}
+
+@keyframes file-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.file-in {
+  animation: file-in 0.45s var(--ease-expo) both;
+}
+
+.line-live {
+  animation: lime-glow 1.6s ease-in-out infinite;
+}
+
+.line-wait-bar {
+  transform-origin: bottom center;
+  animation: pulse-line 0.9s var(--ease-expo) infinite alternate;
+}
+.line-wait-bar:nth-child(2) {
+  animation-delay: 0.12s;
+}
+.line-wait-bar:nth-child(3) {
+  animation-delay: 0.24s;
+}
+.line-wait-bar:nth-child(4) {
+  animation-delay: 0.36s;
 }
 
 .work-card img {
@@ -266,7 +344,11 @@
   .hero-in > *,
   .marquee-track,
   .float-script,
-  .lime-pulse {
+  .lime-pulse,
+  .file-in,
+  .line-live,
+  .line-wait-bar,
+  .identity-geo {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
@@ -281,5 +363,9 @@
     transform: none !important;
     filter: none !important;
     clip-path: none !important;
+  }
+  .menu-panel,
+  .menu-scrim {
+    transition: none !important;
   }
 }

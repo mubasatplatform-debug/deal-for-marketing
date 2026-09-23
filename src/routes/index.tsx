@@ -1,8 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { IdentityBreak } from "@/components/identity-break";
+import { SiteChrome } from "@/components/site-chrome";
 import {
   About,
   AiUse,
   Clients,
+  DealLineTeaser,
   Footer,
   Hero,
   Instant,
@@ -16,7 +19,6 @@ import {
   Systems,
   Works,
 } from "@/components/home-sections";
-import { SiteChrome } from "@/components/site-chrome";
 
 export const Route = createFileRoute("/")({ component: Home });
 
@@ -25,9 +27,11 @@ function Home() {
     <SiteChrome>
       <main>
         <Hero />
+        <IdentityBreak />
         <Story />
         <Systems />
         <Instant />
+        <DealLineTeaser />
         <Lawyers />
         <AiUse />
         <Pay />

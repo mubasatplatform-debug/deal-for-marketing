@@ -7,6 +7,7 @@ export const phone = {
 export const nav = [
   { href: "/", label: "الرئيسية" },
   { href: "/#systems", label: "الأنظمة" },
+  { href: "/line", label: "خط ديل" },
   { href: "/#works", label: "أعمالنا" },
   { href: "/#about", label: "من نحن" },
   { href: "/start", label: "اطلب خدمتك" },
@@ -26,7 +27,7 @@ export const services = [
     slug: "crm",
     n: "01",
     title: "الحل اللحظي",
-    body: "غرفة عمليات: واتساب وكول سنتر. الذكاء يرد ويوزّع الخط. أنت لا تدخل إلا إذا احتاجك. السلوشن يُسلَّم لحظيًا.",
+    body: "كول سنتر وواتساب: الذكاء يرد بلهجتكم، يراجع هل الزبون سدّد، هل الطلب واصل، ويحوّل لك إذا احتجت. أنت لا تدخل إلا إذا احتاجك.",
   },
   {
     slug: "law",
@@ -38,7 +39,7 @@ export const services = [
     slug: "ai",
     n: "03",
     title: "استخدام الذكاء الاصطناعي",
-    body: "مو روبوت. نظام سعودي — من عيالنا. يتحمل اللهجات، يرد بأسلوبك، يفاوت بين العملاء، يوجّه المحادثات، ويدير المنصات والنشر. إدارة فعلية تنوب عن الموظف في آخر الخط.",
+    body: "مو روبوت. نظام سعودي — يتحمل اللهجات، يرد بأسلوب المحل، يراجع ملف الزبون، ويدير الخط حتى يقفل.",
   },
   {
     slug: "pay",
@@ -81,6 +82,25 @@ export const services = [
 export type Service = (typeof services)[number];
 
 export const agency = services.filter((s) => ["brand", "influencers", "production", "events", "media"].includes(s.slug));
+
+export const lineStarters = [
+  {
+    label: "تتبع الطلب",
+    text: "السلام عليكم، طلبي رقم ٣٨١٢ وصل ولا باقي؟",
+  },
+  {
+    label: "السداد",
+    text: "أخوي أنا دفعت الفاتورة ولا زال يطلبني المبلغ؟",
+  },
+  {
+    label: "موعد",
+    text: "أبغى ألغي الموعد حق بعد العشاء وأحوّله ليوم ثاني.",
+  },
+  {
+    label: "خط المحل",
+    text: "عندي محل في بريدة والواتساب يذبحنا. أبغى الخط يرد على الزبائن بلهجتنا.",
+  },
+] as const;
 
 export function serviceBySlug(slug: string) {
   return services.find((s) => s.slug === slug);

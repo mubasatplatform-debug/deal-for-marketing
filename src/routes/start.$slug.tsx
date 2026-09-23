@@ -1,9 +1,10 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { DealSignIn } from "@/components/deal-sign-in";
 import { SiteChrome } from "@/components/site-chrome";
 import { SignInGate } from "@/lib/auth/gates";
 import { serviceBySlug } from "@/lib/content";
+import { LINE_DRAFT_KEY } from "@/lib/line";
 import { createRequest } from "@/lib/requests";
 
 export const Route = createFileRoute("/start/$slug")({ component: StartService });
@@ -16,6 +17,21 @@ function StartService() {
   const [brief, setBrief] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [fromLine, setFromLine] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(LINE_DRAFT_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw) as { slug?: string; company?: string; brief?: string };
+      if (d.slug !== slug) return;
+      if (d.company) setCompany(d.company);
+      if (d.brief) setBrief(d.brief);
+      setFromLine(true);
+    } catch {
+      /* ignore */
+    }
+  }, [slug]);
 
   if (!service) {
     return (
@@ -39,6 +55,11 @@ function StartService() {
     setBusy(true);
     try {
       await createRequest({ data: { slug: service.slug, company, brief } });
+      try {
+        sessionStorage.removeItem(LINE_DRAFT_KEY);
+      } catch {
+        /* ignore */
+      }
       await navigate({ to: "/client" });
     } catch (error) {
       setErr(error instanceof Error && error.message === "Unauthorized" ? "يلزم الدخول أولاً" : "تعذر إرسال الطلب، حاول مرة أخرى.");
@@ -52,6 +73,7 @@ function StartService() {
         <p className="font-ui text-xs tracking-widest text-lime">{service.n}</p>
         <h1 className="mt-3 font-display text-poster text-snow">{service.title}</h1>
         <p className="mt-4 max-w-lg text-mist">{service.body}</p>
+        {fromLine ? <p className="mt-4 text-kicker text-lime">من خط ديل //</p> : null}
 
         <SignInGate
           fallback={
