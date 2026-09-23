@@ -22,7 +22,7 @@ type State =
   | { kind: "error" }
   | { kind: "ready"; rows: AdminRequestRow[] };
 
-const dateFmt = new Intl.DateTimeFormat("ar-SA-u-nu-latn", {
+const dateFmt = new Intl.DateTimeFormat("ar-SA-u-nu-latn-ca-gregory", {
   dateStyle: "medium",
   timeStyle: "short",
 });
