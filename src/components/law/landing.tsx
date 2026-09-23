@@ -301,40 +301,42 @@ export function LawPricing() {
         ))}
       </div>
 
-      <ul className="mx-auto mt-12 grid max-w-6xl gap-px bg-hair px-0 md:grid-cols-3 md:px-8">
-        {PLANS.map((p) => {
-          const lime = Boolean(p.highlight);
-          return (
-            <li key={p.id} className={cn("relative flex flex-col p-8 md:p-10", lime ? "bg-lime text-ink" : "bg-ink text-snow")}>
-              {lime ? <p className="font-display text-xs text-pine">الأنسب لمعظم المكاتب</p> : <p className="font-display text-xs text-dim">&nbsp;</p>}
-              <h3 className="mt-3 font-display text-3xl">{p.name}</h3>
-              <p className={cn("mt-1 font-display text-sm", lime ? "text-pine" : "text-mist")}>{p.tagline}</p>
-              <p className="mt-8 flex items-baseline gap-2">
-                <span className="font-ui text-[2.75rem] leading-none font-extrabold tabular-nums">{riyals(p.price[cycle])}</span>
-                <span className={cn("font-display text-sm", lime ? "text-pine" : "text-mist")}>
-                  ر.س / {cycle === "yearly" ? "سنة" : "شهر"}
-                </span>
-              </p>
-              <p className={cn("mt-2 font-display text-xs", lime ? "text-pine/80" : "text-dim")}>
-                {cycle === "yearly" ? `يعادل ${riyals(Math.round(p.price.yearly / 12))} ر.س شهريًا` : "تُدفع شهريًا"} · لا تشمل
-                الضريبة
-              </p>
-              <div className="mt-8 flex-1">
-                <PlanFeatures plan={p} dark={!lime} />
-              </div>
-              <a
-                href={SIGNUP}
-                className={cn(
-                  "mt-10 inline-flex h-12 items-center justify-center px-6 font-display text-base transition-opacity hover:opacity-90",
-                  lime ? "bg-ink text-lime" : "border border-lime text-lime",
-                )}
-              >
-                ابدأ التجربة المجانية
-              </a>
-            </li>
-          );
-        })}
-      </ul>
+      <div className="mt-12 md:px-8">
+        <ul className="mx-auto grid max-w-6xl gap-px border-y border-hair bg-hair md:grid-cols-3 md:border">
+          {PLANS.map((p) => {
+            const lime = Boolean(p.highlight);
+            return (
+              <li key={p.id} className={cn("relative flex flex-col p-8 md:p-10", lime ? "bg-lime text-ink" : "bg-ink text-snow")}>
+                {lime ? <p className="font-display text-xs text-pine">الأنسب لمعظم المكاتب</p> : <p className="font-display text-xs text-dim">&nbsp;</p>}
+                <h3 className="mt-3 font-display text-3xl">{p.name}</h3>
+                <p className={cn("mt-1 font-display text-sm", lime ? "text-pine" : "text-mist")}>{p.tagline}</p>
+                <p className="mt-8 flex items-baseline gap-2">
+                  <span className="font-ui text-[2.75rem] leading-none font-extrabold tabular-nums">{riyals(p.price[cycle])}</span>
+                  <span className={cn("font-display text-sm", lime ? "text-pine" : "text-mist")}>
+                    ر.س / {cycle === "yearly" ? "سنة" : "شهر"}
+                  </span>
+                </p>
+                <p className={cn("mt-2 font-display text-xs", lime ? "text-pine/80" : "text-dim")}>
+                  {cycle === "yearly" ? `يعادل ${riyals(Math.round(p.price.yearly / 12))} ر.س شهريًا` : "تُدفع شهريًا"} · لا تشمل
+                  الضريبة
+                </p>
+                <div className="mt-8 flex-1">
+                  <PlanFeatures plan={p} dark={!lime} />
+                </div>
+                <a
+                  href={SIGNUP}
+                  className={cn(
+                    "mt-10 inline-flex h-12 items-center justify-center px-6 font-display text-base transition-opacity hover:opacity-90",
+                    lime ? "bg-ink text-lime" : "border border-lime text-lime",
+                  )}
+                >
+                  ابدأ التجربة المجانية
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
       <p className="mx-auto mt-8 max-w-3xl px-8 text-center font-display text-sm leading-relaxed text-dim">
         الأسعار بالريال السعودي ولا تشمل ضريبة القيمة المضافة (١٥٪). للجهات الحكومية والشركات: تحويل بنكي وتفعيل من فريق ديل —{" "}
         <a
