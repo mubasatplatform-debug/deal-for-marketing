@@ -18,22 +18,47 @@ export const Route = createFileRoute("/developers")({
 const API = `${SITE_URL}/api/v1`;
 const MCP = `${SITE_URL}/api/mcp`;
 
-type Endpoint = { method: string; path: string; scope: string; body: string };
+type Endpoint = { method: string; path: string; scope: string; body: ReactNode };
 
 const endpoints: Endpoint[] = [
-  { method: "GET", path: "/services", scope: "—", body: "قائمة خدمات ديل ومعرّف كل خدمة (slug). عامة، لا تحتاج مفتاحًا." },
+  {
+    method: "GET",
+    path: "/services",
+    scope: "public",
+    body: (
+      <>
+        قائمة خدمات ديل ومعرّف كل خدمة <Mono>slug</Mono>. عامة، لا تحتاج مفتاحًا.
+      </>
+    ),
+  },
   {
     method: "GET",
     path: "/requests",
     scope: "requests:read",
-    body: "طلباتك أنت فقط، الأحدث أولًا. يقبل limit (1–100) و offset و status.",
+    body: (
+      <>
+        طلباتك أنت فقط، الأحدث أولًا، مع ترقيم الصفحات وتصفية اختيارية بالحالة (حتى 100 في الصفحة).
+        <Mono block>?limit=20&offset=0&status=review</Mono>
+      </>
+    ),
   },
-  { method: "GET", path: "/requests/:id", scope: "requests:read", body: "طلب واحد من طلباتك وحالته الحالية." },
+  {
+    method: "GET",
+    path: "/requests/:id",
+    scope: "requests:read",
+    body: "طلب واحد من طلباتك وحالته الحالية.",
+  },
   {
     method: "POST",
     path: "/requests",
     scope: "requests:write",
-    body: "ينشئ طلب خدمة باسم حسابك: slug, name, phone, company, brief, consent: true. حتى 20 طلبًا في الساعة لكل مفتاح.",
+    body: (
+      <>
+        ينشئ طلب خدمة باسم حسابك، حتى 20 طلبًا في الساعة لكل مفتاح. قيمة <Mono>consent</Mono> يجب أن
+        تكون <Mono>true</Mono> (موافقة صاحب الطلب على التواصل).
+        <Mono block>slug · name · phone · company · brief · consent</Mono>
+      </>
+    ),
   },
   {
     method: "GET",
@@ -45,7 +70,12 @@ const endpoints: Endpoint[] = [
     method: "PATCH",
     path: "/admin/requests/:id",
     scope: "admin:requests:write",
-    body: "لفريق ديل: يغيّر حالة الطلب { status: new | review | production | delivered }.",
+    body: (
+      <>
+        لفريق ديل: يغيّر حالة الطلب إلى إحدى المراحل.
+        <Mono block>{'{ "status": "new" | "review" | "production" | "delivered" }'}</Mono>
+      </>
+    ),
   },
 ];
 
@@ -58,12 +88,33 @@ const tools: { name: string; scope: string }[] = [
   { name: "deal_admin_update_request_status", scope: "admin:requests:write" },
 ];
 
-const errors: { status: string; code: string; body: string }[] = [
+const errors: { status: string; code: string; body: ReactNode }[] = [
   { status: "401", code: "unauthorized", body: "المفتاح ناقص أو غير صحيح أو ملغى أو منتهي." },
-  { status: "403", code: "insufficient_scope", body: "المفتاح لا يملك الصلاحية المطلوبة لهذا المسار." },
+  {
+    status: "403",
+    code: "insufficient_scope",
+    body: "المفتاح لا يملك الصلاحية المطلوبة لهذا المسار.",
+  },
   { status: "404", code: "not_found", body: "المسار غير موجود، أو الطلب ليس من طلبات حسابك." },
-  { status: "422", code: "validation_error", body: "حقل غير صالح؛ details تذكر كل حقل وسببه." },
-  { status: "429", code: "rate_limited", body: "تجاوزت الحد (60 استدعاء في الدقيقة لكل مفتاح). انتظر Retry-After ثانية." },
+  {
+    status: "422",
+    code: "validation_error",
+    body: (
+      <>
+        حقل غير صالح؛ القائمة <Mono>details</Mono> تذكر كل حقل وسببه.
+      </>
+    ),
+  },
+  {
+    status: "429",
+    code: "rate_limited",
+    body: (
+      <>
+        تجاوزت الحد (60 استدعاء في الدقيقة لكل مفتاح). انتظر عدد الثواني في ترويسة{" "}
+        <Mono>Retry-After</Mono>.
+      </>
+    ),
+  },
 ];
 
 const curlList = `curl ${API}/requests \\
@@ -114,9 +165,16 @@ function Code({ children, label }: { children: string; label: string }) {
   );
 }
 
-function Mono({ children }: { children: ReactNode }) {
+function Mono({ children, block }: { children: ReactNode; block?: boolean }) {
   return (
-    <code dir="ltr" className="font-mono text-[12.5px] text-lime">
+    <code
+      dir="ltr"
+      className={
+        block
+          ? "mt-1 block text-end font-mono text-[12.5px] break-words text-lime"
+          : "font-mono text-[12.5px] break-words text-lime [unicode-bidi:isolate]"
+      }
+    >
       {children}
     </code>
   );
@@ -140,8 +198,8 @@ function Developers() {
         <p className="text-kicker text-lime">المطوّرون //</p>
         <h1 className="mt-4 font-display text-poster text-snow">دليل المطوّرين</h1>
         <p className="mt-4 max-w-2xl text-sm leading-loose text-mist">
-          اربط متجرك وأدوات الأتمتة ومساعدي الذكاء الاصطناعي بحسابك في ديل. كل استدعاء يتم بمفتاح API تنشئه
-          بنفسك وتحدد صلاحياته ومدته، وتلغيه متى شئت.
+          اربط متجرك وأدوات الأتمتة ومساعدي الذكاء الاصطناعي بحسابك في ديل. كل استدعاء يتم بمفتاح
+          API تنشئه بنفسك وتحدد صلاحياته ومدته، وتلغيه متى شئت.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <a
@@ -161,13 +219,19 @@ function Developers() {
         <div className="mt-14 max-w-3xl space-y-12">
           <Section id="auth" title="المصادقة">
             <p>
-              أنشئ مفتاحًا من <a href="/client/keys" className="text-lime">مفاتيح API</a> في حسابك. يظهر المفتاح
-              كاملًا مرة واحدة فقط، ونحفظ منه بصمة مشفّرة لا غير. أرسله في ترويسة كل طلب:
+              أنشئ مفتاحًا من{" "}
+              <a href="/client/keys" className="text-lime">
+                مفاتيح API
+              </a>{" "}
+              في حسابك. يظهر المفتاح كاملًا مرة واحدة فقط، ونحفظ منه بصمة مشفّرة لا غير. أرسله في
+              ترويسة كل طلب:
             </p>
             <Code label="الترويسة">{"Authorization: Bearer deal_live_…"}</Code>
             <p>
-              عنوان الـ API: <Mono>{API}</Mono>. الإجابات JSON دائمًا: <Mono>{"{ data, meta }"}</Mono> عند النجاح،
-              و<Mono>{"{ error: { code, message, details } }"}</Mono> عند الخطأ. لا تضع المفتاح في كود يصل للمتصفح.
+              عنوان الـ API: <Mono>{API}</Mono>. الإجابات JSON دائمًا:{" "}
+              <Mono>{"{ data, meta }"}</Mono> عند النجاح، و
+              <Mono>{"{ error: { code, message, details } }"}</Mono> عند الخطأ. لا تضع المفتاح في
+              كود يصل للمتصفح.
             </p>
           </Section>
 
@@ -190,14 +254,17 @@ function Developers() {
           <Section id="rest" title="مسارات REST">
             <ul className="divide-y divide-hair/40 border-y border-hair/40">
               {endpoints.map((e) => (
-                <li key={e.method + e.path} className="py-3">
-                  <p dir="ltr" className="flex flex-wrap items-baseline justify-end gap-x-3 gap-y-1 text-start">
+                <li key={e.method + e.path} className="min-w-0 py-3">
+                  <p
+                    dir="ltr"
+                    className="flex flex-wrap items-baseline justify-end gap-x-3 gap-y-1 text-start"
+                  >
                     <span className="font-mono text-xs text-dim">{e.scope}</span>
                     <span className="font-mono text-[13px] text-snow">
                       <span className="text-lime">{e.method}</span> /api/v1{e.path}
                     </span>
                   </p>
-                  <p className="mt-1">{e.body}</p>
+                  <p className="mt-1 min-w-0">{e.body}</p>
                 </li>
               ))}
             </ul>
@@ -208,12 +275,16 @@ function Developers() {
 
           <Section id="mcp" title="خادم MCP">
             <p>
-              يعمل خادم MCP عبر Streamable HTTP على <Mono>{MCP}</Mono> بالمفتاح نفسه. يرى المساعد فقط الأدوات التي
-              تسمح بها صلاحيات المفتاح:
+              يعمل خادم MCP عبر Streamable HTTP على <Mono>{MCP}</Mono> بالمفتاح نفسه. يرى المساعد
+              فقط الأدوات التي تسمح بها صلاحيات المفتاح:
             </p>
             <ul className="grid gap-x-6 gap-y-1 sm:grid-cols-2">
               {tools.map((t) => (
-                <li key={t.name} dir="ltr" className="flex flex-wrap justify-end gap-x-2 text-start">
+                <li
+                  key={t.name}
+                  dir="ltr"
+                  className="flex flex-wrap justify-end gap-x-2 text-start"
+                >
                   <span className="font-mono text-xs text-dim">{t.scope}</span>
                   <span className="font-mono text-[12.5px] text-snow">{t.name}</span>
                 </li>
@@ -228,15 +299,16 @@ function Developers() {
               {errors.map((e) => (
                 <li key={e.code} className="flex flex-col gap-1 py-3 sm:flex-row sm:gap-4">
                   <span dir="ltr" className="shrink-0 text-start font-mono text-[12.5px] sm:w-48">
-                    <span className="text-snow">{e.status}</span> <span className="text-lime">{e.code}</span>
+                    <span className="text-snow">{e.status}</span>{" "}
+                    <span className="text-lime">{e.code}</span>
                   </span>
                   <span>{e.body}</span>
                 </li>
               ))}
             </ul>
             <p>
-              كل استدعاء يُسجَّل باسم المفتاح ويظهر لك عدده في صفحة المفاتيح. إذا تسرّب مفتاح ألغِه فورًا؛ الإلغاء
-              يسري في اللحظة نفسها.
+              كل استدعاء يُسجَّل باسم المفتاح ويظهر لك عدده في صفحة المفاتيح. إذا تسرّب مفتاح ألغِه
+              فورًا؛ الإلغاء يسري في اللحظة نفسها.
             </p>
           </Section>
 
