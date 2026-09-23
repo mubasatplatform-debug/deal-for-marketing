@@ -41,17 +41,21 @@ function Signup() {
   const userId = user?.id;
   useEffect(() => {
     if (isPending) return;
+    // The session refetches after the office is created; never let that
+    // replace the "done" screen with "you already have an office".
     if (!userId) {
-      setPhase({ kind: "account" });
+      setPhase((p) => (p.kind === "done" ? p : { kind: "account" }));
       return;
     }
     let live = true;
     getAppContext({ data: {} })
       .then((ctx) => {
         if (!live) return;
-        setPhase(ctx.memberships.length > 0 && !wantNew ? { kind: "has-office", ctx } : { kind: "office", ctx });
+        setPhase((p) =>
+          p.kind === "done" ? p : ctx.memberships.length > 0 && !wantNew ? { kind: "has-office", ctx } : { kind: "office", ctx },
+        );
       })
-      .catch(() => live && setPhase({ kind: "office", ctx: null }));
+      .catch(() => live && setPhase((p) => (p.kind === "done" ? p : { kind: "office", ctx: null })));
     return () => {
       live = false;
     };
