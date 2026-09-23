@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { AlertCircle, ClipboardList, MessageCircle, Plus, RotateCw } from "lucide-react";
+import { AlertCircle, ClipboardList, KeyRound, MessageCircle, Plus, RotateCw } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { DashShell, type NavItem } from "@/components/dash/shell";
 import { Button, Card, Kpi, Skeleton } from "@/components/dash/ui";
@@ -23,6 +23,7 @@ const NAV: NavItem[] = [
   { href: "#requests", label: "طلباتي", icon: ClipboardList, active: true },
   { href: "/start", label: "طلب جديد", icon: Plus },
   { href: "#contact", label: "تواصل معنا", icon: MessageCircle },
+  { href: "/client/keys", label: "مفاتيح API", icon: KeyRound },
 ];
 
 /**

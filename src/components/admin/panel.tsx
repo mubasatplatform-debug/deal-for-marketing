@@ -6,6 +6,7 @@ import {
   CircleCheck,
   Download,
   Inbox,
+  KeyRound,
   LayoutGrid,
   RotateCw,
   Search,
@@ -184,6 +185,7 @@ export function AdminPanel({
       badge: state === "ready" ? stats.fresh : undefined,
     },
     { href: "#customers", label: "العملاء", icon: Users, active: section === "customers" },
+    { href: "/admin/keys", label: "مفاتيح API", icon: KeyRound },
   ];
 
   const loading = state === "loading";
