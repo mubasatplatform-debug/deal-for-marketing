@@ -14,7 +14,7 @@
  */
 import type { Role } from "../saas/lifecycle.ts";
 import { UUID_RE, WorkspaceError, type SqlTag, type WorkspaceAccess } from "../saas/tenancy-core.ts";
-import { CASE_STAGE_LABELS, type CaseStage, type CaseType, type ClientKind, type HearingStatus } from "./options.ts";
+import { CASE_STAGES, CASE_STAGE_LABELS, type CaseStage, type CaseType, type ClientKind, type HearingStatus } from "./options.ts";
 import { can, canDeleteNote, canEditTask, type Action } from "./permissions.ts";
 import { PAGE_SIZE, likeEscape, plain, plainRows } from "./rows.ts";
 import type { CaseFields, ClientFields } from "./schemas.ts";
@@ -821,3 +821,122 @@ export async function homeCore(sql: SqlTag, access: WorkspaceAccess): Promise<Ho
   };
 }
 
+
+/* ------------------------------------------------------------------------ */
+/* Reports & analytics                                                       */
+/* ------------------------------------------------------------------------ */
+
+export type ReportsView = {
+  finance: { billed: number; collected: number; outstanding: number; collectionRate: number };
+  totals: { cases: number; openCases: number; clients: number };
+  stages: { stage: CaseStage; count: number }[];
+  openedByMonth: { ym: string; count: number }[];
+  topClients: { id: string; name: string; billed: number; collected: number; outstanding: number }[];
+  hearings: { upcoming: number; byStatus: { status: string; count: number }[] };
+  appointments: { byMode: { mode: string; count: number }[]; byStatus: { status: string; count: number }[] };
+};
+
+const num = (v: unknown): number => (typeof v === "bigint" ? Number(v) : Number(v ?? 0));
+
+/**
+ * Office analytics — money, pipeline and activity for the whole workspace.
+ * Financials are gated behind `case.fees.view`, so a paralegal (staff) can't
+ * open it. Everything is a point-in-time aggregate over the tenant's own rows.
+ */
+export async function reportsCore(sql: SqlTag, access: WorkspaceAccess): Promise<ReportsView> {
+  need(access, "case.fees.view");
+  const ws = access.workspace.id;
+
+  const [[fin], stageRows, monthRows, clientRows, [hearUpcoming], hearStatusRows, apptModeRows, apptStatusRows] =
+    await Promise.all([
+      sql<{ billed: string; collected: string; cases: number; openCases: number; clients: number }>`
+        select
+          coalesce(sum(fees_halalas), 0) as billed,
+          coalesce(sum(paid_halalas), 0) as collected,
+          count(*)::int as cases,
+          count(*) filter (where stage <> 'closed')::int as "openCases",
+          (select count(*)::int from law_clients where workspace_id = ${ws}) as clients
+        from law_cases where workspace_id = ${ws}
+      `,
+      sql<{ stage: CaseStage; count: number }>`
+        select stage, count(*)::int as count from law_cases where workspace_id = ${ws} group by stage
+      `,
+      sql<{ ym: string; count: number }>`
+        select to_char(date_trunc('month', created_at at time zone 'Asia/Riyadh'), 'YYYY-MM') as ym,
+               count(*)::int as count
+        from law_cases
+        where workspace_id = ${ws} and created_at >= (now() - interval '5 months')
+        group by 1
+      `,
+      sql<{ id: string; name: string; billed: string; collected: string }>`
+        select c.id, c.name,
+               coalesce(sum(k.fees_halalas), 0) as billed,
+               coalesce(sum(k.paid_halalas), 0) as collected
+        from law_cases k
+        join law_clients c on c.id = k.client_id and c.workspace_id = k.workspace_id
+        where k.workspace_id = ${ws}
+        group by c.id, c.name
+        having coalesce(sum(k.fees_halalas), 0) > 0
+        order by (coalesce(sum(k.fees_halalas), 0) - coalesce(sum(k.paid_halalas), 0)) desc,
+                 coalesce(sum(k.fees_halalas), 0) desc
+        limit 6
+      `,
+      sql<{ upcoming: number }>`
+        select count(*)::int as upcoming from law_hearings
+        where workspace_id = ${ws} and status = 'scheduled' and starts_at >= now()
+      `,
+      sql<{ status: string; count: number }>`
+        select status, count(*)::int as count from law_hearings where workspace_id = ${ws} group by status
+      `,
+      sql<{ mode: string; count: number }>`
+        select mode, count(*)::int as count from law_appointments where workspace_id = ${ws} group by mode
+      `,
+      sql<{ status: string; count: number }>`
+        select status, count(*)::int as count from law_appointments where workspace_id = ${ws} group by status
+      `,
+    ]);
+
+  const billed = num(fin?.billed);
+  const collected = num(fin?.collected);
+
+  // Zero-fill the 7 stages in canonical order.
+  const stageCount = new Map(plainRows<{ stage: CaseStage; count: number }>(stageRows).map((r) => [r.stage, r.count]));
+  const stages = CASE_STAGES.map((stage) => ({ stage, count: stageCount.get(stage) ?? 0 }));
+
+  // Zero-fill the last 6 months (oldest first), keyed by Riyadh year-month.
+  const monthCount = new Map(plainRows<{ ym: string; count: number }>(monthRows).map((r) => [r.ym, r.count]));
+  const nowYmd = riyadhYmd();
+  const [y, m] = [Number(nowYmd.slice(0, 4)), Number(nowYmd.slice(5, 7))];
+  const openedByMonth = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(Date.UTC(y, m - 1 - (5 - i), 1));
+    const ym = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+    return { ym, count: monthCount.get(ym) ?? 0 };
+  });
+
+  const topClients = plainRows<{ id: string; name: string; billed: string; collected: string }>(clientRows).map((r) => {
+    const b = num(r.billed);
+    const c = num(r.collected);
+    return { id: r.id, name: r.name, billed: b, collected: c, outstanding: Math.max(0, b - c) };
+  });
+
+  return {
+    finance: {
+      billed,
+      collected,
+      outstanding: Math.max(0, billed - collected),
+      collectionRate: billed > 0 ? Math.round((collected / billed) * 100) : 0,
+    },
+    totals: { cases: num(fin?.cases), openCases: num(fin?.openCases), clients: num(fin?.clients) },
+    stages,
+    openedByMonth,
+    topClients,
+    hearings: {
+      upcoming: num(hearUpcoming?.upcoming),
+      byStatus: plainRows<{ status: string; count: number }>(hearStatusRows),
+    },
+    appointments: {
+      byMode: plainRows<{ mode: string; count: number }>(apptModeRows),
+      byStatus: plainRows<{ status: string; count: number }>(apptStatusRows),
+    },
+  };
+}
