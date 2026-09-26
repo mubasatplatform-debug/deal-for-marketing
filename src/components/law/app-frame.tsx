@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   MessageCircle,
+  PhoneCall,
   Plus,
   ReceiptText,
   Scale,
@@ -54,6 +55,7 @@ const MAIN: NavEntry[] = [
   { to: "/app", label: "الرئيسية", icon: LayoutDashboard },
   { to: "/app/assistant", label: "مساعد المكتب", icon: Sparkles },
   { to: "/app/inbox", label: "التواصل", icon: InboxNavIcon },
+  { to: "/app/calls", label: "المكالمات", icon: PhoneCall },
   ...MODULES.map((m) => ({ to: `/app/${m.id}`, label: m.label, icon: m.icon })),
 ];
 

@@ -10,7 +10,6 @@ import {
   Mail,
   MessageCircle,
   Pencil,
-  Phone,
   Scale,
   Trash2,
   Upload,
@@ -26,6 +25,7 @@ import { DocumentRows, UploadDialog } from "@/components/law/documents-ui";
 import { dateAr, phoneAr, whenAr } from "@/components/law/format";
 import { ConfirmDialog, ErrorCard, InfoRow, ModePill, StagePill, StatusPill, Tabs, useCan, useLoad } from "@/components/law/kit";
 import { Timeline } from "@/components/law/timeline";
+import { CallButton } from "@/components/law/voice/softphone";
 import { CASE_TYPE_LABELS, CLIENT_KIND_LABELS } from "@/lib/law/options";
 import { deleteClient, getClient } from "@/lib/law/practice";
 import { workspaceErrorMessage } from "@/lib/saas/errors";
@@ -100,10 +100,12 @@ function ClientProfile() {
             ) : null}
             <div className="mt-5 flex flex-wrap gap-2">
               {c.phone ? (
-                <a href={`tel:${c.phone}`} className="inline-flex h-9 items-center gap-2 rounded-xl border border-line px-3 text-[13px] font-semibold hover:bg-paper">
-                  <Phone className="size-4 text-pine" aria-hidden="true" />
-                  اتصال
-                </a>
+                <CallButton
+                  phone={c.phone}
+                  label={c.name}
+                  clientId={c.id}
+                  className="inline-flex h-9 items-center gap-2 rounded-xl border border-line px-3 text-[13px] font-semibold hover:bg-paper"
+                />
               ) : null}
               {wa ? (
                 <a
