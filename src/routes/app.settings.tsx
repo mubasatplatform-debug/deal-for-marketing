@@ -6,6 +6,7 @@ import { Button, Card, CardHeader } from "@/components/dash/ui";
 import { PageHead } from "@/components/law/app-frame";
 import { useLawApp } from "@/components/law/app-context";
 import { AiAuditCard, AiIntegrationsCard } from "@/components/law/ai-integrations";
+import { TwoFactorCard } from "@/components/law/two-factor";
 import { BookingSettingsCard } from "@/components/law/booking-settings";
 import { Field, SelectInput, TextInput } from "@/components/law/fields";
 import { CITIES, TEAM_SIZE_OPTIONS, toLatinDigits } from "@/components/law/office-options";
@@ -137,6 +138,7 @@ function Settings() {
         </Card>
 
         <div className="space-y-4">
+          <TwoFactorCard />
           <Card className="p-5 md:p-6">
             <p className="text-[15px] font-bold">عن هذا المكتب</p>
             <dl className="mt-3 space-y-2.5 text-sm">

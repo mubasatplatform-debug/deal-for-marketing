@@ -93,8 +93,13 @@ async function access(request: Request, write: boolean) {
   const sql = (await getSql()) as unknown as SqlTag;
   try {
     const a = await resolveMembership(sql, userId, ws, "staff", { write });
+    const { assertSecondFactor } = await import("@/lib/otp/otp.server");
+    await assertSecondFactor(userId);
     return { sql, access: a, userId };
   } catch (err) {
+    if (err instanceof WorkspaceError && err.code === "otp_required") {
+      return { error: fail(403, "otp_required", "أدخل رمز التحقق المرسل إلى واتساب أولًا.") };
+    }
     if (err instanceof WorkspaceError && err.code === "read_only") {
       return { error: fail(403, "read_only", "المكتب للقراءة فقط حاليًا.") };
     }

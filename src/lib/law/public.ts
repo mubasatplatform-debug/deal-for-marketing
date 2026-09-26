@@ -48,7 +48,13 @@ export const PUBLIC_ERRORS = {
   notConfirmed: "لم يؤكد المكتب الاستشارة بعد.",
   notVideo: "هذه الاستشارة ليست مكالمة فيديو.",
   video: "تعذّر تجهيز غرفة الفيديو. حاول بعد لحظات.",
+  phone: "أدخل رقم جوال عليه واتساب. مثال: 0501234567",
+  code: "الرمز غير صحيح أو انتهت صلاحيته. اطلب رمزًا جديدًا.",
+  send: "تعذّر إرسال الرمز عبر واتساب. تأكد من الرقم وحاول بعد لحظات.",
 } as const;
+
+/** Thrown when the booking needs the WhatsApp code first (the page then asks for it). */
+export const NEED_CODE = "OTP:need_code";
 
 /* ------------------------------------------------------------------------ */
 /* Booking page                                                              */
@@ -64,7 +70,14 @@ export type BookingOffice = {
   slotMinutes: number;
   note: string;
   horizonDays: number;
+  /** The client confirms their number with a WhatsApp code before booking. */
+  verifyPhone: boolean;
 };
+
+async function verifyPhoneOn(): Promise<boolean> {
+  const { bookingOtpSender: otpSender } = await import("@/lib/otp/otp.server");
+  return otpSender() !== null;
+}
 
 function publicView(o: {
   name: string;
@@ -74,7 +87,7 @@ function publicView(o: {
   modes: ConsultMode[];
   lawyers: { id: string; name: string }[];
   settings: BookingSettings;
-}): BookingOffice {
+}, verifyPhone: boolean): BookingOffice {
   return {
     name: o.name,
     city: o.city,
@@ -85,6 +98,7 @@ function publicView(o: {
     slotMinutes: o.settings.slotMinutes,
     note: o.open ? o.settings.bookingNote : "",
     horizonDays: o.settings.horizonDays,
+    verifyPhone,
   };
 }
 
@@ -98,7 +112,7 @@ export const getBookingOffice = createServerFn({ method: "GET" })
     const { publicOfficeCore } = await core();
     const { getSql } = await import("@/lib/db");
     const office = await publicOfficeCore((await getSql()) as never, data.slug);
-    return office ? publicView(office) : null;
+    return office ? publicView(office, await verifyPhoneOn()) : null;
   });
 
 export const getBookingSlots = createServerFn({ method: "GET" })
@@ -148,6 +162,65 @@ export const getBookingSlots = createServerFn({ method: "GET" })
     return { days: days.map((d) => ({ date: d.date, weekday: d.weekday, slots: d.slots.map((s) => ({ start: s.start, time: s.time })) })) };
   });
 
+/** Send the WhatsApp code that confirms the booking phone. */
+export const sendBookingCode = createServerFn({ method: "POST" })
+  .validator((input: unknown) => z.object({ slug: slugField, phone: z.string().max(40) }).parse(input))
+  .handler(async ({ data }): Promise<{ phone: string }> => {
+    await sameSite();
+    const { whatsappPhone, maskPhone, OtpError } = await import("@/lib/otp/otp-core");
+    const { bookingOtpSender: otpSender } = await import("@/lib/otp/otp.server");
+    const phone = whatsappPhone(data.phone);
+    if (!phone) throw new Error(PUBLIC_ERRORS.phone);
+    const sender = otpSender();
+    if (!sender) throw new Error(PUBLIC_ERRORS.send);
+    const { publicOfficeCore } = await core();
+    const { getSql } = await import("@/lib/db");
+    const office = await publicOfficeCore((await getSql()) as never, data.slug);
+    if (!office?.open) throw new Error(PUBLIC_ERRORS.closed);
+    await throttle("book-otp", 5, 3600);
+    const { takeHit, RateLimitError } = await import("@/lib/rate-limit.server");
+    try {
+      await takeHit(`book-otp-phone:${phone}`, 3, 900);
+      await takeHit("otp-send:all", 1000, 86_400);
+    } catch (err) {
+      if (err instanceof RateLimitError) throw new Error(PUBLIC_ERRORS.busy);
+      throw err;
+    }
+    try {
+      await sender.start(phone);
+    } catch (err) {
+      if (err instanceof OtpError && err.code === "rate_limited") throw new Error(PUBLIC_ERRORS.busy);
+      if (err instanceof OtpError && err.code === "bad_phone") throw new Error(PUBLIC_ERRORS.phone);
+      throw new Error(PUBLIC_ERRORS.send);
+    }
+    return { phone: maskPhone(phone) };
+  });
+
+/**
+ * The booking phone check: passes when the relay is off, when this visitor
+ * proved this number in the last 30 minutes, or with a correct code now.
+ */
+async function assertBookingPhone(sql: never, phone: string, otpCode: string | null | undefined) {
+  const { bookingOtpSender: otpSender } = await import("@/lib/otp/otp.server");
+  const sender = otpSender();
+  if (!sender) return;
+  const { phoneRememberedCore, rememberPhoneCore, OtpError } = await import("@/lib/otp/otp-core");
+  const { visitorId } = await import("@/lib/rate-limit.server");
+  const visitor = visitorId();
+  if (await phoneRememberedCore(sql, "book", phone, visitor)) return;
+  if (!otpCode) throw new Error(NEED_CODE);
+  await throttle("book-otp-check", 10, 900);
+  let ok = false;
+  try {
+    ok = await sender.check(phone, otpCode);
+  } catch (err) {
+    if (err instanceof OtpError && err.code === "rate_limited") throw new Error(PUBLIC_ERRORS.busy);
+    throw new Error(PUBLIC_ERRORS.code);
+  }
+  if (!ok) throw new Error(PUBLIC_ERRORS.code);
+  await rememberPhoneCore(sql, "book", phone, visitor);
+}
+
 export type BookingResult = {
   ok: true;
   startsAt: string;
@@ -196,6 +269,8 @@ export const createBooking = createServerFn({ method: "POST" })
     if (!isOfferedStart(availability, data.start, now)) throw new Error(PUBLIC_ERRORS.slot);
     const startsAt = new Date(data.start).toISOString();
     const endsAt = new Date(Date.parse(startsAt) + availability.slotMinutes * 60_000).toISOString();
+    // The number is the client's: a WhatsApp code proves it (see sendBookingCode).
+    await assertBookingPhone(sql, data.phone!, data.otpCode);
 
     const pool = data.lawyerId
       ? office.lawyers.filter((l) => l.id === data.lawyerId)

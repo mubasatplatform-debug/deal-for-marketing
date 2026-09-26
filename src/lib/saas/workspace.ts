@@ -65,6 +65,9 @@ export const getAppContext = createServerFn({ method: "GET" })
   .handler(async ({ context, data }): Promise<AppContext> => {
     const { withStatus } = await guard();
     const { pickActiveWorkspace, seatUsage } = await core();
+    // Two-step sign-in comes before anything about the offices.
+    const { assertSecondFactor } = await import("@/lib/otp/otp.server");
+    await withStatus(() => assertSecondFactor(context.userId));
     const sql = await getSql();
     const [user, picked] = await Promise.all([
       userInfo(context.userId),

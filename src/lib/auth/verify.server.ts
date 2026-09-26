@@ -42,6 +42,9 @@ export class UnauthorizedError extends Error {
   }
 }
 
+/** Session id per request (see `currentSessionId`). */
+const sessionByRequest = new WeakMap<Request, string>();
+
 export type VerifiedUser = { id: string; email: string | null };
 
 /**
@@ -67,7 +70,19 @@ export async function getSessionUser(
   }
   const session = await auth.api.getSession({ headers });
   if (!session?.user) return null;
+  if (session.session?.id) sessionByRequest.set(request, session.session.id);
   return { id: session.user.id, email: session.user.email ?? null };
+}
+
+/**
+ * The Better Auth session id resolved for the current request, if any — set by
+ * `getSessionUser` (so by `authMiddleware`). Null for API-key requests and when
+ * no session was resolved. Used by the two-step sign-in check
+ * (`@/lib/otp/otp.server`), which is per session.
+ */
+export function currentSessionId(): string | null {
+  const request = getRequest();
+  return request ? (sessionByRequest.get(request) ?? null) : null;
 }
 
 /**
