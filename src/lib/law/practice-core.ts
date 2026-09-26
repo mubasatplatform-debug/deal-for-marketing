@@ -100,6 +100,8 @@ export type ClientRow = {
   created_at: string;
   updated_at: string;
   open_cases: number;
+  /** Sample data (migrations/0016). */
+  is_demo: boolean;
 };
 
 export type ClientPage = { rows: ClientRow[]; total: number; page: number; pageSize: number; tags: string[] };
@@ -119,6 +121,7 @@ export async function listClientsCore(
   const [rows, tags] = await Promise.all([
     sql<ClientRow & { total: number }>`
       select c.id, c.kind, c.name, c.phone, c.email, c.id_number, c.notes, c.tags, c.created_at, c.updated_at,
+             c.is_demo,
              (select count(*)::int from law_cases k
                where k.workspace_id = c.workspace_id and k.client_id = c.id and k.stage <> 'closed') as open_cases,
              count(*) over ()::int as total
@@ -236,6 +239,7 @@ export async function getClientCore(sql: SqlTag, access: WorkspaceAccess, id: st
   const ws = access.workspace.id;
   const [client] = await sql<ClientRow>`
     select c.id, c.kind, c.name, c.phone, c.email, c.id_number, c.notes, c.tags, c.created_at, c.updated_at,
+           c.is_demo,
            (select count(*)::int from law_cases k where k.workspace_id = c.workspace_id and k.client_id = c.id
               and k.stage <> 'closed') as open_cases
     from law_clients c where c.id = ${id} and c.workspace_id = ${ws}
@@ -323,6 +327,8 @@ export type CaseRow = {
   created_at: string;
   next_hearing: string | null;
   lawyers: LawyerRef[];
+  /** Sample data (migrations/0016). */
+  is_demo: boolean;
 };
 
 export type CasePage = {
@@ -344,7 +350,7 @@ function stripFees<T extends { fees_halalas: number | null; paid_halalas: number
 const CASE_SELECT = `
   select k.id, k.ref_no, k.title, k.case_type, k.stage, k.court, k.court_case_no, k.opposing_party,
          k.description, k.client_id, c.name as client_name, k.fees_halalas, k.paid_halalas,
-         k.opened_on, k.closed_on, k.updated_at, k.created_at,
+         k.opened_on, k.closed_on, k.updated_at, k.created_at, k.is_demo,
          (select min(h.starts_at) from law_hearings h
            where h.case_id = k.id and h.status = 'scheduled' and h.starts_at >= now()) as next_hearing,
          coalesce((select json_agg(json_build_object('id', u.id, 'name', coalesce(nullif(u.name, ''), u.email))
@@ -457,7 +463,7 @@ export async function updateCaseCore(sql: SqlTag, access: WorkspaceAccess, id: s
         updated_at = now()
       from (select id, stage from law_cases where id = ${id} and workspace_id = ${ws}) old
       where k.id = old.id
-      returning k.id, old.stage as old_stage, k.stage
+      returning k.id, old.stage as old_stage, k.stage, k.is_demo
     ),
     del as (
       delete from law_case_lawyers cl using upd
@@ -469,11 +475,12 @@ export async function updateCaseCore(sql: SqlTag, access: WorkspaceAccess, id: s
       on conflict do nothing
     ),
     note as (
-      insert into law_notes (workspace_id, case_id, kind, body, author_id)
-      select ${ws}, upd.id, 'event', ${`نُقلت القضية إلى مرحلة «${CASE_STAGE_LABELS[input.stage]}»`}, ${access.userId}
+      insert into law_notes (workspace_id, case_id, kind, body, author_id, is_demo)
+      select ${ws}, upd.id, 'event', ${`نُقلت القضية إلى مرحلة «${CASE_STAGE_LABELS[input.stage]}»`}, ${access.userId},
+             upd.is_demo
       from upd where upd.old_stage <> upd.stage
     )
-    select * from upd
+    select id, old_stage, stage from upd
   `;
   if (!rows[0]) notFound();
   await logEvent(sql, access, "case_updated", { id, stage: rows[0].stage });
@@ -490,14 +497,15 @@ export async function setCaseStageCore(sql: SqlTag, access: WorkspaceAccess, id:
         updated_at = now()
       from (select id, stage from law_cases where id = ${id} and workspace_id = ${ws}) old
       where k.id = old.id
-      returning k.id, old.stage as old_stage
+      returning k.id, old.stage as old_stage, k.is_demo
     ),
     note as (
-      insert into law_notes (workspace_id, case_id, kind, body, author_id)
-      select ${ws}, upd.id, 'event', ${`نُقلت القضية إلى مرحلة «${CASE_STAGE_LABELS[stage]}»`}, ${access.userId}
+      insert into law_notes (workspace_id, case_id, kind, body, author_id, is_demo)
+      select ${ws}, upd.id, 'event', ${`نُقلت القضية إلى مرحلة «${CASE_STAGE_LABELS[stage]}»`}, ${access.userId},
+             upd.is_demo
       from upd where upd.old_stage <> ${stage}
     )
-    select * from upd
+    select id, old_stage from upd
   `;
   if (!rows[0]) notFound();
   await logEvent(sql, access, "case_stage", { id, from: rows[0].old_stage, to: stage });
@@ -514,11 +522,11 @@ export async function addPaymentCore(sql: SqlTag, access: WorkspaceAccess, id: s
     with upd as (
       update law_cases set paid_halalas = paid_halalas + ${amount}, updated_at = now()
       where id = ${id} and workspace_id = ${ws} and paid_halalas + ${amount} <= 100000000000
-      returning id
+      returning id, is_demo
     ),
     note as (
-      insert into law_notes (workspace_id, case_id, kind, body, author_id)
-      select ${ws}, upd.id, 'event', ${`سُجّلت دفعة بمبلغ ${riyals} ر.س`}, ${access.userId} from upd
+      insert into law_notes (workspace_id, case_id, kind, body, author_id, is_demo)
+      select ${ws}, upd.id, 'event', ${`سُجّلت دفعة بمبلغ ${riyals} ر.س`}, ${access.userId}, upd.is_demo from upd
     ),
     ev as (
       insert into workspace_events (workspace_id, actor_id, kind, detail)

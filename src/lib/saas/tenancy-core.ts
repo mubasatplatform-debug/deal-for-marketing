@@ -68,7 +68,10 @@ export type WorkspaceErrorCode =
   | "ai_limit"
   | "ai_unavailable"
   // Two-step sign-in (src/lib/otp)
-  | "otp_required";
+  | "otp_required"
+  // Sample data (src/lib/law/demo-core.ts)
+  | "demo_exists"
+  | "demo_in_use";
 
 export const WORKSPACE_ERROR_PREFIX = "WS:";
 

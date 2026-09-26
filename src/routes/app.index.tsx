@@ -1,27 +1,36 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   AlertTriangle,
   ArrowLeft,
   CalendarDays,
   Check,
+  FlaskConical,
   Gavel,
   Hourglass,
   ListChecks,
+  Loader2,
   Phone,
   Scale,
   Sparkles,
+  Trash2,
   UserRound,
   Users,
   Video,
+  X,
 } from "lucide-react";
-import { Card, CardHeader, EmptyState, Kpi, Pill, Skeleton } from "@/components/dash/ui";
+import { toast } from "sonner";
+import { Button, Card, CardHeader, EmptyState, Kpi, Pill, Skeleton } from "@/components/dash/ui";
 import { PageHead } from "@/components/law/app-frame";
 import { useLawApp } from "@/components/law/app-context";
 import { dayAr, daysAr, timeAr } from "@/components/law/format";
-import { StatusPill, useLoad } from "@/components/law/kit";
+import { ConfirmDialog, StatusPill, useLoad } from "@/components/law/kit";
 import { TaskItem } from "@/components/law/tasks-ui";
+import { clearDemoData, getOnboarding, seedDemoData } from "@/lib/law/demo";
+import type { OnboardingState } from "@/lib/law/demo-core";
 import { getLawHome } from "@/lib/law/practice";
 import type { AgendaItem } from "@/lib/law/practice-core";
+import { workspaceErrorMessage } from "@/lib/saas/errors";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/")({
@@ -35,23 +44,22 @@ function greeting(): string {
 
 function Home() {
   const { ctx, active } = useLawApp();
-  const { workspace, lifecycle, seats, role } = active;
+  const { workspace, lifecycle, role } = active;
   const first = (ctx.user.name || "").trim().split(/\s+/)[0];
   const manager = role === "owner" || role === "admin";
   const home = useLoad(() => getLawHome({ data: { workspaceId: workspace.id } }), [workspace.id]);
+  const onboarding = useLoad(() => getOnboarding({ data: { workspaceId: workspace.id } }), [workspace.id]);
   const h = home.data;
-
-  const steps = [
-    {
-      done: Boolean(workspace.cr_number),
-      title: "أكمل بيانات المكتب",
-      to: "/app/settings" as const,
-    },
-    { done: seats.used > 1, title: "ادعُ فريقك", to: "/app/team" as const },
-    { done: (h?.counts.clients ?? 0) > 0, title: "أضف أول عميل", to: "/app/clients" as const },
-    { done: lifecycle.status === "active", title: "اختر خطتك", to: "/app/billing" as const },
-  ];
-  const pending = steps.filter((s) => !s.done && (manager || s.to !== "/app/settings") && (manager || s.to !== "/app/billing"));
+  const ob = onboarding.data;
+  const dismissKey = `law:onboarding-dismissed:${ctx.user.id}:${workspace.id}`;
+  const [dismissed, setDismissed] = useState(true);
+  useEffect(() => {
+    setDismissed(readFlag(dismissKey));
+  }, [dismissKey]);
+  const reloadAll = async () => {
+    await Promise.all([home.reload(), onboarding.reload()]);
+  };
+  const showStart = manager && ob !== null && !dismissed && !allDone(ob);
 
   return (
     <>
@@ -59,6 +67,11 @@ function Home() {
         title={`${greeting()}${first ? `، ${first}` : ""}`}
         subtitle={h ? `${dayAr(h.today, true)} · ${workspace.name}` : workspace.name}
       />
+
+      {ob?.hasDemo ? <DemoBanner workspaceId={workspace.id} manager={manager} onCleared={reloadAll} /> : null}
+      {manager && ob && !ob.hasDemo && !ob.hasRealData && !lifecycle.readOnly ? (
+        <TryDemo workspaceId={workspace.id} onSeeded={reloadAll} />
+      ) : null}
 
       <div className="grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
         <Kpi label="قضايا مفتوحة" value={h?.counts.openCases ?? 0} loading={!h} icon={Scale} hint="كل المراحل عدا المغلقة" />
@@ -143,35 +156,16 @@ function Home() {
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-5">
-        {pending.length ? (
-          <Card className="lg:col-span-3">
-            <CardHeader title="جهّز مكتبك" description={`${steps.length - pending.length} من ${steps.length} خطوات مكتملة`} />
-            <ul className="mt-2 grid gap-2 px-5 pb-5 sm:grid-cols-2 md:px-6">
-              {steps.map((s) => (
-                <li key={s.title}>
-                  <Link
-                    to={s.to}
-                    className={cn(
-                      "flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 ring-1 ring-line transition-colors hover:bg-paper",
-                      s.done && "opacity-60",
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "grid size-7 shrink-0 place-items-center rounded-full",
-                        s.done ? "bg-lime text-pine-deep" : "bg-paper text-slate ring-1 ring-line",
-                      )}
-                    >
-                      {s.done ? <Check className="size-3.5" strokeWidth={3} aria-hidden="true" /> : <ListChecks className="size-3.5" aria-hidden="true" />}
-                    </span>
-                    <span className={cn("text-sm font-semibold", s.done && "line-through decoration-slate/40")}>{s.title}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </Card>
+        {showStart && ob ? (
+          <StartHere
+            state={ob}
+            onDismiss={() => {
+              writeFlag(dismissKey);
+              setDismissed(true);
+            }}
+          />
         ) : null}
-        <Card className={cn("p-5 md:p-6", pending.length ? "lg:col-span-2" : "lg:col-span-5")}>
+        <Card className={cn("p-5 md:p-6", showStart ? "lg:col-span-2" : "lg:col-span-5")}>
           <p className="flex items-center gap-2 text-[15px] font-bold">
             <Sparkles className="size-[18px] text-lime-600" aria-hidden="true" />
             الاستشارات عن بُعد
@@ -201,6 +195,187 @@ function Home() {
         </Card>
       </div>
     </>
+  );
+}
+
+/* ------------------------------------------------------------------------ */
+/* Onboarding and sample data                                                */
+/* ------------------------------------------------------------------------ */
+
+function readFlag(key: string): boolean {
+  try {
+    return window.localStorage.getItem(key) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function writeFlag(key: string) {
+  try {
+    window.localStorage.setItem(key, "1");
+  } catch {
+    // Private mode / blocked storage: the card simply comes back next visit.
+  }
+}
+
+type StepKey = keyof OnboardingState["steps"];
+
+const START_STEPS: {
+  key: StepKey;
+  title: string;
+  body: string;
+  to: "/app/settings" | "/app/clients" | "/app/cases" | "/app/team";
+  hash?: string;
+}[] = [
+  { key: "office", title: "أكمل بيانات المكتب", body: "المدينة ورقم السجل التجاري", to: "/app/settings" },
+  { key: "booking", title: "فعّل صفحة الحجز", body: "ليحجز عملاؤك استشاراتهم بأنفسهم", to: "/app/settings", hash: "booking" },
+  { key: "client", title: "أضف أول عميل", body: "فرد أو منشأة", to: "/app/clients" },
+  { key: "case", title: "افتح أول قضية", body: "برقم ملف ومرحلة وأتعاب", to: "/app/cases" },
+  { key: "team", title: "ادعُ فريقك", body: "محامين ومساعدين بصلاحيات مناسبة", to: "/app/team" },
+  { key: "twoStep", title: "فعّل الدخول بخطوتين", body: "رمز عبر واتساب عند كل دخول", to: "/app/settings" },
+];
+
+function allDone(s: OnboardingState): boolean {
+  return START_STEPS.every((x) => s.steps[x.key]);
+}
+
+function StartHere({ state, onDismiss }: { state: OnboardingState; onDismiss: () => void }) {
+  const done = START_STEPS.filter((x) => state.steps[x.key]).length;
+  return (
+    <Card className="lg:col-span-3">
+      <CardHeader
+        title="ابدأ هنا"
+        description={`${done} من ${START_STEPS.length} خطوات مكتملة`}
+        actions={
+          <button
+            type="button"
+            onClick={onDismiss}
+            aria-label="إخفاء قائمة البدء"
+            title="إخفاء"
+            className="grid size-9 place-items-center rounded-xl text-slate transition-colors hover:bg-paper hover:text-pine-deep"
+          >
+            <X className="size-4" aria-hidden="true" />
+          </button>
+        }
+      />
+      <div className="px-5 md:px-6">
+        <div
+          className="mt-3 h-1.5 overflow-hidden rounded-full bg-paper ring-1 ring-line"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={START_STEPS.length}
+          aria-valuenow={done}
+          aria-label="التقدّم"
+        >
+          <div className="h-full rounded-full bg-lime transition-all" style={{ width: `${(done / START_STEPS.length) * 100}%` }} />
+        </div>
+      </div>
+      <ul className="mt-3 grid gap-2 px-5 pb-5 sm:grid-cols-2 md:px-6">
+        {START_STEPS.map((x) => {
+          const ok = state.steps[x.key];
+          return (
+            <li key={x.key}>
+              <Link
+                to={x.to}
+                hash={x.hash}
+                className={cn(
+                  "flex min-h-14 items-center gap-3 rounded-xl px-3 py-2 ring-1 ring-line transition-colors hover:bg-paper",
+                  ok && "opacity-60",
+                )}
+              >
+                <span
+                  className={cn(
+                    "grid size-7 shrink-0 place-items-center rounded-full",
+                    ok ? "bg-lime text-pine-deep" : "bg-paper text-slate ring-1 ring-line",
+                  )}
+                >
+                  {ok ? <Check className="size-3.5" strokeWidth={3} aria-hidden="true" /> : <ListChecks className="size-3.5" aria-hidden="true" />}
+                </span>
+                <span className="min-w-0">
+                  <span className={cn("block text-sm font-semibold", ok && "line-through decoration-slate/40")}>{x.title}</span>
+                  <span className="block truncate text-xs text-slate">{x.body}</span>
+                </span>
+                <span className="sr-only">{ok ? "(مكتملة)" : ""}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </Card>
+  );
+}
+
+function TryDemo({ workspaceId, onSeeded }: { workspaceId: string; onSeeded: () => Promise<void> }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <Card className="mb-4 border-dashed border-pine/30 bg-pine-50/40 p-5 md:p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-lime text-pine-deep">
+          <FlaskConical className="size-5" aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[15px] font-bold text-pine-deep">جرّب ببيانات تجريبية</p>
+          <p className="mt-1 text-[13px] leading-relaxed text-slate">
+            نضيف إلى مكتبك أربعة عملاء وأربع قضايا بجلساتها ومهامها ومواعيدها لتتعرّف على النظام قبل إدخال بياناتك. تُعلَّم
+            كلها «تجريبي» وتحذفها بضغطة متى ما أردت.
+          </p>
+        </div>
+        <Button
+          variant="dark"
+          icon={busy ? Loader2 : Sparkles}
+          disabled={busy}
+          className="shrink-0"
+          onClick={async () => {
+            setBusy(true);
+            try {
+              await seedDemoData({ data: { workspaceId } });
+              toast.success("أُضيفت البيانات التجريبية");
+              await onSeeded();
+            } catch (err) {
+              toast.error(workspaceErrorMessage(err));
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          أضف البيانات التجريبية
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+function DemoBanner({ workspaceId, manager, onCleared }: { workspaceId: string; manager: boolean; onCleared: () => Promise<void> }) {
+  const [confirming, setConfirming] = useState(false);
+  return (
+    <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-lime/25 px-4 py-2.5 ring-1 ring-lime/60 ring-inset">
+      <FlaskConical className="size-4 shrink-0 text-pine" aria-hidden="true" />
+      <p className="min-w-0 flex-1 text-[13px] font-semibold text-pine-deep">هذه بيانات تجريبية — احذفها متى ما أردت</p>
+      {manager ? (
+        <Button size="sm" icon={Trash2} onClick={() => setConfirming(true)}>
+          حذف البيانات التجريبية
+        </Button>
+      ) : null}
+      {confirming ? (
+        <ConfirmDialog
+          title="حذف البيانات التجريبية؟"
+          body="ستُحذف العملاء والقضايا والجلسات والمهام والمواعيد والملاحظات المعلَّمة «تجريبي» فقط. لا يُمسّ شيء أدخلته بنفسك."
+          confirmLabel="حذف البيانات التجريبية"
+          danger
+          onClose={() => setConfirming(false)}
+          onConfirm={async () => {
+            try {
+              await clearDemoData({ data: { workspaceId } });
+              toast.success("حُذفت البيانات التجريبية");
+              setConfirming(false);
+              await onCleared();
+            } catch (err) {
+              toast.error(workspaceErrorMessage(err));
+            }
+          }}
+        />
+      ) : null}
+    </div>
   );
 }
 

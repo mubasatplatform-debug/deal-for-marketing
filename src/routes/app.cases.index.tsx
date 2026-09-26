@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { CalendarClock, ChevronLeft, Plus, Scale } from "lucide-react";
-import { Button, Card, EmptyState, Select } from "@/components/dash/ui";
+import { Button, Card, EmptyState, Pill, Select } from "@/components/dash/ui";
 import { PageHead } from "@/components/law/app-frame";
 import { useLawApp } from "@/components/law/app-context";
 import { CaseFormDialog } from "@/components/law/case-form";
@@ -153,7 +153,14 @@ function Cases() {
                           #{k.ref_no}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-bold">{k.title}</p>
+                          <p className="flex items-center gap-2">
+                            <span className="truncate text-sm font-bold">{k.title}</span>
+                            {k.is_demo ? (
+                              <Pill tone="lime" dot={false} className="shrink-0 px-2 text-[11px]">
+                                تجريبي
+                              </Pill>
+                            ) : null}
+                          </p>
                           <p className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-slate">
                             <span>{CASE_TYPE_LABELS[k.case_type]}</span>
                             {k.client_name ? <span className="truncate">{k.client_name}</span> : null}
