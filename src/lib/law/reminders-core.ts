@@ -120,6 +120,7 @@ export async function dueClientRemindersCore(sql: SqlTag, now: number, limit = 5
        left join law_clients cl on cl.id = a.client_id and cl.workspace_id = a.workspace_id
        left join "user" u on u.id = a.lawyer_id
        where a.status = 'confirmed'
+         and not a.is_demo
          and w.status not in ('suspended', 'cancelled')
          and coalesce(s.client_consult, true)
          and ((a.starts_at >= $1::timestamptz and a.starts_at <= $2::timestamptz)
@@ -131,18 +132,19 @@ export async function dueClientRemindersCore(sql: SqlTag, now: number, limit = 5
          select 1 from law_reminders_sent r
          where r.kind = c.kind and r.ref_id = c.ref_id and r.recipient = c.email
        )
-     order by c.starts_at, c.id
-     limit $5`,
+     order by c.starts_at, c.id`,
     [
       new Date(now + w24.from).toISOString(),
       new Date(now + w24.to).toISOString(),
       new Date(now + w1.from).toISOString(),
       new Date(now + w1.to).toISOString(),
-      limit,
     ],
   );
+  // The lifecycle check (lapsed trials) runs here, so the limit applies after
+  // it: inactive offices never crowd active ones out of a run.
   return rows
     .filter((r) => active(r as unknown as WsLife, now))
+    .slice(0, limit)
     .map((r) => ({
       kind: r.kind as ClientReminderDue["kind"],
       refId: String(r.ref_id),
@@ -202,7 +204,7 @@ export async function dueLawyerDigestsCore(sql: SqlTag, now: number, limit = 500
        join law_case_lawyers cl on cl.workspace_id = e.workspace_id and cl.user_id = e.user_id
        join law_hearings h on h.case_id = cl.case_id and h.workspace_id = e.workspace_id
        join law_cases c on c.id = h.case_id and c.workspace_id = e.workspace_id
-       where h.status = 'scheduled' and h.starts_at >= $2::timestamptz and h.starts_at < $3::timestamptz
+       where h.status = 'scheduled' and not h.is_demo and h.starts_at >= $2::timestamptz and h.starts_at < $3::timestamptz
        order by h.starts_at`,
       [ymd, from, to],
     ),
@@ -213,7 +215,7 @@ export async function dueLawyerDigestsCore(sql: SqlTag, now: number, limit = 500
        from eligible e
        join law_appointments a on a.workspace_id = e.workspace_id and a.lawyer_id = e.user_id
        left join law_clients cl on cl.id = a.client_id and cl.workspace_id = a.workspace_id
-       where a.status in ('pending', 'confirmed')
+       where a.status in ('pending', 'confirmed') and not a.is_demo
          and a.starts_at >= $2::timestamptz and a.starts_at < $3::timestamptz
        order by a.starts_at`,
       [ymd, from, to],
@@ -224,7 +226,7 @@ export async function dueLawyerDigestsCore(sql: SqlTag, now: number, limit = 500
        from eligible e
        join law_tasks t on t.workspace_id = e.workspace_id and t.assignee_id = e.user_id
        left join law_cases c on c.id = t.case_id and c.workspace_id = t.workspace_id
-       where t.done_at is null and t.due_on is not null and t.due_on <= $2::date
+       where t.done_at is null and not t.is_demo and t.due_on is not null and t.due_on <= $2::date
        order by t.due_on, t.created_at`,
       [ymd, ymd],
     ),

@@ -276,6 +276,15 @@ test("AI first responder: replies, hands off on request, and respects caps", asy
   const r5 = await aiFirstReplyCore(sql, office1, e.conv.id, chatty, { ...opts, dailyCap: 3 });
   assert.equal(r5.handoff, "daily_cap");
 
+  // The office turns the AI off (or its plan drops it) mid-conversation: hand off, no model call.
+  const f = await start(sql, office1, "سؤال آخر", true);
+  const calls = chatty.calls;
+  const off = await aiFirstReplyCore(sql, { ...office1, settings: { ...office1.settings, aiFirstReply: false } }, f.conv.id, chatty, opts);
+  assert.equal(off.handoff, "off");
+  assert.equal(chatty.calls, calls);
+  const g = await start(sql, office1, "سؤال ثالث", true);
+  assert.equal((await aiFirstReplyCore(sql, office1, g.conv.id, chatty, { ...opts, aiAllowed: false })).handoff, "off");
+
   assert.equal(wantsHuman("ممكن اكلم محامي؟"), true);
   assert.equal(wantsHuman("ما ساعات العمل؟"), false);
 });

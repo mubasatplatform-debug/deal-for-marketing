@@ -310,3 +310,12 @@ test("a run stops at its cap; the rest goes out next time", async () => {
   assert.equal((await processRemindersCore(sql, NOW, ok, 3)).client24, 2);
   assert.equal((await processRemindersCore(sql, NOW, ok, 3)).client24, 0);
 });
+
+test("client reminders: sample (demo) appointments never email anyone", async () => {
+  const { pg, sql } = await freshDb();
+  const w = await office(pg, sql, "demo-owner");
+  const id = await appointment(pg, w.id, at(24 * HOUR));
+  await pg.query(`update law_appointments set is_demo = true where id = $1`, [id]);
+  assert.equal((await dueClientRemindersCore(sql, NOW)).length, 0);
+});
+

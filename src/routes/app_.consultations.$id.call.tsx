@@ -10,6 +10,7 @@ import { PreJoin, type DeviceChoices } from "@/components/law/call/prejoin";
 import { usePolicyReload } from "@/components/law/call/use-policy-reload";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { admitClient, getHostJoin, type HostJoin } from "@/lib/law/schedule";
+import { rememberOtpReturn } from "@/lib/otp/return";
 import { workspaceErrorCode, workspaceErrorMessage } from "@/lib/saas/errors";
 import { pageHead } from "@/lib/seo";
 
@@ -38,6 +39,12 @@ function HostCall() {
     } catch (err) {
       if (err instanceof Error && err.message === "Unauthorized") {
         window.location.replace(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+        return;
+      }
+      if (workspaceErrorCode(err) === "otp_required") {
+        // The code screen lives in the /app layout; come back here after it.
+        rememberOtpReturn(window.location.pathname);
+        window.location.replace("/app");
         return;
       }
       setError({ code: workspaceErrorCode(err), message: workspaceErrorMessage(err) });

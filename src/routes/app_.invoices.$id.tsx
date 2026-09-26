@@ -15,6 +15,7 @@ import { QrCode } from "@/components/law/qr-code";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { getInvoice, issueCreditNote } from "@/lib/law/invoices";
 import { INVOICE_TITLES, type InvoiceDetail } from "@/lib/law/invoices-core";
+import { rememberOtpReturn } from "@/lib/otp/return";
 import { workspaceErrorCode, workspaceErrorMessage } from "@/lib/saas/errors";
 import { pageHead } from "@/lib/seo";
 
@@ -51,6 +52,12 @@ function InvoicePage() {
     } catch (err) {
       if (err instanceof Error && err.message === "Unauthorized") {
         window.location.replace(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+        return;
+      }
+      if (workspaceErrorCode(err) === "otp_required") {
+        // The code screen lives in the /app layout; come back here after it.
+        rememberOtpReturn(window.location.pathname);
+        window.location.replace("/app");
         return;
       }
       setError({ code: workspaceErrorCode(err), message: workspaceErrorMessage(err) });

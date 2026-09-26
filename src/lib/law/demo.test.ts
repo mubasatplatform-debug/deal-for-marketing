@@ -185,6 +185,21 @@ test("clear: refused while a real task, note or case hangs off demo data", async
   await assert.rejects(clearDemoCore(sql, owner), (e: unknown) => e instanceof WorkspaceError && e.code === "demo_in_use");
   await pg.query(`update law_cases set client_id = null where id = $1`, [realCase.id]);
 
+  // An invoice issued to a demo client (invoices can never be deleted).
+  await pg.query(
+    `insert into law_invoices (workspace_id, seq, kind, invoice_type, client_id, seller_name, seller_vat, buyer_name, issued_at,
+       subtotal_halalas, vat_halalas, total_halalas, qr_tlv, uuid)
+     values ($1, 1, 'invoice', 'simplified', $2, 'مكتب', '310122393500003', 'عميل', now(), 1000, 150, 1150, 'x',
+       '5b596b0d-77f0-4169-a5d6-778377586ba2')`,
+    [w.id, demoClient.id],
+  );
+  await assert.rejects(clearDemoCore(sql, owner), (e: unknown) => e instanceof WorkspaceError && e.code === "demo_in_use");
+  assert.equal(await count(pg, "law_clients", w.id, "is_demo"), 4, "nothing was deleted");
+  await pg.query(`delete from law_invoices where workspace_id = $1`, [w.id]).catch(async () => {
+    // The immutability trigger refuses deletes; drop it for this test only.
+    await pg.exec(`alter table law_invoices disable trigger user; delete from law_invoices; alter table law_invoices enable trigger user;`);
+  });
+
   await clearDemoCore(sql, owner);
   assert.equal(await count(pg, "law_tasks", w.id, `id = '${task.id}'`), 1, "the real task survived");
   assert.equal(await count(pg, "law_cases", w.id), 1, "the real case survived");

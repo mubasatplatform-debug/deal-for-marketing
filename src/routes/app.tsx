@@ -8,6 +8,7 @@ import { buttonClass } from "@/components/dash/button-class";
 import { LawAppFrame } from "@/components/law/app-frame";
 import { LawAppContext, type LawApp } from "@/components/law/app-context";
 import { TwoFactorGate } from "@/components/law/two-factor";
+import { takeOtpReturn } from "@/lib/otp/return";
 import { useSignOut } from "@/components/keys/use-sign-out";
 import { authEnabled } from "@/lib/auth/client";
 import { hasGateSessionMarker } from "@/lib/auth/gate-session-marker";
@@ -96,6 +97,11 @@ function AppLayout() {
       <CenterCard>
         <TwoFactorGate
           onPassed={() => {
+            const back = takeOtpReturn();
+            if (back) {
+              window.location.replace(back);
+              return;
+            }
             setState({ kind: "loading" });
             void load();
           }}
