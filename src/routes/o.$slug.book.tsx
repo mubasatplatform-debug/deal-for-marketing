@@ -22,12 +22,15 @@ import { toLatinDigits } from "@/components/law/office-options";
 import { PublicShell } from "@/components/law/public-shell";
 import { MODE_LABELS, WEEKDAY_LABELS, type ConsultMode } from "@/lib/law/options";
 import {
+  NEED_CODE,
   createBooking,
   getBookingOffice,
   getBookingSlots,
+  sendBookingCode,
   type BookingOffice,
   type BookingResult,
 } from "@/lib/law/public";
+import { CodeInput, Resend, SentTo } from "@/components/otp/code-input";
 import { normalizePhone } from "@/lib/phone";
 import { pageHead } from "@/lib/seo";
 import { cn } from "@/lib/utils";
@@ -111,6 +114,11 @@ function Booking({ office }: { office: BookingOffice }) {
   const [errors, setErrors] = useState<Partial<Record<"name" | "phone" | "email" | "topic", string>>>({});
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<BookingResult | null>(null);
+  // WhatsApp check of the phone: the masked number once a code is sent.
+  const [codeSentTo, setCodeSentTo] = useState<string | null>(null);
+  const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
   const opened = useRef(Date.now());
   const detailsRef = useRef<HTMLDivElement>(null);
 
@@ -135,9 +143,28 @@ function Booking({ office }: { office: BookingOffice }) {
   const day = useMemo(() => days?.find((d) => d.date === date) ?? null, [days, date]);
   const anySlots = days?.some((d) => d.slots.length) ?? false;
 
+  const errText = (err: unknown, fallback: string) => {
+    const msg = err instanceof Error ? err.message : "";
+    return /[؀-ۿ]/.test(msg) ? msg : fallback;
+  };
+
+  async function sendCode() {
+    setSending(true);
+    setOtpError(null);
+    try {
+      const r = await sendBookingCode({ data: { slug: office.slug, phone: phone.trim() } });
+      setCodeSentTo(r.phone);
+      setOtp("");
+    } catch (err) {
+      toast.error(errText(err, "تعذّر إرسال الرمز. حاول مرة أخرى."));
+    } finally {
+      setSending(false);
+    }
+  }
+
   async function submit(e: FormEvent) {
     e.preventDefault();
-    if (busy || !slot) return;
+    if (busy || sending || !slot) return;
     const next: typeof errors = {};
     if (name.trim().length < 2) next.name = "اكتب اسمك.";
     if (!normalizePhone(phone)) next.phone = "رقم الجوال غير صحيح. مثال: 0501234567";
@@ -145,6 +172,15 @@ function Booking({ office }: { office: BookingOffice }) {
     if (topic.trim().length < 5) next.topic = "صف موضوع استشارتك باختصار.";
     setErrors(next);
     if (Object.keys(next).length) return;
+    if (office.verifyPhone && !codeSentTo) {
+      await sendCode();
+      return;
+    }
+    if (codeSentTo && otp.length !== 6) {
+      setOtpError("أدخل الرمز المكوّن من ٦ أرقام.");
+      return;
+    }
+    setOtpError(null);
     setBusy(true);
     try {
       const r = await createBooking({
@@ -159,12 +195,21 @@ function Booking({ office }: { office: BookingOffice }) {
           topic: topic.trim(),
           website,
           fillMs: Date.now() - opened.current,
+          otpCode: codeSentTo ? otp : null,
         },
       });
       setDone(r);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";
+      if (msg === NEED_CODE) {
+        await sendCode();
+        return;
+      }
+      if (msg.includes("الرمز غير صحيح")) {
+        setOtpError(msg);
+        return;
+      }
       toast.error(/[؀-ۿ]/.test(msg) ? msg : "تعذّر إرسال الحجز. حاول مرة أخرى.");
       if (msg.includes("لم يعد هذا الموعد متاحًا")) {
         setSlot(null);
@@ -327,7 +372,7 @@ function Booking({ office }: { office: BookingOffice }) {
                 <TextInput id={`${uid}-name`} autoComplete="name" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} invalid={Boolean(errors.name)} />
               </Field>
             </div>
-            <Field id={`${uid}-phone`} label="الجوال" error={errors.phone}>
+            <Field id={`${uid}-phone`} label="الجوال" error={errors.phone} hint={office.verifyPhone ? "عليه واتساب — نرسل إليه رمز تأكيد" : undefined}>
               <TextInput
                 id={`${uid}-phone`}
                 type="tel"
@@ -336,7 +381,11 @@ function Booking({ office }: { office: BookingOffice }) {
                 dir="ltr"
                 placeholder="05xxxxxxxx"
                 value={phone}
-                onChange={(e) => setPhone(toLatinDigits(e.target.value))}
+                onChange={(e) => {
+                  setPhone(toLatinDigits(e.target.value));
+                  setCodeSentTo(null);
+                  setOtp("");
+                }}
                 invalid={Boolean(errors.phone)}
                 className="text-left font-ui"
               />
@@ -377,14 +426,62 @@ function Booking({ office }: { office: BookingOffice }) {
               <label htmlFor={`${uid}-website`}>Website</label>
               <input id={`${uid}-website`} tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
             </div>
+            {codeSentTo ? (
+              <div className="space-y-3 rounded-xl bg-paper p-4 ring-1 ring-line sm:col-span-2">
+                <SentTo phone={codeSentTo} />
+                <label htmlFor={`${uid}-otp`} className="sr-only">
+                  رمز التحقق
+                </label>
+                <CodeInput
+                  id={`${uid}-otp`}
+                  value={otp}
+                  onChange={(v) => {
+                    setOtp(v);
+                    setOtpError(null);
+                  }}
+                  invalid={Boolean(otpError)}
+                  describedBy={otpError ? `${uid}-otp-err` : undefined}
+                  autoFocus
+                />
+                {otpError ? (
+                  <p id={`${uid}-otp-err`} className="text-[13px] text-red-700">
+                    {otpError}
+                  </p>
+                ) : null}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <Resend onResend={() => void sendCode()} busy={sending} />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCodeSentTo(null);
+                      setOtp("");
+                      document.getElementById(`${uid}-phone`)?.focus();
+                    }}
+                    className="min-h-9 text-[13px] font-semibold text-slate underline-offset-4 hover:underline"
+                  >
+                    تغيير الرقم
+                  </button>
+                </div>
+              </div>
+            ) : null}
             <div className="sm:col-span-2">
               <button
                 type="submit"
-                disabled={busy || !slot}
+                disabled={busy || sending || !slot}
                 className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-lime text-[15px] font-bold text-pine-deep transition-colors hover:bg-[#b3bf28] disabled:cursor-not-allowed disabled:bg-pine-50 disabled:text-slate"
               >
-                {busy ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <CalendarCheck2 className="size-4" aria-hidden="true" />}
-                {busy ? "جارٍ الإرسال…" : slot ? `احجز ${dayAr(slot.start)} الساعة ${timeAr(slot.start)}` : "اختر وقتًا أولًا"}
+                {busy || sending ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <CalendarCheck2 className="size-4" aria-hidden="true" />}
+                {sending
+                  ? "جارٍ إرسال الرمز…"
+                  : busy
+                    ? "جارٍ الإرسال…"
+                    : !slot
+                      ? "اختر وقتًا أولًا"
+                      : codeSentTo
+                        ? "تأكيد الرمز والحجز"
+                        : office.verifyPhone
+                          ? "أرسل رمز التأكيد إلى واتساب"
+                          : `احجز ${dayAr(slot.start)} الساعة ${timeAr(slot.start)}`}
               </button>
               <p className="mt-2 text-center text-xs text-slate">
                 بإرسال الطلب توافق على مشاركة بياناتك مع {office.name} لتنظيم الاستشارة.

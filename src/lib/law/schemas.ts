@@ -242,5 +242,7 @@ export const bookingForm = z.object({
   website: z.string().max(200).optional().default(""),
   /** Milliseconds the form was open (instant submits are bots). */
   fillMs: z.number().int().min(0).max(86_400_000).default(0),
+  /** WhatsApp code for `phone`, when the booking page asks for one. */
+  otpCode: z.string().trim().regex(/^\d{6}$/).nullish(),
 });
 export type BookingForm = z.infer<typeof bookingForm>;

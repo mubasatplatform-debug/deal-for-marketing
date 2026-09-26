@@ -66,7 +66,9 @@ export type WorkspaceErrorCode =
   | "video_unavailable"
   // AI assistant (src/lib/law/agent)
   | "ai_limit"
-  | "ai_unavailable";
+  | "ai_unavailable"
+  // Two-step sign-in (src/lib/otp)
+  | "otp_required";
 
 export const WORKSPACE_ERROR_PREFIX = "WS:";
 

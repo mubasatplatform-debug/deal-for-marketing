@@ -29,6 +29,7 @@ const MESSAGES: Record<string, string> = {
   video_unavailable: "غرفة الفيديو غير متاحة لهذه الاستشارة.",
   ai_limit: "وصل المكتب إلى الحد اليومي لاستخدام المساعد. حاول غدًا.",
   ai_unavailable: "المساعد غير متاح حاليًا. حاول بعد قليل.",
+  otp_required: "أدخل رمز التحقق المرسل إلى واتساب لمتابعة العمل.",
 };
 
 export function workspaceErrorCode(err: unknown): string | null {

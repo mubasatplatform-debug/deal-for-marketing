@@ -7,6 +7,7 @@ import { Button, Card } from "@/components/dash/ui";
 import { buttonClass } from "@/components/dash/button-class";
 import { LawAppFrame } from "@/components/law/app-frame";
 import { LawAppContext, type LawApp } from "@/components/law/app-context";
+import { TwoFactorGate } from "@/components/law/two-factor";
 import { useSignOut } from "@/components/keys/use-sign-out";
 import { authEnabled } from "@/lib/auth/client";
 import { hasGateSessionMarker } from "@/lib/auth/gate-session-marker";
@@ -32,6 +33,7 @@ type State =
   | { kind: "loading" }
   | { kind: "error" }
   | { kind: "forbidden" }
+  | { kind: "otp" }
   | { kind: "ready"; ctx: AppContext };
 
 function AppLayout() {
@@ -55,6 +57,10 @@ function AppLayout() {
       const code = workspaceErrorCode(err);
       if (err instanceof Error && err.message === "Unauthorized") {
         window.location.replace(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+        return;
+      }
+      if (code === "otp_required") {
+        setState({ kind: "otp" });
         return;
       }
       setState(code === "forbidden" ? { kind: "forbidden" } : { kind: "error" });
@@ -85,6 +91,19 @@ function AppLayout() {
     [state, load],
   );
 
+  if (state.kind === "otp") {
+    return (
+      <CenterCard>
+        <TwoFactorGate
+          onPassed={() => {
+            setState({ kind: "loading" });
+            void load();
+          }}
+          onSignOut={canSignOut ? () => signOut.start("/law") : undefined}
+        />
+      </CenterCard>
+    );
+  }
   if (state.kind === "forbidden") return <NoAccess />;
   if (state.kind === "error") return <LoadError onRetry={() => void load()} />;
   if (!app) return <Splash />;

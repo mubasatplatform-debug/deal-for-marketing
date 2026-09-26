@@ -25,7 +25,13 @@ export async function requireWorkspace(
   minRole: Role = "staff",
   opts: { write?: boolean } = {},
 ): Promise<WorkspaceAccess> {
-  return withStatus(async () => resolveMembership(await getSql(), userId, workspaceId, minRole, opts));
+  return withStatus(async () => {
+    const access = await resolveMembership(await getSql(), userId, workspaceId, minRole, opts);
+    // Two-step sign-in: this session must have passed its WhatsApp code.
+    const { assertSecondFactor } = await import("@/lib/otp/otp.server");
+    await assertSecondFactor(userId);
+    return access;
+  });
 }
 
 /** Run `fn`; a `WorkspaceError` sets the HTTP status it carries before rethrowing. */
