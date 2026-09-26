@@ -29,6 +29,7 @@ import { Route as AppAppointmentsRouteImport } from './routes/app.appointments'
 import { Route as AppAssistantRouteImport } from './routes/app.assistant'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppDocumentsRouteImport } from './routes/app.documents'
+import { Route as AppInvoicesRouteImport } from './routes/app.invoices'
 import { Route as AppReportsRouteImport } from './routes/app.reports'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppTasksRouteImport } from './routes/app.tasks'
@@ -56,6 +57,7 @@ import { Route as AppClientsIdRouteImport } from './routes/app.clients.$id'
 import { Route as AppConsultationsIndexRouteImport } from './routes/app.consultations.index'
 import { Route as AppConsultationsIdRouteImport } from './routes/app.consultations.$id'
 import { Route as AppInviteTokenRouteImport } from './routes/app_.invite.$token'
+import { Route as AppInvoicesIdRouteImport } from './routes/app_.invoices.$id'
 import { Route as ClientRequestsIdRouteImport } from './routes/client_.requests.$id'
 import { Route as DeskCrmViewRouteImport } from './routes/desk.crm.$view'
 import { Route as DeskLawViewRouteImport } from './routes/desk.law.$view'
@@ -168,6 +170,11 @@ const AppBillingRoute = AppBillingRouteImport.update({
 const AppDocumentsRoute = AppDocumentsRouteImport.update({
   id: '/documents',
   path: '/documents',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInvoicesRoute = AppInvoicesRouteImport.update({
+  id: '/invoices',
+  path: '/invoices',
   getParentRoute: () => AppRoute,
 } as any)
 const AppReportsRoute = AppReportsRouteImport.update({
@@ -305,6 +312,11 @@ const AppInviteTokenRoute = AppInviteTokenRouteImport.update({
   path: '/app/invite/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppInvoicesIdRoute = AppInvoicesIdRouteImport.update({
+  id: '/app_/invoices/$id',
+  path: '/app/invoices/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ClientRequestsIdRoute = ClientRequestsIdRouteImport.update({
   id: '/client_/requests/$id',
   path: '/client/requests/$id',
@@ -391,6 +403,7 @@ export interface FileRoutesByFullPath {
   '/app/assistant': typeof AppAssistantRoute
   '/app/billing': typeof AppBillingRoute
   '/app/documents': typeof AppDocumentsRoute
+  '/app/invoices': typeof AppInvoicesRoute
   '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/tasks': typeof AppTasksRoute
@@ -416,6 +429,7 @@ export interface FileRoutesByFullPath {
   '/app/clients/$id': typeof AppClientsIdRoute
   '/app/consultations/$id': typeof AppConsultationsIdRoute
   '/app/invite/$token': typeof AppInviteTokenRoute
+  '/app/invoices/$id': typeof AppInvoicesIdRoute
   '/client/requests/$id': typeof ClientRequestsIdRoute
   '/desk/crm/$view': typeof DeskCrmViewRoute
   '/desk/law/$view': typeof DeskLawViewRoute
@@ -451,6 +465,7 @@ export interface FileRoutesByTo {
   '/app/assistant': typeof AppAssistantRoute
   '/app/billing': typeof AppBillingRoute
   '/app/documents': typeof AppDocumentsRoute
+  '/app/invoices': typeof AppInvoicesRoute
   '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/tasks': typeof AppTasksRoute
@@ -476,6 +491,7 @@ export interface FileRoutesByTo {
   '/app/clients/$id': typeof AppClientsIdRoute
   '/app/consultations/$id': typeof AppConsultationsIdRoute
   '/app/invite/$token': typeof AppInviteTokenRoute
+  '/app/invoices/$id': typeof AppInvoicesIdRoute
   '/client/requests/$id': typeof ClientRequestsIdRoute
   '/desk/crm/$view': typeof DeskCrmViewRoute
   '/desk/law/$view': typeof DeskLawViewRoute
@@ -514,6 +530,7 @@ export interface FileRoutesById {
   '/app/assistant': typeof AppAssistantRoute
   '/app/billing': typeof AppBillingRoute
   '/app/documents': typeof AppDocumentsRoute
+  '/app/invoices': typeof AppInvoicesRoute
   '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/tasks': typeof AppTasksRoute
@@ -539,6 +556,7 @@ export interface FileRoutesById {
   '/app/clients/$id': typeof AppClientsIdRoute
   '/app/consultations/$id': typeof AppConsultationsIdRoute
   '/app_/invite/$token': typeof AppInviteTokenRoute
+  '/app_/invoices/$id': typeof AppInvoicesIdRoute
   '/client_/requests/$id': typeof ClientRequestsIdRoute
   '/desk/crm/$view': typeof DeskCrmViewRoute
   '/desk/law/$view': typeof DeskLawViewRoute
@@ -578,6 +596,7 @@ export interface FileRouteTypes {
     | '/app/assistant'
     | '/app/billing'
     | '/app/documents'
+    | '/app/invoices'
     | '/app/reports'
     | '/app/settings'
     | '/app/tasks'
@@ -603,6 +622,7 @@ export interface FileRouteTypes {
     | '/app/clients/$id'
     | '/app/consultations/$id'
     | '/app/invite/$token'
+    | '/app/invoices/$id'
     | '/client/requests/$id'
     | '/desk/crm/$view'
     | '/desk/law/$view'
@@ -638,6 +658,7 @@ export interface FileRouteTypes {
     | '/app/assistant'
     | '/app/billing'
     | '/app/documents'
+    | '/app/invoices'
     | '/app/reports'
     | '/app/settings'
     | '/app/tasks'
@@ -663,6 +684,7 @@ export interface FileRouteTypes {
     | '/app/clients/$id'
     | '/app/consultations/$id'
     | '/app/invite/$token'
+    | '/app/invoices/$id'
     | '/client/requests/$id'
     | '/desk/crm/$view'
     | '/desk/law/$view'
@@ -700,6 +722,7 @@ export interface FileRouteTypes {
     | '/app/assistant'
     | '/app/billing'
     | '/app/documents'
+    | '/app/invoices'
     | '/app/reports'
     | '/app/settings'
     | '/app/tasks'
@@ -725,6 +748,7 @@ export interface FileRouteTypes {
     | '/app/clients/$id'
     | '/app/consultations/$id'
     | '/app_/invite/$token'
+    | '/app_/invoices/$id'
     | '/client_/requests/$id'
     | '/desk/crm/$view'
     | '/desk/law/$view'
@@ -774,6 +798,7 @@ export interface RootRouteChildren {
   ApiV1RequestsRoute: typeof ApiV1RequestsRouteWithChildren
   ApiV1ServicesRoute: typeof ApiV1ServicesRoute
   AppInviteTokenRoute: typeof AppInviteTokenRoute
+  AppInvoicesIdRoute: typeof AppInvoicesIdRoute
   ClientRequestsIdRoute: typeof ClientRequestsIdRoute
   DeskCrmViewRoute: typeof DeskCrmViewRoute
   DeskLawViewRoute: typeof DeskLawViewRoute
@@ -927,6 +952,13 @@ declare module '@tanstack/react-router' {
       path: '/documents'
       fullPath: '/app/documents'
       preLoaderRoute: typeof AppDocumentsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/invoices': {
+      id: '/app/invoices'
+      path: '/invoices'
+      fullPath: '/app/invoices'
+      preLoaderRoute: typeof AppInvoicesRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/reports': {
@@ -1118,6 +1150,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInviteTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app_/invoices/$id': {
+      id: '/app_/invoices/$id'
+      path: '/app/invoices/$id'
+      fullPath: '/app/invoices/$id'
+      preLoaderRoute: typeof AppInvoicesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/client_/requests/$id': {
       id: '/client_/requests/$id'
       path: '/client/requests/$id'
@@ -1217,6 +1256,7 @@ interface AppRouteChildren {
   AppAssistantRoute: typeof AppAssistantRoute
   AppBillingRoute: typeof AppBillingRoute
   AppDocumentsRoute: typeof AppDocumentsRoute
+  AppInvoicesRoute: typeof AppInvoicesRoute
   AppReportsRoute: typeof AppReportsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppTasksRoute: typeof AppTasksRoute
@@ -1235,6 +1275,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAssistantRoute: AppAssistantRoute,
   AppBillingRoute: AppBillingRoute,
   AppDocumentsRoute: AppDocumentsRoute,
+  AppInvoicesRoute: AppInvoicesRoute,
   AppReportsRoute: AppReportsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppTasksRoute: AppTasksRoute,
@@ -1316,6 +1357,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiV1RequestsRoute: ApiV1RequestsRouteWithChildren,
   ApiV1ServicesRoute: ApiV1ServicesRoute,
   AppInviteTokenRoute: AppInviteTokenRoute,
+  AppInvoicesIdRoute: AppInvoicesIdRoute,
   ClientRequestsIdRoute: ClientRequestsIdRoute,
   DeskCrmViewRoute: DeskCrmViewRoute,
   DeskLawViewRoute: DeskLawViewRoute,

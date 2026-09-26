@@ -56,6 +56,9 @@ test("staff: reception work, no deletes, no fees, no case edits, no private note
     "document.delete",
     "appointment.delete",
     "settings.booking",
+    "invoice.view",
+    "invoice.issue",
+    "settings.tax",
   ] as const) {
     assert.equal(can("staff", a), false, a);
   }

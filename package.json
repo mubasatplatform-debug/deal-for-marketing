@@ -19,7 +19,7 @@
     "typecheck": "tsc --noEmit",
     "check:auth": "node scripts/check-auth-invariant.mjs",
     "test": "node --test 'scripts/**/*.test.mjs' && node --experimental-strip-types --test src/lib/app-data/app-data.test.ts src/lib/app-data/readiness-schedule.test.ts src/lib/auth/gate-identity.test.ts src/lib/auth/sign-in-gate.test.ts src/lib/phone.test.ts",
-    "test:app": "node --experimental-strip-types --test src/lib/saas/tenancy.test.ts src/lib/saas/plans.test.ts src/lib/saas/payments/edfapay.test.ts src/lib/law/permissions.test.ts src/lib/law/slots.test.ts src/lib/law/meet-token.test.ts src/lib/law/video.test.ts src/lib/law/schemas.test.ts src/lib/law/practice.test.ts src/lib/law/reports.test.ts src/lib/law/agent/tools.test.ts src/lib/law/agent/agent.test.ts src/lib/law/portal.test.ts src/lib/otp/otp.test.ts src/lib/api/api-keys.test.ts src/lib/rate-limit.test.ts src/lib/names.test.ts src/lib/attribution.test.ts src/lib/files/validate.test.ts src/lib/phone.test.ts src/lib/app-data/app-data.test.ts src/lib/app-data/readiness-schedule.test.ts src/lib/auth/email-verification.test.ts src/lib/auth/gate-identity.test.ts src/lib/auth/sign-in-gate.test.ts src/lib/law/reminders.test.ts src/lib/law/demo.test.ts",
+    "test:app": "node --experimental-strip-types --test src/lib/saas/tenancy.test.ts src/lib/saas/plans.test.ts src/lib/saas/payments/edfapay.test.ts src/lib/law/permissions.test.ts src/lib/law/slots.test.ts src/lib/law/meet-token.test.ts src/lib/law/video.test.ts src/lib/law/schemas.test.ts src/lib/law/practice.test.ts src/lib/law/reports.test.ts src/lib/law/agent/tools.test.ts src/lib/law/agent/agent.test.ts src/lib/law/portal.test.ts src/lib/otp/otp.test.ts src/lib/api/api-keys.test.ts src/lib/rate-limit.test.ts src/lib/names.test.ts src/lib/attribution.test.ts src/lib/files/validate.test.ts src/lib/phone.test.ts src/lib/app-data/app-data.test.ts src/lib/app-data/readiness-schedule.test.ts src/lib/auth/email-verification.test.ts src/lib/auth/gate-identity.test.ts src/lib/auth/sign-in-gate.test.ts src/lib/law/reminders.test.ts src/lib/law/demo.test.ts src/lib/law/invoices.test.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
@@ -71,6 +71,7 @@
     "livekit-server-sdk": "^2.19.1",
     "lucide-react": "^0.510.0",
     "pg": "^8.16.3",
+    "qrcode-generator": "^2.0.4",
     "react": "^19.2.0",
     "react-day-picker": "^9.14.0",
     "react-dom": "^19.2.0",
