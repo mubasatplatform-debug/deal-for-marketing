@@ -129,6 +129,47 @@ function LoadError({ onRetry }: { onRetry: () => void }) {
 }
 
 // ---------------------------------------------------------------------------
+// «مكتب المحامي»: /app/keys (inside the office frame)
+
+const LAW_SCOPES: Scope[] = ["law:read", "law:write"];
+
+/** The member's own keys, offered with the law-office scopes only. */
+export function LawKeysPanel() {
+  const keys = useOwnKeys(true);
+  const [creating, setCreating] = useState(false);
+  const activeCount = keys.data?.keys.filter((k) => isKeyActive(k)).length ?? 0;
+  const atLimit = activeCount >= MAX_ACTIVE_KEYS;
+  return (
+    <>
+      {toaster}
+      <div className="mb-4 flex justify-end">
+        <NewKeyButton onClick={() => setCreating(true)} disabled={keys.state !== "ready" || atLimit} />
+      </div>
+      {keys.state === "error" ? (
+        <LoadError onRetry={keys.load} />
+      ) : (
+        <KeyList
+          keys={keys.data?.keys ?? []}
+          loading={keys.state === "loading"}
+          now={keys.now}
+          onNew={() => setCreating(true)}
+          onRevoke={keys.revoke}
+        />
+      )}
+      {creating && keys.data ? (
+        <CreateKeyDialog
+          grantable={keys.data.grantable}
+          only={LAW_SCOPES}
+          defaults={["law:read"]}
+          onCreate={keys.create}
+          onClose={() => setCreating(false)}
+        />
+      ) : null}
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Client: /client/keys
 
 export function ClientKeysPage({ user, onSignOut }: { user: ShellUser; onSignOut?: () => void }) {

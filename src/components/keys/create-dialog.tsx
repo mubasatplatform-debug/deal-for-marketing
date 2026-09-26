@@ -27,23 +27,32 @@ export function CreateKeyDialog({
   grantable,
   onCreate,
   onClose,
+  only,
+  defaults = DEFAULT_SCOPES,
 }: {
   grantable: Scope[];
   onCreate: OnCreate;
   onClose: () => void;
+  /** Offer just these scopes (e.g. the law office's), not every grantable one. */
+  only?: Scope[];
+  /** Pre-ticked scopes. */
+  defaults?: Scope[];
 }) {
   const [created, setCreated] = useState<Created | null>(null);
+  const offered = only ? grantable.filter((s) => only.includes(s)) : grantable;
   if (created) return <RevealStep created={created} onClose={onClose} />;
-  return <FormStep grantable={grantable} onCreate={onCreate} onCreated={setCreated} onClose={onClose} />;
+  return <FormStep grantable={offered} defaults={defaults} onCreate={onCreate} onCreated={setCreated} onClose={onClose} />;
 }
 
 function FormStep({
   grantable,
+  defaults,
   onCreate,
   onCreated,
   onClose,
 }: {
   grantable: Scope[];
+  defaults: Scope[];
   onCreate: OnCreate;
   onCreated: (c: Created) => void;
   onClose: () => void;
@@ -51,7 +60,7 @@ function FormStep({
   const formId = useId();
   const [name, setName] = useState("");
   const [scopes, setScopes] = useState<Set<Scope>>(
-    () => new Set(DEFAULT_SCOPES.filter((s) => grantable.includes(s))),
+    () => new Set(defaults.filter((s) => grantable.includes(s))),
   );
   const [expiry, setExpiry] = useState<KeyExpiryDays>(DEFAULT_KEY_EXPIRY_DAYS);
   const [busy, setBusy] = useState(false);

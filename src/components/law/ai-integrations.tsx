@@ -79,7 +79,7 @@ export function AiIntegrationsCard() {
             <span className="grid size-6 shrink-0 place-items-center rounded-full bg-pine text-xs font-bold text-lime">١</span>
             <span>
               أنشئ مفتاح API من{" "}
-              <a href="/client/keys" className="inline-flex items-center gap-1 font-semibold text-pine underline underline-offset-4">
+              <a href="/app/keys" className="inline-flex items-center gap-1 font-semibold text-pine underline underline-offset-4">
                 <KeyRound className="size-3.5" aria-hidden="true" />
                 مفاتيح API
               </a>{" "}

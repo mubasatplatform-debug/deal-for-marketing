@@ -2,12 +2,13 @@ import { useEffect, useRef, useState, type ComponentType, type ReactNode } from 
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   AlertTriangle,
+  BarChart3,
   Check,
   ChevronsUpDown,
   CreditCard,
+  KeyRound,
   LayoutDashboard,
   LockKeyhole,
-  BarChart3,
   LogOut,
   Menu,
   MessageCircle,
@@ -63,6 +64,7 @@ const OFFICE: NavEntry[] = [
   { to: "/app/invoices", label: "الفواتير", icon: ReceiptText, need: "invoice.view" },
   { to: "/app/reports", label: "التقارير", icon: BarChart3 },
   { to: "/app/team", label: "الفريق", icon: Users },
+  { to: "/app/keys", label: "الربط ومفاتيح API", icon: KeyRound },
   { to: "/app/settings", label: "الإعدادات", icon: Settings },
   { to: "/app/billing", label: "الاشتراك", icon: CreditCard },
 ];
