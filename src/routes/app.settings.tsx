@@ -1,11 +1,12 @@
 import { useEffect, useId, useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { BellRing, Loader2, ReceiptText, Save, ShieldCheck } from "lucide-react";
+import { BellRing, KeyRound, Loader2, ReceiptText, Save, ShieldCheck } from "lucide-react";
+import { buttonClass } from "@/components/dash/button-class";
 import { toast } from "sonner";
 import { Button, Card, CardHeader } from "@/components/dash/ui";
 import { PageHead } from "@/components/law/app-frame";
 import { useLawApp } from "@/components/law/app-context";
-import { AiAuditCard, AiIntegrationsCard } from "@/components/law/ai-integrations";
+import { AiAuditCard } from "@/components/law/ai-integrations";
 import { TwoFactorCard } from "@/components/law/two-factor";
 import { BookingSettingsCard } from "@/components/law/booking-settings";
 import { Field, SelectInput, TextInput } from "@/components/law/fields";
@@ -177,7 +178,18 @@ function Settings() {
       {can(active.role, "settings.tax") ? <TaxSettingsCard readOnly={active.lifecycle.readOnly} /> : null}
       <BookingSettingsCard />
       <div className="mt-6 grid gap-6">
-        <AiIntegrationsCard />
+        <Card className="flex flex-wrap items-center justify-between gap-3 p-5 md:p-6">
+          <div className="min-w-0">
+            <p className="flex items-center gap-2 text-[15px] font-bold">
+              <KeyRound className="size-[18px] text-pine" aria-hidden="true" />
+              ربط مساعدات الذكاء الاصطناعي (MCP) ومفاتيح API
+            </p>
+            <p className="mt-1 text-[13px] text-slate">أنشئ مفتاحك واربط Claude أو Cursor أو أي نظام آخر ببيانات المكتب.</p>
+          </div>
+          <a href="/app/keys" className={buttonClass("secondary")}>
+            فتح «الربط ومفاتيح API»
+          </a>
+        </Card>
         <AiAuditCard />
       </div>
     </>

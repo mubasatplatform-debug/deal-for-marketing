@@ -32,6 +32,7 @@ import { Route as AppCallsRouteImport } from './routes/app.calls'
 import { Route as AppDocumentsRouteImport } from './routes/app.documents'
 import { Route as AppInboxRouteImport } from './routes/app.inbox'
 import { Route as AppInvoicesRouteImport } from './routes/app.invoices'
+import { Route as AppKeysRouteImport } from './routes/app.keys'
 import { Route as AppReportsRouteImport } from './routes/app.reports'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppTasksRouteImport } from './routes/app.tasks'
@@ -189,6 +190,11 @@ const AppInboxRoute = AppInboxRouteImport.update({
 const AppInvoicesRoute = AppInvoicesRouteImport.update({
   id: '/invoices',
   path: '/invoices',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppKeysRoute = AppKeysRouteImport.update({
+  id: '/keys',
+  path: '/keys',
   getParentRoute: () => AppRoute,
 } as any)
 const AppReportsRoute = AppReportsRouteImport.update({
@@ -430,6 +436,7 @@ export interface FileRoutesByFullPath {
   '/app/documents': typeof AppDocumentsRoute
   '/app/inbox': typeof AppInboxRoute
   '/app/invoices': typeof AppInvoicesRoute
+  '/app/keys': typeof AppKeysRoute
   '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/tasks': typeof AppTasksRoute
@@ -496,6 +503,7 @@ export interface FileRoutesByTo {
   '/app/documents': typeof AppDocumentsRoute
   '/app/inbox': typeof AppInboxRoute
   '/app/invoices': typeof AppInvoicesRoute
+  '/app/keys': typeof AppKeysRoute
   '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/tasks': typeof AppTasksRoute
@@ -565,6 +573,7 @@ export interface FileRoutesById {
   '/app/documents': typeof AppDocumentsRoute
   '/app/inbox': typeof AppInboxRoute
   '/app/invoices': typeof AppInvoicesRoute
+  '/app/keys': typeof AppKeysRoute
   '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/tasks': typeof AppTasksRoute
@@ -635,6 +644,7 @@ export interface FileRouteTypes {
     | '/app/documents'
     | '/app/inbox'
     | '/app/invoices'
+    | '/app/keys'
     | '/app/reports'
     | '/app/settings'
     | '/app/tasks'
@@ -701,6 +711,7 @@ export interface FileRouteTypes {
     | '/app/documents'
     | '/app/inbox'
     | '/app/invoices'
+    | '/app/keys'
     | '/app/reports'
     | '/app/settings'
     | '/app/tasks'
@@ -769,6 +780,7 @@ export interface FileRouteTypes {
     | '/app/documents'
     | '/app/inbox'
     | '/app/invoices'
+    | '/app/keys'
     | '/app/reports'
     | '/app/settings'
     | '/app/tasks'
@@ -1023,6 +1035,13 @@ declare module '@tanstack/react-router' {
       path: '/invoices'
       fullPath: '/app/invoices'
       preLoaderRoute: typeof AppInvoicesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/keys': {
+      id: '/app/keys'
+      path: '/keys'
+      fullPath: '/app/keys'
+      preLoaderRoute: typeof AppKeysRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/reports': {
@@ -1337,6 +1356,7 @@ interface AppRouteChildren {
   AppDocumentsRoute: typeof AppDocumentsRoute
   AppInboxRoute: typeof AppInboxRoute
   AppInvoicesRoute: typeof AppInvoicesRoute
+  AppKeysRoute: typeof AppKeysRoute
   AppReportsRoute: typeof AppReportsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppTasksRoute: typeof AppTasksRoute
@@ -1358,6 +1378,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDocumentsRoute: AppDocumentsRoute,
   AppInboxRoute: AppInboxRoute,
   AppInvoicesRoute: AppInvoicesRoute,
+  AppKeysRoute: AppKeysRoute,
   AppReportsRoute: AppReportsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppTasksRoute: AppTasksRoute,

@@ -84,7 +84,7 @@ export async function authenticate(request: Request): Promise<ApiCaller> {
     throw unauthorized(
       header
         ? 'Malformed Authorization header. Send "Authorization: Bearer deal_live_…".'
-        : 'Missing API key. Send "Authorization: Bearer deal_live_…"; create a key at /client/keys.',
+        : 'Missing API key. Send "Authorization: Bearer deal_live_…"; create one in the law office at /app/keys (or at /client/keys).',
     );
   }
   if (!isWellFormedKey(secret)) {
@@ -110,9 +110,9 @@ export async function authenticate(request: Request): Promise<ApiCaller> {
     return recordAuthFailure(ip, unauthorized("Invalid API key. It may have been deleted; create a new one."));
   }
   const dead = key.revoked_at
-    ? unauthorized("This API key was revoked. Create a new key at /client/keys.")
+    ? unauthorized("This API key was revoked. Create a new key at /app/keys (law office) or /client/keys.")
     : key.expires_at && new Date(key.expires_at).getTime() <= Date.now()
-      ? unauthorized("This API key has expired. Create a new key at /client/keys.")
+      ? unauthorized("This API key has expired. Create a new key at /app/keys (law office) or /client/keys.")
       : null;
   if (dead) {
     // Attributed to the key so the team sees a leaked, revoked key being tried.
