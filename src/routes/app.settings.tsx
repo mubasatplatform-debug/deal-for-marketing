@@ -1,6 +1,6 @@
-import { useId, useState, type FormEvent } from "react";
+import { useEffect, useId, useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Loader2, Save, ShieldCheck } from "lucide-react";
+import { BellRing, Loader2, Save, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button, Card, CardHeader } from "@/components/dash/ui";
 import { PageHead } from "@/components/law/app-frame";
@@ -11,6 +11,9 @@ import { BookingSettingsCard } from "@/components/law/booking-settings";
 import { Field, SelectInput, TextInput } from "@/components/law/fields";
 import { CITIES, TEAM_SIZE_OPTIONS, toLatinDigits } from "@/components/law/office-options";
 import { dateAr } from "@/components/law/format";
+import { useLoad } from "@/components/law/kit";
+import { getReminderSettings, saveReminderSettings } from "@/lib/law/reminders";
+import type { ReminderSettings } from "@/lib/law/reminders-core";
 import { workspaceErrorMessage } from "@/lib/saas/errors";
 import { ROLE_LABELS } from "@/lib/saas/lifecycle";
 import { updateWorkspace, type TeamSize } from "@/lib/saas/workspace";
@@ -139,6 +142,7 @@ function Settings() {
 
         <div className="space-y-4">
           <TwoFactorCard />
+          <RemindersCard />
           <Card className="p-5 md:p-6">
             <p className="text-[15px] font-bold">عن هذا المكتب</p>
             <dl className="mt-3 space-y-2.5 text-sm">
@@ -173,6 +177,83 @@ function Settings() {
         <AiAuditCard />
       </div>
     </>
+  );
+}
+
+/** «التذكيرات التلقائية»: owner/admin switch them on or off; everyone else reads. */
+function RemindersCard() {
+  const { active } = useLawApp();
+  const res = useLoad(() => getReminderSettings({ data: { workspaceId: active.workspace.id } }), [active.workspace.id]);
+  const [s, setS] = useState<ReminderSettings | null>(null);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    if (res.data) setS(res.data.settings);
+  }, [res.data]);
+  const canEdit = res.data?.canEdit ?? false;
+
+  async function toggle(key: keyof ReminderSettings, value: boolean) {
+    if (!s || busy || !canEdit) return;
+    const prev = s;
+    const next = { ...s, [key]: value };
+    setS(next);
+    setBusy(true);
+    try {
+      await saveReminderSettings({ data: { workspaceId: active.workspace.id, ...next } });
+      toast.success("حُفظت إعدادات التذكيرات");
+    } catch (err) {
+      setS(prev);
+      toast.error(workspaceErrorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const options: { key: keyof ReminderSettings; title: string; hint: string }[] = [
+    {
+      key: "clientConsult",
+      title: "تذكير العميل قبل الاستشارة بيوم وبساعة",
+      hint: "بريد للعميل قبل مواعيده المؤكدة، مع رابط الدخول لمكالمات الفيديو.",
+    },
+    {
+      key: "lawyerDaily",
+      title: "ملخص صباحي لكل محامٍ بجلساته ومواعيده ومهامه",
+      hint: "يصل الساعة 7 صباحًا تقريبًا، ولا يُرسل في يوم ليس فيه شيء.",
+    },
+  ];
+
+  return (
+    <Card className="p-5 md:p-6">
+      <p className="flex items-center gap-2 text-[15px] font-bold">
+        <BellRing className="size-[18px] text-pine" aria-hidden="true" />
+        التذكيرات التلقائية
+      </p>
+      {res.error ? (
+        <p className="mt-3 text-[13px] text-red-700">{res.error}</p>
+      ) : !s ? (
+        <div className="mt-3 h-24 animate-pulse rounded-xl bg-pine-50/40">
+          <span className="sr-only">جارٍ التحميل…</span>
+        </div>
+      ) : (
+        <div className="mt-3 space-y-2.5">
+          {options.map((o) => (
+            <label key={o.key} className="flex items-start gap-3 rounded-xl bg-paper p-3.5 ring-1 ring-line">
+              <input
+                type="checkbox"
+                disabled={!canEdit || busy}
+                checked={s[o.key]}
+                onChange={(e) => void toggle(o.key, e.target.checked)}
+                className="mt-1 size-4 shrink-0 accent-[var(--color-pine)]"
+              />
+              <span>
+                <span className="block text-sm font-bold">{o.title}</span>
+                <span className="mt-0.5 block text-[13px] leading-relaxed text-slate">{o.hint}</span>
+              </span>
+            </label>
+          ))}
+          {!canEdit ? <p className="text-[13px] text-slate">يعدّل هذه الإعدادات مالك المكتب أو المدير.</p> : null}
+        </div>
+      )}
+    </Card>
   );
 }
 

@@ -42,6 +42,7 @@ import { Route as PortalTokenRouteImport } from './routes/portal.$token'
 import { Route as StartIndexRouteImport } from './routes/start.index'
 import { Route as StartSlugRouteImport } from './routes/start.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiCronRemindersRouteImport } from './routes/api/cron/reminders'
 import { Route as ApiFilesIdRouteImport } from './routes/api/files.$id'
 import { Route as ApiLawEdfapayRouteImport } from './routes/api/law/edfapay'
 import { Route as ApiLawMoyasarRouteImport } from './routes/api/law/moyasar'
@@ -234,6 +235,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronRemindersRoute = ApiCronRemindersRouteImport.update({
+  id: '/api/cron/reminders',
+  path: '/api/cron/reminders',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiFilesIdRoute = ApiFilesIdRouteImport.update({
   id: '/api/files/$id',
   path: '/api/files/$id',
@@ -399,6 +405,7 @@ export interface FileRoutesByFullPath {
   '/law/': typeof LawIndexRoute
   '/start/': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/reminders': typeof ApiCronRemindersRoute
   '/api/files/$id': typeof ApiFilesIdRoute
   '/api/law/edfapay': typeof ApiLawEdfapayRoute
   '/api/law/moyasar': typeof ApiLawMoyasarRoute
@@ -458,6 +465,7 @@ export interface FileRoutesByTo {
   '/law': typeof LawIndexRoute
   '/start': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/reminders': typeof ApiCronRemindersRoute
   '/api/files/$id': typeof ApiFilesIdRoute
   '/api/law/edfapay': typeof ApiLawEdfapayRoute
   '/api/law/moyasar': typeof ApiLawMoyasarRoute
@@ -520,6 +528,7 @@ export interface FileRoutesById {
   '/law/': typeof LawIndexRoute
   '/start/': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/reminders': typeof ApiCronRemindersRoute
   '/api/files/$id': typeof ApiFilesIdRoute
   '/api/law/edfapay': typeof ApiLawEdfapayRoute
   '/api/law/moyasar': typeof ApiLawMoyasarRoute
@@ -583,6 +592,7 @@ export interface FileRouteTypes {
     | '/law/'
     | '/start/'
     | '/api/auth/$'
+    | '/api/cron/reminders'
     | '/api/files/$id'
     | '/api/law/edfapay'
     | '/api/law/moyasar'
@@ -642,6 +652,7 @@ export interface FileRouteTypes {
     | '/law'
     | '/start'
     | '/api/auth/$'
+    | '/api/cron/reminders'
     | '/api/files/$id'
     | '/api/law/edfapay'
     | '/api/law/moyasar'
@@ -703,6 +714,7 @@ export interface FileRouteTypes {
     | '/law/'
     | '/start/'
     | '/api/auth/$'
+    | '/api/cron/reminders'
     | '/api/files/$id'
     | '/api/law/edfapay'
     | '/api/law/moyasar'
@@ -754,6 +766,7 @@ export interface RootRouteChildren {
   PortalTokenRoute: typeof PortalTokenRoute
   LawIndexRoute: typeof LawIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiCronRemindersRoute: typeof ApiCronRemindersRoute
   ApiFilesIdRoute: typeof ApiFilesIdRoute
   ApiLawEdfapayRoute: typeof ApiLawEdfapayRoute
   ApiLawMoyasarRoute: typeof ApiLawMoyasarRoute
@@ -1005,6 +1018,13 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/reminders': {
+      id: '/api/cron/reminders'
+      path: '/api/cron/reminders'
+      fullPath: '/api/cron/reminders'
+      preLoaderRoute: typeof ApiCronRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/files/$id': {
@@ -1288,6 +1308,7 @@ const rootRouteChildren: RootRouteChildren = {
   PortalTokenRoute: PortalTokenRoute,
   LawIndexRoute: LawIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiCronRemindersRoute: ApiCronRemindersRoute,
   ApiFilesIdRoute: ApiFilesIdRoute,
   ApiLawEdfapayRoute: ApiLawEdfapayRoute,
   ApiLawMoyasarRoute: ApiLawMoyasarRoute,
