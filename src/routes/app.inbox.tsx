@@ -191,7 +191,7 @@ function InboxPage() {
         <ErrorCard title="تعذّر تحميل المحادثات" message={list.error} onRetry={() => void list.reload()} />
       ) : (
         <Card className="overflow-hidden">
-          <div className="grid h-[calc(100dvh-12.5rem)] min-h-[520px] lg:grid-cols-[340px_minmax(0,1fr)] xl:grid-cols-[340px_minmax(0,1fr)_300px]">
+          <div className="grid h-[calc(100dvh-12.5rem)] min-h-[520px] grid-cols-[minmax(0,1fr)] lg:grid-cols-[340px_minmax(0,1fr)] xl:grid-cols-[340px_minmax(0,1fr)_300px]">
             {/* List */}
             <aside
               aria-label="قائمة المحادثات"
