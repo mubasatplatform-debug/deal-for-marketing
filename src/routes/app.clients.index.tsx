@@ -134,6 +134,11 @@ function Clients() {
                         <p className="flex items-center gap-2">
                           <span className="truncate text-sm font-bold">{c.name}</span>
                           <span className="hidden text-xs text-slate sm:inline">{CLIENT_KIND_LABELS[c.kind]}</span>
+                          {c.is_demo ? (
+                            <Pill tone="lime" dot={false} className="shrink-0 px-2 text-[11px]">
+                              تجريبي
+                            </Pill>
+                          ) : null}
                         </p>
                         <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate">
                           {c.phone ? (
