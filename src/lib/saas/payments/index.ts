@@ -1,3 +1,4 @@
+import { edfapayProvider } from "./edfapay.ts";
 import { manualProvider } from "./manual.ts";
 import { moyasarProvider } from "./moyasar.ts";
 import type { PaymentProvider, ProviderId } from "./types.ts";
@@ -7,6 +8,7 @@ export type { BankDetails, CheckoutResult, PaymentProvider, ProviderId } from ".
 const providers: Record<ProviderId, PaymentProvider> = {
   manual: manualProvider,
   moyasar: moyasarProvider,
+  edfapay: edfapayProvider,
 };
 
 /** The provider by id — **server-only**. */

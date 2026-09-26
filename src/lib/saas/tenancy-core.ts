@@ -473,7 +473,7 @@ export type InvoiceRow = {
   vat: number;
   total: number;
   currency: string;
-  provider: "manual" | "moyasar";
+  provider: "manual" | "moyasar" | "edfapay";
   provider_ref: string | null;
   status: "pending" | "paid" | "cancelled" | "failed";
   created_at: string;
@@ -503,7 +503,7 @@ export async function createInvoiceCore(
   access: WorkspaceAccess,
   planId: PlanId,
   cycle: BillingCycle,
-  provider: "manual" | "moyasar",
+  provider: "manual" | "moyasar" | "edfapay",
 ): Promise<{ invoice: InvoiceRow; reused: boolean }> {
   if (!roleAtLeast(access.role, "admin")) throw new WorkspaceError("role");
   const q = quote(planId, cycle);
