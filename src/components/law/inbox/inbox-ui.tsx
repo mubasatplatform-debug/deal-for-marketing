@@ -31,6 +31,8 @@ import { useLawApp } from "@/components/law/app-context";
 import { dayAr, phoneAr, shortDateAr, timeAr } from "@/components/law/format";
 import { ClientPicker, useCan, useMembers } from "@/components/law/kit";
 import { inboxChanged } from "@/components/law/inbox/inbox-events";
+import { CallButton } from "@/components/law/voice/softphone";
+import { useSoftphone } from "@/components/law/voice/softphone-context";
 import {
   assignInbox,
   clientFromInbox,
@@ -46,6 +48,7 @@ import { CHANNEL_LABELS, CHANNEL_SHORT, type ChannelId } from "@/lib/law/inbox-c
 import type { ConversationDetail, ConversationRow, MessageRow, QuickReply, ThreadView } from "@/lib/law/inbox-core";
 import { CONV_STATUS_LABELS, INTENTS, INTENT_LABELS, type ConvStatus, type Intent } from "@/lib/law/inbox-options";
 import { CASE_STAGE_LABELS, type CaseStage } from "@/lib/law/options";
+import { saudiPhone } from "@/lib/law/voice-options";
 import { workspaceErrorMessage } from "@/lib/saas/errors";
 import { cn } from "@/lib/utils";
 
@@ -682,6 +685,9 @@ export function Details({
             </div>
           ) : null}
         </dl>
+        {c.contact_phone && !readOnly ? (
+          <ContactCall phone={c.contact_phone} label={displayName(c)} clientId={c.client_id} conversationId={c.id} />
+        ) : null}
       </section>
 
       <Block title="ملف العميل">
@@ -881,6 +887,21 @@ export function Details({
         </div>
       </Block>
     </div>
+  );
+}
+
+/** «اتصال من المتصفح» for the contact, when calls are available and the number is Saudi. */
+function ContactCall({ phone, label, clientId, conversationId }: { phone: string; label: string; clientId: string | null; conversationId: string }) {
+  const sp = useSoftphone();
+  if (!sp.ready || !saudiPhone(phone)) return null;
+  return (
+    <CallButton
+      phone={phone}
+      label={label}
+      clientId={clientId}
+      conversationId={conversationId}
+      className="mt-3 inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface px-3 text-[13px] font-semibold text-pine-deep hover:bg-paper"
+    />
   );
 }
 
