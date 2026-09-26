@@ -375,7 +375,7 @@ function Booking({ office }: { office: BookingOffice }) {
                 <TextInput id={`${uid}-name`} autoComplete="name" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} invalid={Boolean(errors.name)} />
               </Field>
             </div>
-            <Field id={`${uid}-phone`} label="الجوال" error={errors.phone} hint={office.verifyPhone ? "عليه واتساب — نرسل إليه رمز تأكيد" : undefined}>
+            <Field id={`${uid}-phone`} label="الجوال" error={errors.phone} hint={office.verifyPhone ? "نرسل إليه رمز تأكيد" : undefined}>
               <TextInput
                 id={`${uid}-phone`}
                 type="tel"
@@ -483,7 +483,7 @@ function Booking({ office }: { office: BookingOffice }) {
                       : codeSentTo
                         ? "تأكيد الرمز والحجز"
                         : office.verifyPhone
-                          ? "أرسل رمز التأكيد إلى واتساب"
+                          ? "أرسل رمز التأكيد إلى جوالي"
                           : `احجز ${dayAr(slot.start)} الساعة ${timeAr(slot.start)}`}
               </button>
               <p className="mt-2 text-center text-xs text-slate">

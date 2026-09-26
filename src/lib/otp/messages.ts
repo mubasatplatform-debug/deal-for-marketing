@@ -4,11 +4,11 @@ export type OtpErrorCode = "bad_phone" | "rate_limited" | "send_failed" | "bad_c
 
 /** Arabic messages the pages show for `OTP:<code>` errors. Client-safe. */
 export const OTP_MESSAGES: Record<OtpErrorCode, string> = {
-  bad_phone: "أدخل رقم جوال عليه واتساب. مثال: 0501234567",
+  bad_phone: "أدخل رقم جوال صحيحًا. مثال: 0501234567",
   rate_limited: "طلبت رموزًا كثيرة خلال وقت قصير. انتظر بضع دقائق ثم حاول مجددًا.",
-  send_failed: "تعذّر إرسال الرمز عبر واتساب. تأكد من الرقم وحاول بعد لحظات.",
+  send_failed: "تعذّر إرسال الرمز. تأكد من الرقم وحاول بعد لحظات.",
   bad_code: "الرمز غير صحيح أو انتهت صلاحيته. اطلب رمزًا جديدًا.",
-  unavailable: "التحقق عبر واتساب غير متاح حاليًا.",
+  unavailable: "التحقق برمز الجوال غير متاح حاليًا.",
   not_enabled: "التحقق بخطوتين غير مفعّل لهذا الحساب.",
 };
 

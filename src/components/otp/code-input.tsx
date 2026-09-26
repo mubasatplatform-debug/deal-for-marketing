@@ -57,7 +57,7 @@ export function SentTo({ phone }: { phone: string }) {
     <p className="flex items-start gap-2 text-sm leading-relaxed text-slate">
       <MessageCircle className="mt-0.5 size-4 shrink-0 text-[#1f9d55]" aria-hidden="true" />
       <span>
-        أرسلنا رمزًا من ٦ أرقام عبر <b className="text-pine-deep">واتساب</b> إلى{" "}
+        أرسلنا رمزًا من ٦ أرقام إلى جوالك{" "}
         <span dir="ltr" className="inline-block font-ui font-semibold whitespace-nowrap text-pine-deep">
           {phone}
         </span>

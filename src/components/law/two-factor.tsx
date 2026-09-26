@@ -83,7 +83,7 @@ export function TwoFactorGate({ onPassed, onSignOut }: { onPassed: () => void; o
         <ShieldCheck className="size-6" aria-hidden="true" />
       </span>
       <h1 className="mt-5 text-center text-xl font-extrabold">التحقق بخطوتين</h1>
-      <p className="mt-2 text-center text-sm leading-6 text-slate">حسابك محمي برمز يصلك على واتساب عند كل دخول جديد.</p>
+      <p className="mt-2 text-center text-sm leading-6 text-slate">حسابك محمي برمز يصل جوالك عند كل دخول جديد.</p>
       <div className="mt-6 space-y-3">
         {sentTo ? (
           <SentTo phone={sentTo} />
@@ -203,7 +203,7 @@ export function TwoFactorCard() {
         const s = await confirmEnroll({ data: { phone: step.phone, code } });
         setState({ ...s, available: state!.available });
         reset();
-        toast.success("فُعّل التحقق بخطوتين عبر واتساب.");
+        toast.success("فُعّل التحقق بخطوتين.");
       });
     if (step.kind === "disable")
       return void run(async () => {
@@ -226,19 +226,19 @@ export function TwoFactorCard() {
       <p className="mt-2 text-[13px] leading-relaxed text-slate">
         {state.enabled ? (
           <>
-            يصلك رمز على واتساب{" "}
+            يصلك رمز على جوالك{" "}
             <span dir="ltr" className="inline-block font-ui font-semibold whitespace-nowrap text-pine-deep">
               {state.phone}
             </span>{" "}
             عند كل دخول من جهاز أو جلسة جديدة.
           </>
         ) : (
-          "احمِ حسابك وبيانات عملائك: رمز يصلك على واتساب عند كل دخول جديد، فلا تكفي كلمة المرور وحدها."
+          "احمِ حسابك وبيانات عملائك: رمز يصل جوالك عند كل دخول جديد، فلا تكفي كلمة المرور وحدها."
         )}
       </p>
 
       {!state.available && !state.enabled ? (
-        <p className="mt-3 rounded-xl bg-paper px-3.5 py-2.5 text-[13px] text-slate">التحقق عبر واتساب غير متاح حاليًا.</p>
+        <p className="mt-3 rounded-xl bg-paper px-3.5 py-2.5 text-[13px] text-slate">التحقق برمز الجوال غير متاح حاليًا.</p>
       ) : step.kind === "idle" ? (
         <div className="mt-4">
           {state.enabled ? (
@@ -252,7 +252,7 @@ export function TwoFactorCard() {
             </div>
           ) : (
             <Button variant="dark" icon={ShieldCheck} onClick={() => setStep({ kind: "phone" })}>
-              تفعيل عبر واتساب
+              تفعيل التحقق بخطوتين
             </Button>
           )}
           {error ? <p className="mt-2 text-[13px] text-red-700">{error}</p> : null}
@@ -262,7 +262,7 @@ export function TwoFactorCard() {
           {step.kind === "phone" ? (
             <div>
               <label htmlFor={`${uid}-phone`} className="mb-1.5 block text-sm font-semibold text-pine-deep">
-                رقم واتساب
+                رقم الجوال
               </label>
               <TextInput
                 id={`${uid}-phone`}
