@@ -8,6 +8,7 @@ import { buttonClass } from "@/components/dash/button-class";
 import { LawAppFrame } from "@/components/law/app-frame";
 import { LawAppContext, type LawApp } from "@/components/law/app-context";
 import { TwoFactorGate } from "@/components/law/two-factor";
+import { SoftphoneProvider } from "@/components/law/voice/softphone";
 import { useSignOut } from "@/components/keys/use-sign-out";
 import { authEnabled } from "@/lib/auth/client";
 import { hasGateSessionMarker } from "@/lib/auth/gate-session-marker";
@@ -110,15 +111,17 @@ function AppLayout() {
 
   return (
     <LawAppContext.Provider value={app}>
-      <LawAppFrame
-        ctx={app.ctx}
-        active={app.active}
-        onSwitch={(id) => void onSwitch(id)}
-        onSignOut={canSignOut ? () => signOut.start("/law") : undefined}
-        signingOut={signOut.signingOut}
-      >
-        <Outlet />
-      </LawAppFrame>
+      <SoftphoneProvider>
+        <LawAppFrame
+          ctx={app.ctx}
+          active={app.active}
+          onSwitch={(id) => void onSwitch(id)}
+          onSignOut={canSignOut ? () => signOut.start("/law") : undefined}
+          signingOut={signOut.signingOut}
+        >
+          <Outlet />
+        </LawAppFrame>
+      </SoftphoneProvider>
       <Toaster position="top-center" dir="rtl" richColors closeButton />
     </LawAppContext.Provider>
   );

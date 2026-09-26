@@ -75,7 +75,10 @@ export type WorkspaceErrorCode =
   | "otp_required"
   // Sample data (src/lib/law/demo-core.ts)
   | "demo_exists"
-  | "demo_in_use";
+  | "demo_in_use"
+  // Calls (src/lib/law/voice-core.ts)
+  | "call_limit"
+  | "voice_unavailable";
 
 export const WORKSPACE_ERROR_PREFIX = "WS:";
 

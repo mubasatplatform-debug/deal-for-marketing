@@ -28,6 +28,7 @@ import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppAppointmentsRouteImport } from './routes/app.appointments'
 import { Route as AppAssistantRouteImport } from './routes/app.assistant'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
+import { Route as AppCallsRouteImport } from './routes/app.calls'
 import { Route as AppDocumentsRouteImport } from './routes/app.documents'
 import { Route as AppInboxRouteImport } from './routes/app.inbox'
 import { Route as AppInvoicesRouteImport } from './routes/app.invoices'
@@ -51,6 +52,7 @@ import { Route as ApiLawMoyasarRouteImport } from './routes/api/law/moyasar'
 import { Route as ApiV1SplatRouteImport } from './routes/api/v1/$'
 import { Route as ApiV1RequestsRouteImport } from './routes/api/v1/requests'
 import { Route as ApiV1ServicesRouteImport } from './routes/api/v1/services'
+import { Route as ApiVoiceEventsRouteImport } from './routes/api/voice/events'
 import { Route as AppCasesIndexRouteImport } from './routes/app.cases.index'
 import { Route as AppCasesIdRouteImport } from './routes/app.cases.$id'
 import { Route as AppClientsIndexRouteImport } from './routes/app.clients.index'
@@ -70,6 +72,7 @@ import { Route as ApiPortalDocumentsIdRouteImport } from './routes/api/portal/do
 import { Route as ApiRequestsIdMessagesRouteImport } from './routes/api/requests.$id.messages'
 import { Route as ApiV1AdminRequestsRouteImport } from './routes/api/v1/admin/requests'
 import { Route as ApiV1RequestsIdRouteImport } from './routes/api/v1/requests.$id'
+import { Route as ApiVoiceRecordingIdRouteImport } from './routes/api/voice/recording.$id'
 import { Route as AppConsultationsIdCallRouteImport } from './routes/app_.consultations.$id.call'
 import { Route as ApiV1AdminRequestsIdRouteImport } from './routes/api/v1/admin/requests.$id'
 
@@ -166,6 +169,11 @@ const AppAssistantRoute = AppAssistantRouteImport.update({
 const AppBillingRoute = AppBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCallsRoute = AppCallsRouteImport.update({
+  id: '/calls',
+  path: '/calls',
   getParentRoute: () => AppRoute,
 } as any)
 const AppDocumentsRoute = AppDocumentsRouteImport.update({
@@ -283,6 +291,11 @@ const ApiV1ServicesRoute = ApiV1ServicesRouteImport.update({
   path: '/api/v1/services',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiVoiceEventsRoute = ApiVoiceEventsRouteImport.update({
+  id: '/api/voice/events',
+  path: '/api/voice/events',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppCasesIndexRoute = AppCasesIndexRouteImport.update({
   id: '/cases/',
   path: '/cases/',
@@ -378,6 +391,11 @@ const ApiV1RequestsIdRoute = ApiV1RequestsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => ApiV1RequestsRoute,
 } as any)
+const ApiVoiceRecordingIdRoute = ApiVoiceRecordingIdRouteImport.update({
+  id: '/api/voice/recording/$id',
+  path: '/api/voice/recording/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppConsultationsIdCallRoute = AppConsultationsIdCallRouteImport.update({
   id: '/app_/consultations/$id/call',
   path: '/app/consultations/$id/call',
@@ -408,6 +426,7 @@ export interface FileRoutesByFullPath {
   '/app/appointments': typeof AppAppointmentsRoute
   '/app/assistant': typeof AppAssistantRoute
   '/app/billing': typeof AppBillingRoute
+  '/app/calls': typeof AppCallsRoute
   '/app/documents': typeof AppDocumentsRoute
   '/app/inbox': typeof AppInboxRoute
   '/app/invoices': typeof AppInvoicesRoute
@@ -432,6 +451,7 @@ export interface FileRoutesByFullPath {
   '/api/v1/$': typeof ApiV1SplatRoute
   '/api/v1/requests': typeof ApiV1RequestsRouteWithChildren
   '/api/v1/services': typeof ApiV1ServicesRoute
+  '/api/voice/events': typeof ApiVoiceEventsRoute
   '/app/cases/$id': typeof AppCasesIdRoute
   '/app/clients/$id': typeof AppClientsIdRoute
   '/app/consultations/$id': typeof AppConsultationsIdRoute
@@ -451,6 +471,7 @@ export interface FileRoutesByFullPath {
   '/api/requests/$id/messages': typeof ApiRequestsIdMessagesRoute
   '/api/v1/admin/requests': typeof ApiV1AdminRequestsRouteWithChildren
   '/api/v1/requests/$id': typeof ApiV1RequestsIdRoute
+  '/api/voice/recording/$id': typeof ApiVoiceRecordingIdRoute
   '/app/consultations/$id/call': typeof AppConsultationsIdCallRoute
   '/api/v1/admin/requests/$id': typeof ApiV1AdminRequestsIdRoute
 }
@@ -471,6 +492,7 @@ export interface FileRoutesByTo {
   '/app/appointments': typeof AppAppointmentsRoute
   '/app/assistant': typeof AppAssistantRoute
   '/app/billing': typeof AppBillingRoute
+  '/app/calls': typeof AppCallsRoute
   '/app/documents': typeof AppDocumentsRoute
   '/app/inbox': typeof AppInboxRoute
   '/app/invoices': typeof AppInvoicesRoute
@@ -495,6 +517,7 @@ export interface FileRoutesByTo {
   '/api/v1/$': typeof ApiV1SplatRoute
   '/api/v1/requests': typeof ApiV1RequestsRouteWithChildren
   '/api/v1/services': typeof ApiV1ServicesRoute
+  '/api/voice/events': typeof ApiVoiceEventsRoute
   '/app/cases/$id': typeof AppCasesIdRoute
   '/app/clients/$id': typeof AppClientsIdRoute
   '/app/consultations/$id': typeof AppConsultationsIdRoute
@@ -514,6 +537,7 @@ export interface FileRoutesByTo {
   '/api/requests/$id/messages': typeof ApiRequestsIdMessagesRoute
   '/api/v1/admin/requests': typeof ApiV1AdminRequestsRouteWithChildren
   '/api/v1/requests/$id': typeof ApiV1RequestsIdRoute
+  '/api/voice/recording/$id': typeof ApiVoiceRecordingIdRoute
   '/app/consultations/$id/call': typeof AppConsultationsIdCallRoute
   '/api/v1/admin/requests/$id': typeof ApiV1AdminRequestsIdRoute
 }
@@ -537,6 +561,7 @@ export interface FileRoutesById {
   '/app/appointments': typeof AppAppointmentsRoute
   '/app/assistant': typeof AppAssistantRoute
   '/app/billing': typeof AppBillingRoute
+  '/app/calls': typeof AppCallsRoute
   '/app/documents': typeof AppDocumentsRoute
   '/app/inbox': typeof AppInboxRoute
   '/app/invoices': typeof AppInvoicesRoute
@@ -561,6 +586,7 @@ export interface FileRoutesById {
   '/api/v1/$': typeof ApiV1SplatRoute
   '/api/v1/requests': typeof ApiV1RequestsRouteWithChildren
   '/api/v1/services': typeof ApiV1ServicesRoute
+  '/api/voice/events': typeof ApiVoiceEventsRoute
   '/app/cases/$id': typeof AppCasesIdRoute
   '/app/clients/$id': typeof AppClientsIdRoute
   '/app/consultations/$id': typeof AppConsultationsIdRoute
@@ -580,6 +606,7 @@ export interface FileRoutesById {
   '/api/requests/$id/messages': typeof ApiRequestsIdMessagesRoute
   '/api/v1/admin/requests': typeof ApiV1AdminRequestsRouteWithChildren
   '/api/v1/requests/$id': typeof ApiV1RequestsIdRoute
+  '/api/voice/recording/$id': typeof ApiVoiceRecordingIdRoute
   '/app_/consultations/$id/call': typeof AppConsultationsIdCallRoute
   '/api/v1/admin/requests/$id': typeof ApiV1AdminRequestsIdRoute
 }
@@ -604,6 +631,7 @@ export interface FileRouteTypes {
     | '/app/appointments'
     | '/app/assistant'
     | '/app/billing'
+    | '/app/calls'
     | '/app/documents'
     | '/app/inbox'
     | '/app/invoices'
@@ -628,6 +656,7 @@ export interface FileRouteTypes {
     | '/api/v1/$'
     | '/api/v1/requests'
     | '/api/v1/services'
+    | '/api/voice/events'
     | '/app/cases/$id'
     | '/app/clients/$id'
     | '/app/consultations/$id'
@@ -647,6 +676,7 @@ export interface FileRouteTypes {
     | '/api/requests/$id/messages'
     | '/api/v1/admin/requests'
     | '/api/v1/requests/$id'
+    | '/api/voice/recording/$id'
     | '/app/consultations/$id/call'
     | '/api/v1/admin/requests/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -667,6 +697,7 @@ export interface FileRouteTypes {
     | '/app/appointments'
     | '/app/assistant'
     | '/app/billing'
+    | '/app/calls'
     | '/app/documents'
     | '/app/inbox'
     | '/app/invoices'
@@ -691,6 +722,7 @@ export interface FileRouteTypes {
     | '/api/v1/$'
     | '/api/v1/requests'
     | '/api/v1/services'
+    | '/api/voice/events'
     | '/app/cases/$id'
     | '/app/clients/$id'
     | '/app/consultations/$id'
@@ -710,6 +742,7 @@ export interface FileRouteTypes {
     | '/api/requests/$id/messages'
     | '/api/v1/admin/requests'
     | '/api/v1/requests/$id'
+    | '/api/voice/recording/$id'
     | '/app/consultations/$id/call'
     | '/api/v1/admin/requests/$id'
   id:
@@ -732,6 +765,7 @@ export interface FileRouteTypes {
     | '/app/appointments'
     | '/app/assistant'
     | '/app/billing'
+    | '/app/calls'
     | '/app/documents'
     | '/app/inbox'
     | '/app/invoices'
@@ -756,6 +790,7 @@ export interface FileRouteTypes {
     | '/api/v1/$'
     | '/api/v1/requests'
     | '/api/v1/services'
+    | '/api/voice/events'
     | '/app/cases/$id'
     | '/app/clients/$id'
     | '/app/consultations/$id'
@@ -775,6 +810,7 @@ export interface FileRouteTypes {
     | '/api/requests/$id/messages'
     | '/api/v1/admin/requests'
     | '/api/v1/requests/$id'
+    | '/api/voice/recording/$id'
     | '/app_/consultations/$id/call'
     | '/api/v1/admin/requests/$id'
   fileRoutesById: FileRoutesById
@@ -809,6 +845,7 @@ export interface RootRouteChildren {
   ApiV1SplatRoute: typeof ApiV1SplatRoute
   ApiV1RequestsRoute: typeof ApiV1RequestsRouteWithChildren
   ApiV1ServicesRoute: typeof ApiV1ServicesRoute
+  ApiVoiceEventsRoute: typeof ApiVoiceEventsRoute
   AppInviteTokenRoute: typeof AppInviteTokenRoute
   AppInvoicesIdRoute: typeof AppInvoicesIdRoute
   ClientRequestsIdRoute: typeof ClientRequestsIdRoute
@@ -821,6 +858,7 @@ export interface RootRouteChildren {
   ApiPortalDocumentsIdRoute: typeof ApiPortalDocumentsIdRoute
   ApiRequestsIdMessagesRoute: typeof ApiRequestsIdMessagesRoute
   ApiV1AdminRequestsRoute: typeof ApiV1AdminRequestsRouteWithChildren
+  ApiVoiceRecordingIdRoute: typeof ApiVoiceRecordingIdRoute
   AppConsultationsIdCallRoute: typeof AppConsultationsIdCallRoute
 }
 
@@ -957,6 +995,13 @@ declare module '@tanstack/react-router' {
       path: '/billing'
       fullPath: '/app/billing'
       preLoaderRoute: typeof AppBillingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/calls': {
+      id: '/app/calls'
+      path: '/calls'
+      fullPath: '/app/calls'
+      preLoaderRoute: typeof AppCallsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/documents': {
@@ -1120,6 +1165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV1ServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/voice/events': {
+      id: '/api/voice/events'
+      path: '/api/voice/events'
+      fullPath: '/api/voice/events'
+      preLoaderRoute: typeof ApiVoiceEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app/cases/': {
       id: '/app/cases/'
       path: '/cases'
@@ -1253,6 +1305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV1RequestsIdRouteImport
       parentRoute: typeof ApiV1RequestsRoute
     }
+    '/api/voice/recording/$id': {
+      id: '/api/voice/recording/$id'
+      path: '/api/voice/recording/$id'
+      fullPath: '/api/voice/recording/$id'
+      preLoaderRoute: typeof ApiVoiceRecordingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app_/consultations/$id/call': {
       id: '/app_/consultations/$id/call'
       path: '/app/consultations/$id/call'
@@ -1274,6 +1333,7 @@ interface AppRouteChildren {
   AppAppointmentsRoute: typeof AppAppointmentsRoute
   AppAssistantRoute: typeof AppAssistantRoute
   AppBillingRoute: typeof AppBillingRoute
+  AppCallsRoute: typeof AppCallsRoute
   AppDocumentsRoute: typeof AppDocumentsRoute
   AppInboxRoute: typeof AppInboxRoute
   AppInvoicesRoute: typeof AppInvoicesRoute
@@ -1294,6 +1354,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAppointmentsRoute: AppAppointmentsRoute,
   AppAssistantRoute: AppAssistantRoute,
   AppBillingRoute: AppBillingRoute,
+  AppCallsRoute: AppCallsRoute,
   AppDocumentsRoute: AppDocumentsRoute,
   AppInboxRoute: AppInboxRoute,
   AppInvoicesRoute: AppInvoicesRoute,
@@ -1377,6 +1438,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiV1SplatRoute: ApiV1SplatRoute,
   ApiV1RequestsRoute: ApiV1RequestsRouteWithChildren,
   ApiV1ServicesRoute: ApiV1ServicesRoute,
+  ApiVoiceEventsRoute: ApiVoiceEventsRoute,
   AppInviteTokenRoute: AppInviteTokenRoute,
   AppInvoicesIdRoute: AppInvoicesIdRoute,
   ClientRequestsIdRoute: ClientRequestsIdRoute,
@@ -1389,6 +1451,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPortalDocumentsIdRoute: ApiPortalDocumentsIdRoute,
   ApiRequestsIdMessagesRoute: ApiRequestsIdMessagesRoute,
   ApiV1AdminRequestsRoute: ApiV1AdminRequestsRouteWithChildren,
+  ApiVoiceRecordingIdRoute: ApiVoiceRecordingIdRoute,
   AppConsultationsIdCallRoute: AppConsultationsIdCallRoute,
 }
 export const routeTree = rootRouteImport
