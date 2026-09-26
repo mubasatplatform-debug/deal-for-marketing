@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button, Card, CardHeader } from "@/components/dash/ui";
 import { PageHead } from "@/components/law/app-frame";
 import { useLawApp } from "@/components/law/app-context";
+import { AiAuditCard, AiIntegrationsCard } from "@/components/law/ai-integrations";
 import { BookingSettingsCard } from "@/components/law/booking-settings";
 import { Field, SelectInput, TextInput } from "@/components/law/fields";
 import { CITIES, TEAM_SIZE_OPTIONS, toLatinDigits } from "@/components/law/office-options";
@@ -165,6 +166,10 @@ function Settings() {
         </div>
       </div>
       <BookingSettingsCard />
+      <div className="mt-6 grid gap-6">
+        <AiIntegrationsCard />
+        <AiAuditCard />
+      </div>
     </>
   );
 }

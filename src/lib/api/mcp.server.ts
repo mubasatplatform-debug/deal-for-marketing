@@ -8,6 +8,8 @@ import { ApiError } from "./errors";
 import * as ops from "./ops.server";
 import { readBodyCapped } from "./rest.server";
 import { hasScope, type Scope } from "./scopes";
+import { AGENT_TOOLS } from "@/lib/law/agent/tools";
+import { officesFor, runLawTool } from "@/lib/law/agent/mcp-law.server";
 
 /**
  * DEAL MCP server (`deal-mcp-server`) — **server-only**. Streamable HTTP,
@@ -21,7 +23,12 @@ const SERVER_INFO = { name: "deal-mcp-server", version: "1.0.0" };
 const INSTRUCTIONS = `DEAL FOR MARKETING (ديل) — a Saudi marketing & business-systems agency.
 Tools act on behalf of the account that owns the API key. Only the tools the key's scopes allow are listed.
 Typical flow: deal_list_services → deal_create_request (with a service slug and the contact's explicit consent) → deal_get_request to follow its status.
-Request statuses: new → review → production → delivered.`;
+Request statuses: new → review → production → delivered.
+
+«مكتب المحامي» (law office) tools are prefixed law_ and act inside the key owner's office with their role's permissions:
+start with law_list_offices (pass office_id when the account has several offices), search before you write (law_search_clients, law_search_cases) so you use real ids,
+and confirm any change with the user before calling a write tool. Money inputs (fees_sar, amount_sar) are in Saudi riyals; reports and case files return halalas (÷100).
+Dates are YYYY-MM-DD and times HH:MM in Riyadh time. Nothing can be deleted over MCP.`;
 
 const CORS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -268,6 +275,48 @@ function buildServer(caller: ApiCaller): McpServer {
       return ok(`Request #${r.id} is now **${r.status}** (${r.status_label}).`, { request: r }, "markdown");
     },
   );
+
+  /* «مكتب المحامي» — the same toolbox as the in-app assistant. */
+  const officeId = z
+    .string()
+    .uuid()
+    .optional()
+    .describe("Law office id from law_list_offices. Optional when the account belongs to exactly one office.");
+  const asResult = (value: unknown): CallToolResult => ({
+    content: [{ type: "text", text: asJson(value) }],
+    structuredContent: { result: value as Record<string, unknown> },
+  });
+
+  tool(
+    "law_list_offices",
+    "law:read",
+    {
+      title: "List my law offices",
+      description: "List the «مكتب المحامي» offices the key's account belongs to (office_id, name, role).\nيعرض مكاتب المحاماة التي ينتمي إليها صاحب المفتاح.",
+      inputSchema: {},
+      annotations: readOnly,
+    },
+    async () => asResult({ offices: await officesFor(caller.userId) }),
+  );
+
+  for (const t of AGENT_TOOLS) {
+    tool(
+      `law_${t.name}`,
+      t.write ? "law:write" : "law:read",
+      {
+        title: t.title,
+        description: t.description,
+        inputSchema: { ...(t.input.shape as z.ZodRawShape), office_id: officeId },
+        annotations: t.write
+          ? { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+          : readOnly,
+      },
+      async (args: Record<string, unknown>) => {
+        const { office_id, ...rest } = args as { office_id?: string } & Record<string, unknown>;
+        return asResult(await runLawTool(caller.userId, office_id, t.name, rest));
+      },
+    );
+  }
 
   return server;
 }

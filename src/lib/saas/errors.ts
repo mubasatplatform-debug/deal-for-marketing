@@ -27,6 +27,8 @@ const MESSAGES: Record<string, string> = {
   status: "لا يمكن نقل الموعد إلى هذه الحالة.",
   slug_taken: "هذا الرابط مستخدم لمكتب آخر. جرّب غيره.",
   video_unavailable: "غرفة الفيديو غير متاحة لهذه الاستشارة.",
+  ai_limit: "وصل المكتب إلى الحد اليومي لاستخدام المساعد. حاول غدًا.",
+  ai_unavailable: "المساعد غير متاح حاليًا. حاول بعد قليل.",
 };
 
 export function workspaceErrorCode(err: unknown): string | null {

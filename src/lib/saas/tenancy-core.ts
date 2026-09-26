@@ -63,7 +63,10 @@ export type WorkspaceErrorCode =
   | "window"
   | "status"
   | "slug_taken"
-  | "video_unavailable";
+  | "video_unavailable"
+  // AI assistant (src/lib/law/agent)
+  | "ai_limit"
+  | "ai_unavailable";
 
 export const WORKSPACE_ERROR_PREFIX = "WS:";
 
