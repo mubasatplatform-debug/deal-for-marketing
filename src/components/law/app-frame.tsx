@@ -23,6 +23,7 @@ import { DealWordmark } from "@/components/logo";
 import { Avatar } from "@/components/dash/ui";
 import { buttonClass } from "@/components/dash/button-class";
 import { MODULES } from "@/components/law/modules";
+import { InboxNavIcon } from "@/components/law/inbox/nav-badge";
 import { VerifyEmailBanner } from "@/components/verify-email-banner";
 import { daysAr, dateAr, officeInitial } from "@/components/law/format";
 import { can, type Action } from "@/lib/law/permissions";
@@ -52,6 +53,7 @@ type NavEntry = {
 const MAIN: NavEntry[] = [
   { to: "/app", label: "الرئيسية", icon: LayoutDashboard },
   { to: "/app/assistant", label: "مساعد المكتب", icon: Sparkles },
+  { to: "/app/inbox", label: "التواصل", icon: InboxNavIcon },
   ...MODULES.map((m) => ({ to: `/app/${m.id}`, label: m.label, icon: m.icon })),
 ];
 
