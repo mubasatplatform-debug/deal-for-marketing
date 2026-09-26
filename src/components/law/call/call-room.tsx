@@ -142,7 +142,7 @@ function Stage(props: CallRoomProps) {
           title="أنت في غرفة الانتظار"
           body="أبلغنا المحامي بوصولك، وسيسمح لك بالدخول خلال لحظات. أبقِ هذه الصفحة مفتوحة."
         >
-          <LeaveButton />
+          <LeaveButton label="إلغاء الانتظار والخروج" />
         </Centered>
       </>
     );
@@ -194,7 +194,8 @@ function GuestGate({ choices }: { choices: DeviceChoices }) {
 }
 
 function TopBar({ title, subtitle }: CallRoomProps) {
-  const participants = useParticipants();
+  // A guest still in the waiting room is not in the call yet.
+  const participants = useParticipants().filter((p) => p.isLocal || p.permissions?.canSubscribe !== false);
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-white/[0.07] px-3 sm:px-5">
       <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-lime text-pine-deep">
@@ -286,6 +287,9 @@ function Tiles() {
   );
   // Waiting guests are not part of the call yet.
   const visible = tracks.filter((t) => t.participant.isLocal || t.participant.permissions?.canSubscribe !== false);
+  const guestWaiting = useParticipants().some(
+    (p) => !p.isLocal && p.identity.startsWith("client:") && p.permissions?.canSubscribe === false,
+  );
   const share = visible.find((t) => t.source === Track.Source.ScreenShare && isTrackReference(t));
   const cams = visible.filter((t) => t.source === Track.Source.Camera);
   const local = cams.find((t) => t.participant.isLocal);
@@ -313,7 +317,7 @@ function Tiles() {
         {local ? <Tile trackRef={local} /> : null}
         <div className="pointer-events-none absolute inset-x-0 top-6 flex justify-center">
           <span className="rounded-full bg-black/45 px-4 py-2 text-sm backdrop-blur">
-            بانتظار انضمام الطرف الآخر…
+            {guestWaiting ? "العميل في غرفة الانتظار — اسمح له بالدخول من الشريط أعلاه" : "بانتظار انضمام الطرف الآخر…"}
           </span>
         </div>
       </div>
@@ -499,7 +503,7 @@ function CtrlButton({
   );
 }
 
-function LeaveButton() {
+function LeaveButton({ label }: { label?: string } = {}) {
   const room = useRoomContext();
   return (
     <button
@@ -508,8 +512,14 @@ function LeaveButton() {
       className="inline-flex h-12 items-center gap-2 rounded-full bg-red-600 px-5 text-sm font-bold text-snow hover:bg-red-700"
     >
       <PhoneOff className="size-5" aria-hidden="true" />
-      <span className="hidden sm:inline">مغادرة</span>
-      <span className="sr-only sm:hidden">مغادرة المكالمة</span>
+      {label ? (
+        <span>{label}</span>
+      ) : (
+        <>
+          <span className="hidden sm:inline">مغادرة</span>
+          <span className="sr-only sm:hidden">مغادرة المكالمة</span>
+        </>
+      )}
     </button>
   );
 }
