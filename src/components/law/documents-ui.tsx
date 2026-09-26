@@ -1,5 +1,18 @@
 import { useId, useRef, useState } from "react";
-import { Download, Eye, FileArchive, FileImage, FileSpreadsheet, FileText, FileVideo, Loader2, Trash2, Upload, X } from "lucide-react";
+import {
+  Download,
+  Eye,
+  FileArchive,
+  FileImage,
+  FileSpreadsheet,
+  FileText,
+  FileVideo,
+  Loader2,
+  Share2,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/dash/ui";
 import { Dialog } from "@/components/keys/dialog";
@@ -9,6 +22,7 @@ import { dateAr } from "@/components/law/format";
 import { ClientPicker, ConfirmDialog, useCan, type PickedClient } from "@/components/law/kit";
 import { deleteDocument, LAW_MAX_FILES, LAW_MAX_FILE_BYTES } from "@/lib/law/documents";
 import type { DocumentRow } from "@/lib/law/documents-core";
+import { setDocumentShared } from "@/lib/law/portal";
 import { ACCEPT_ATTR, FILE_KINDS, checkFile, formatBytes, kindFromName } from "@/lib/files/validate";
 import { workspaceErrorMessage } from "@/lib/saas/errors";
 import { cn } from "@/lib/utils";
@@ -28,7 +42,7 @@ function iconFor(name: string) {
   return FileText;
 }
 
-/** Rows of documents with view / download / delete. */
+/** Rows of documents with view / download / share with the client / delete. */
 export function DocumentRows({
   rows,
   onChanged,
@@ -41,6 +55,25 @@ export function DocumentRows({
   const { active } = useLawApp();
   const allowed = useCan();
   const [confirm, setConfirm] = useState<DocumentRow | null>(null);
+  // Optimistic share state until the parent reloads.
+  const [shared, setShared] = useState<Record<string, boolean>>({});
+  const [sharing, setSharing] = useState<string | null>(null);
+  const canShare = allowed("client.portal");
+
+  async function toggleShare(d: DocumentRow, next: boolean) {
+    setSharing(d.id);
+    try {
+      await setDocumentShared({ data: { workspaceId: active.workspace.id, id: d.id, shared: next } });
+      setShared((m) => ({ ...m, [d.id]: next }));
+      toast.success(next ? "أصبح المستند ظاهرًا للعميل في بوابته" : "أُوقفت مشاركة المستند مع العميل");
+      onChanged();
+    } catch (err) {
+      toast.error(workspaceErrorMessage(err));
+    } finally {
+      setSharing(null);
+    }
+  }
+
   return (
     <>
       <ul className="divide-y divide-line">
@@ -48,6 +81,7 @@ export function DocumentRows({
           const Icon = iconFor(d.name);
           const k = kindFromName(d.name);
           const viewable = k ? FILE_KINDS[k].inline : false;
+          const isShared = shared[d.id] ?? d.shared_with_client;
           return (
             <li key={d.id} className="flex items-center gap-3 px-5 py-3 md:px-6">
               <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-pine-50 text-pine">
@@ -60,12 +94,35 @@ export function DocumentRows({
                 <p className="mt-0.5 flex flex-wrap gap-x-2.5 text-xs text-slate">
                   <span className="font-ui">{formatBytes(d.size)}</span>
                   <span>{dateAr(d.created_at)}</span>
+                  {d.client_id && isShared ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-lime-50 px-2 font-semibold text-pine-deep ring-1 ring-lime/40 ring-inset">
+                      <Share2 className="size-3" aria-hidden="true" />
+                      مُشارك مع العميل
+                    </span>
+                  ) : null}
                   {showLinks && d.client_name ? <span className="truncate">{d.client_name}</span> : null}
                   {showLinks && d.case_ref ? <span className="truncate">قضية #{d.case_ref}</span> : null}
                   {d.uploaded_by_name ? <span className="hidden truncate sm:inline">رفعه {d.uploaded_by_name}</span> : null}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-1">
+                {canShare && d.client_id ? (
+                  <button
+                    type="button"
+                    aria-pressed={isShared}
+                    aria-label={`مشاركة مع العميل: ${d.name}`}
+                    title={isShared ? "إيقاف المشاركة مع العميل" : "مشاركة مع العميل"}
+                    disabled={sharing === d.id}
+                    onClick={() => void toggleShare(d, !isShared)}
+                    className={cn(
+                      "inline-flex h-9 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold disabled:opacity-50",
+                      isShared ? "bg-lime-50 text-pine-deep hover:bg-lime-50/70" : "text-slate hover:bg-paper hover:text-pine-deep",
+                    )}
+                  >
+                    {sharing === d.id ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <Share2 className="size-4" aria-hidden="true" />}
+                    <span className="hidden md:inline">مشاركة مع العميل</span>
+                  </button>
+                ) : null}
                 {viewable ? (
                   <a
                     href={documentUrl(active.workspace.id, d.id, true)}

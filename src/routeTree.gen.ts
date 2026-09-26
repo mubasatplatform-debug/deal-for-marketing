@@ -38,6 +38,7 @@ import { Route as LawIndexRouteImport } from './routes/law.index'
 import { Route as LawSignupRouteImport } from './routes/law.signup'
 import { Route as LawTermsRouteImport } from './routes/law.terms'
 import { Route as MeetTokenRouteImport } from './routes/meet.$token'
+import { Route as PortalTokenRouteImport } from './routes/portal.$token'
 import { Route as StartIndexRouteImport } from './routes/start.index'
 import { Route as StartSlugRouteImport } from './routes/start.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -61,6 +62,7 @@ import { Route as DeskPayViewRouteImport } from './routes/desk.pay.$view'
 import { Route as OSlugBookRouteImport } from './routes/o.$slug.book'
 import { Route as ApiLawDocumentsIdRouteImport } from './routes/api/law/documents.$id'
 import { Route as ApiLawDocumentsUploadRouteImport } from './routes/api/law/documents.upload'
+import { Route as ApiPortalDocumentsIdRouteImport } from './routes/api/portal/documents.$id'
 import { Route as ApiRequestsIdMessagesRouteImport } from './routes/api/requests.$id.messages'
 import { Route as ApiV1AdminRequestsRouteImport } from './routes/api/v1/admin/requests'
 import { Route as ApiV1RequestsIdRouteImport } from './routes/api/v1/requests.$id'
@@ -212,6 +214,11 @@ const MeetTokenRoute = MeetTokenRouteImport.update({
   path: '/meet/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortalTokenRoute = PortalTokenRouteImport.update({
+  id: '/portal/$token',
+  path: '/portal/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StartIndexRoute = StartIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -327,6 +334,11 @@ const ApiLawDocumentsUploadRoute = ApiLawDocumentsUploadRouteImport.update({
   path: '/api/law/documents/upload',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPortalDocumentsIdRoute = ApiPortalDocumentsIdRouteImport.update({
+  id: '/api/portal/documents/$id',
+  path: '/api/portal/documents/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiRequestsIdMessagesRoute = ApiRequestsIdMessagesRouteImport.update({
   id: '/api/requests/$id/messages',
   path: '/api/requests/$id/messages',
@@ -381,6 +393,7 @@ export interface FileRoutesByFullPath {
   '/law/signup': typeof LawSignupRoute
   '/law/terms': typeof LawTermsRoute
   '/meet/$token': typeof MeetTokenRoute
+  '/portal/$token': typeof PortalTokenRoute
   '/start/$slug': typeof StartSlugRoute
   '/app/': typeof AppIndexRoute
   '/law/': typeof LawIndexRoute
@@ -406,6 +419,7 @@ export interface FileRoutesByFullPath {
   '/app/consultations/': typeof AppConsultationsIndexRoute
   '/api/law/documents/$id': typeof ApiLawDocumentsIdRoute
   '/api/law/documents/upload': typeof ApiLawDocumentsUploadRoute
+  '/api/portal/documents/$id': typeof ApiPortalDocumentsIdRoute
   '/api/requests/$id/messages': typeof ApiRequestsIdMessagesRoute
   '/api/v1/admin/requests': typeof ApiV1AdminRequestsRouteWithChildren
   '/api/v1/requests/$id': typeof ApiV1RequestsIdRoute
@@ -438,6 +452,7 @@ export interface FileRoutesByTo {
   '/law/signup': typeof LawSignupRoute
   '/law/terms': typeof LawTermsRoute
   '/meet/$token': typeof MeetTokenRoute
+  '/portal/$token': typeof PortalTokenRoute
   '/start/$slug': typeof StartSlugRoute
   '/app': typeof AppIndexRoute
   '/law': typeof LawIndexRoute
@@ -463,6 +478,7 @@ export interface FileRoutesByTo {
   '/app/consultations': typeof AppConsultationsIndexRoute
   '/api/law/documents/$id': typeof ApiLawDocumentsIdRoute
   '/api/law/documents/upload': typeof ApiLawDocumentsUploadRoute
+  '/api/portal/documents/$id': typeof ApiPortalDocumentsIdRoute
   '/api/requests/$id/messages': typeof ApiRequestsIdMessagesRoute
   '/api/v1/admin/requests': typeof ApiV1AdminRequestsRouteWithChildren
   '/api/v1/requests/$id': typeof ApiV1RequestsIdRoute
@@ -498,6 +514,7 @@ export interface FileRoutesById {
   '/law/signup': typeof LawSignupRoute
   '/law/terms': typeof LawTermsRoute
   '/meet/$token': typeof MeetTokenRoute
+  '/portal/$token': typeof PortalTokenRoute
   '/start/$slug': typeof StartSlugRoute
   '/app/': typeof AppIndexRoute
   '/law/': typeof LawIndexRoute
@@ -523,6 +540,7 @@ export interface FileRoutesById {
   '/app/consultations/': typeof AppConsultationsIndexRoute
   '/api/law/documents/$id': typeof ApiLawDocumentsIdRoute
   '/api/law/documents/upload': typeof ApiLawDocumentsUploadRoute
+  '/api/portal/documents/$id': typeof ApiPortalDocumentsIdRoute
   '/api/requests/$id/messages': typeof ApiRequestsIdMessagesRoute
   '/api/v1/admin/requests': typeof ApiV1AdminRequestsRouteWithChildren
   '/api/v1/requests/$id': typeof ApiV1RequestsIdRoute
@@ -559,6 +577,7 @@ export interface FileRouteTypes {
     | '/law/signup'
     | '/law/terms'
     | '/meet/$token'
+    | '/portal/$token'
     | '/start/$slug'
     | '/app/'
     | '/law/'
@@ -584,6 +603,7 @@ export interface FileRouteTypes {
     | '/app/consultations/'
     | '/api/law/documents/$id'
     | '/api/law/documents/upload'
+    | '/api/portal/documents/$id'
     | '/api/requests/$id/messages'
     | '/api/v1/admin/requests'
     | '/api/v1/requests/$id'
@@ -616,6 +636,7 @@ export interface FileRouteTypes {
     | '/law/signup'
     | '/law/terms'
     | '/meet/$token'
+    | '/portal/$token'
     | '/start/$slug'
     | '/app'
     | '/law'
@@ -641,6 +662,7 @@ export interface FileRouteTypes {
     | '/app/consultations'
     | '/api/law/documents/$id'
     | '/api/law/documents/upload'
+    | '/api/portal/documents/$id'
     | '/api/requests/$id/messages'
     | '/api/v1/admin/requests'
     | '/api/v1/requests/$id'
@@ -675,6 +697,7 @@ export interface FileRouteTypes {
     | '/law/signup'
     | '/law/terms'
     | '/meet/$token'
+    | '/portal/$token'
     | '/start/$slug'
     | '/app/'
     | '/law/'
@@ -700,6 +723,7 @@ export interface FileRouteTypes {
     | '/app/consultations/'
     | '/api/law/documents/$id'
     | '/api/law/documents/upload'
+    | '/api/portal/documents/$id'
     | '/api/requests/$id/messages'
     | '/api/v1/admin/requests'
     | '/api/v1/requests/$id'
@@ -727,6 +751,7 @@ export interface RootRouteChildren {
   LawSignupRoute: typeof LawSignupRoute
   LawTermsRoute: typeof LawTermsRoute
   MeetTokenRoute: typeof MeetTokenRoute
+  PortalTokenRoute: typeof PortalTokenRoute
   LawIndexRoute: typeof LawIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiFilesIdRoute: typeof ApiFilesIdRoute
@@ -743,6 +768,7 @@ export interface RootRouteChildren {
   OSlugBookRoute: typeof OSlugBookRoute
   ApiLawDocumentsIdRoute: typeof ApiLawDocumentsIdRoute
   ApiLawDocumentsUploadRoute: typeof ApiLawDocumentsUploadRoute
+  ApiPortalDocumentsIdRoute: typeof ApiPortalDocumentsIdRoute
   ApiRequestsIdMessagesRoute: typeof ApiRequestsIdMessagesRoute
   ApiV1AdminRequestsRoute: typeof ApiV1AdminRequestsRouteWithChildren
   AppConsultationsIdCallRoute: typeof AppConsultationsIdCallRoute
@@ -953,6 +979,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MeetTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/portal/$token': {
+      id: '/portal/$token'
+      path: '/portal/$token'
+      fullPath: '/portal/$token'
+      preLoaderRoute: typeof PortalTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/start/': {
       id: '/start/'
       path: '/'
@@ -1114,6 +1147,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLawDocumentsUploadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/portal/documents/$id': {
+      id: '/api/portal/documents/$id'
+      path: '/api/portal/documents/$id'
+      fullPath: '/api/portal/documents/$id'
+      preLoaderRoute: typeof ApiPortalDocumentsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/requests/$id/messages': {
       id: '/api/requests/$id/messages'
       path: '/api/requests/$id/messages'
@@ -1245,6 +1285,7 @@ const rootRouteChildren: RootRouteChildren = {
   LawSignupRoute: LawSignupRoute,
   LawTermsRoute: LawTermsRoute,
   MeetTokenRoute: MeetTokenRoute,
+  PortalTokenRoute: PortalTokenRoute,
   LawIndexRoute: LawIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiFilesIdRoute: ApiFilesIdRoute,
@@ -1261,6 +1302,7 @@ const rootRouteChildren: RootRouteChildren = {
   OSlugBookRoute: OSlugBookRoute,
   ApiLawDocumentsIdRoute: ApiLawDocumentsIdRoute,
   ApiLawDocumentsUploadRoute: ApiLawDocumentsUploadRoute,
+  ApiPortalDocumentsIdRoute: ApiPortalDocumentsIdRoute,
   ApiRequestsIdMessagesRoute: ApiRequestsIdMessagesRoute,
   ApiV1AdminRequestsRoute: ApiV1AdminRequestsRouteWithChildren,
   AppConsultationsIdCallRoute: AppConsultationsIdCallRoute,

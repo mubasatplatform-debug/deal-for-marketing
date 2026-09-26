@@ -11,7 +11,8 @@
  *            status), tasks, uploads. No fees, no private call notes, no
  *            deleting records, no case edits.
  *   lawyer — the legal work: cases, hearings, fees, documents, running video
- *            consultations and their private notes.
+ *            consultations and their private notes, the client portal link
+ *            and what it shares.
  *   admin  — deletes records, office booking settings.
  *   owner  — everything admin can (plus the subscription, phase 1).
  */
@@ -22,6 +23,8 @@ export const PERMISSIONS = {
   "client.create": "staff",
   "client.edit": "staff",
   "client.delete": "admin",
+  // The client portal link and which documents it shows (portal-core.ts).
+  "client.portal": "lawyer",
 
   "case.view": "staff",
   "case.create": "lawyer",

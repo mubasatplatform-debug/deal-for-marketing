@@ -21,6 +21,8 @@ export type DocumentRow = {
   case_ref: number | null;
   uploaded_by_name: string | null;
   created_at: string;
+  /** Visible to the client in their portal (migrations/0015). */
+  shared_with_client: boolean;
 };
 
 export type Folder = { id: string; name: string; count: number; cases: { id: string; ref_no: number; title: string; count: number }[] };
@@ -56,7 +58,7 @@ export async function listDocumentsCore(
     sql.query<DocumentRow & { total: number }>(
       `select d.id, d.name, d.mime, d.size, d.client_id, c.name as client_name, d.case_id, k.title as case_title,
               k.ref_no as case_ref, coalesce(nullif(u.name, ''), u.email) as uploaded_by_name, d.created_at,
-              count(*) over ()::int as total
+              d.shared_with_client, count(*) over ()::int as total
        from law_documents d
        left join law_clients c on c.id = d.client_id and c.workspace_id = d.workspace_id
        left join law_cases k on k.id = d.case_id and k.workspace_id = d.workspace_id

@@ -44,6 +44,7 @@ test("staff: reception work, no deletes, no fees, no case edits, no private note
   }
   for (const a of [
     "client.delete",
+    "client.portal",
     "case.create",
     "case.edit",
     "case.delete",
