@@ -322,7 +322,7 @@ export type BillingView = {
   lifecycle: Lifecycle;
   seats: SeatUsage;
   invoices: InvoiceRow[];
-  providers: ("manual" | "moyasar")[];
+  providers: import("./payments/types").ProviderId[];
   bank: import("./payments/types").BankDetails | null;
 };
 
@@ -367,7 +367,7 @@ export const startCheckout = createServerFn({ method: "POST" })
         workspaceId: wsId,
         plan: z.enum(PLAN_IDS),
         cycle: z.enum(["monthly", "yearly"]),
-        provider: z.enum(["manual", "moyasar"]),
+        provider: z.enum(["manual", "moyasar", "edfapay"]),
       })
       .parse(input),
   )
@@ -389,7 +389,7 @@ export const startCheckout = createServerFn({ method: "POST" })
       workspace: { id: access.workspace.id, name: access.workspace.name },
       planName: plan.name,
       returnUrl: `${origin}/app/billing?checkout=${invoice.id}`,
-      callbackUrl: `${origin}/api/law/moyasar`,
+      callbackUrl: `${origin}/api/law/${data.provider}`,
     });
     if (result.kind === "redirect") {
       await setInvoiceProviderRef(sql, invoice.id, result.providerRef);

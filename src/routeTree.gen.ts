@@ -40,6 +40,7 @@ import { Route as StartIndexRouteImport } from './routes/start.index'
 import { Route as StartSlugRouteImport } from './routes/start.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiFilesIdRouteImport } from './routes/api/files.$id'
+import { Route as ApiLawEdfapayRouteImport } from './routes/api/law/edfapay'
 import { Route as ApiLawMoyasarRouteImport } from './routes/api/law/moyasar'
 import { Route as ApiV1SplatRouteImport } from './routes/api/v1/$'
 import { Route as ApiV1RequestsRouteImport } from './routes/api/v1/requests'
@@ -219,6 +220,11 @@ const ApiFilesIdRoute = ApiFilesIdRouteImport.update({
   path: '/api/files/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLawEdfapayRoute = ApiLawEdfapayRouteImport.update({
+  id: '/api/law/edfapay',
+  path: '/api/law/edfapay',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiLawMoyasarRoute = ApiLawMoyasarRouteImport.update({
   id: '/api/law/moyasar',
   path: '/api/law/moyasar',
@@ -367,6 +373,7 @@ export interface FileRoutesByFullPath {
   '/start/': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$id': typeof ApiFilesIdRoute
+  '/api/law/edfapay': typeof ApiLawEdfapayRoute
   '/api/law/moyasar': typeof ApiLawMoyasarRoute
   '/api/v1/$': typeof ApiV1SplatRoute
   '/api/v1/requests': typeof ApiV1RequestsRouteWithChildren
@@ -421,6 +428,7 @@ export interface FileRoutesByTo {
   '/start': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$id': typeof ApiFilesIdRoute
+  '/api/law/edfapay': typeof ApiLawEdfapayRoute
   '/api/law/moyasar': typeof ApiLawMoyasarRoute
   '/api/v1/$': typeof ApiV1SplatRoute
   '/api/v1/requests': typeof ApiV1RequestsRouteWithChildren
@@ -478,6 +486,7 @@ export interface FileRoutesById {
   '/start/': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$id': typeof ApiFilesIdRoute
+  '/api/law/edfapay': typeof ApiLawEdfapayRoute
   '/api/law/moyasar': typeof ApiLawMoyasarRoute
   '/api/v1/$': typeof ApiV1SplatRoute
   '/api/v1/requests': typeof ApiV1RequestsRouteWithChildren
@@ -536,6 +545,7 @@ export interface FileRouteTypes {
     | '/start/'
     | '/api/auth/$'
     | '/api/files/$id'
+    | '/api/law/edfapay'
     | '/api/law/moyasar'
     | '/api/v1/$'
     | '/api/v1/requests'
@@ -590,6 +600,7 @@ export interface FileRouteTypes {
     | '/start'
     | '/api/auth/$'
     | '/api/files/$id'
+    | '/api/law/edfapay'
     | '/api/law/moyasar'
     | '/api/v1/$'
     | '/api/v1/requests'
@@ -646,6 +657,7 @@ export interface FileRouteTypes {
     | '/start/'
     | '/api/auth/$'
     | '/api/files/$id'
+    | '/api/law/edfapay'
     | '/api/law/moyasar'
     | '/api/v1/$'
     | '/api/v1/requests'
@@ -694,6 +706,7 @@ export interface RootRouteChildren {
   LawIndexRoute: typeof LawIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiFilesIdRoute: typeof ApiFilesIdRoute
+  ApiLawEdfapayRoute: typeof ApiLawEdfapayRoute
   ApiLawMoyasarRoute: typeof ApiLawMoyasarRoute
   ApiV1SplatRoute: typeof ApiV1SplatRoute
   ApiV1RequestsRoute: typeof ApiV1RequestsRouteWithChildren
@@ -928,6 +941,13 @@ declare module '@tanstack/react-router' {
       path: '/api/files/$id'
       fullPath: '/api/files/$id'
       preLoaderRoute: typeof ApiFilesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/law/edfapay': {
+      id: '/api/law/edfapay'
+      path: '/api/law/edfapay'
+      fullPath: '/api/law/edfapay'
+      preLoaderRoute: typeof ApiLawEdfapayRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/law/moyasar': {
@@ -1186,6 +1206,7 @@ const rootRouteChildren: RootRouteChildren = {
   LawIndexRoute: LawIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiFilesIdRoute: ApiFilesIdRoute,
+  ApiLawEdfapayRoute: ApiLawEdfapayRoute,
   ApiLawMoyasarRoute: ApiLawMoyasarRoute,
   ApiV1SplatRoute: ApiV1SplatRoute,
   ApiV1RequestsRoute: ApiV1RequestsRouteWithChildren,

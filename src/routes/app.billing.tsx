@@ -27,6 +27,8 @@ import {
   type CheckoutResponse,
 } from "@/lib/saas/workspace";
 import { PlanFeatures } from "@/components/law/plan-features";
+import { cardProvider, providerLabel } from "@/lib/saas/payments/catalog";
+import type { ProviderId } from "@/lib/saas/payments/types";
 import { cn } from "@/lib/utils";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -257,7 +259,7 @@ function Billing() {
                     <td className="px-3 py-3">
                       <Num className="font-semibold">{sar(i.total)}</Num> <span className="text-xs text-slate">ر.س</span>
                     </td>
-                    <td className="px-3 py-3 text-slate">{i.provider === "manual" ? "تحويل بنكي" : "بطاقة / مدى"}</td>
+                    <td className="px-3 py-3 text-slate">{providerLabel(i.provider)}</td>
                     <td className="px-3 py-3">
                       <Pill tone={INVOICE_STATUS[i.status]?.tone ?? "neutral"}>{INVOICE_STATUS[i.status]?.label ?? i.status}</Pill>
                     </td>
@@ -353,12 +355,13 @@ function CheckoutDialog({
   workspaceId: string;
   planId: PlanId;
   cycle: BillingCycle;
-  providers: ("manual" | "moyasar")[];
+  providers: ProviderId[];
   onClose: () => void;
   onDone: () => void;
 }) {
   const q = quote(planId, cycle);
-  const [method, setMethod] = useState<"manual" | "moyasar">(providers.includes("moyasar") ? "moyasar" : "manual");
+  const card = cardProvider(providers);
+  const [method, setMethod] = useState<ProviderId>(card ?? "manual");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [done, setDone] = useState<Extract<CheckoutResponse, { kind: "instructions" }> | null>(null);
@@ -427,7 +430,7 @@ function CheckoutDialog({
             إلغاء
           </Button>
           <Button variant="primary" onClick={() => void pay()} disabled={busy} icon={busy ? Loader2 : undefined}>
-            {busy ? "جارٍ التجهيز…" : method === "moyasar" ? "المتابعة للدفع" : "إرسال طلب التفعيل"}
+            {busy ? "جارٍ التجهيز…" : method === "manual" ? "إرسال طلب التفعيل" : "المتابعة للدفع"}
           </Button>
         </>
       }
@@ -441,10 +444,10 @@ function CheckoutDialog({
       <fieldset className="mt-5">
         <legend className="mb-2 text-sm font-semibold">طريقة الدفع</legend>
         <div className="grid gap-2">
-          {providers.includes("moyasar") ? (
+          {card ? (
             <Method
-              checked={method === "moyasar"}
-              onPick={() => setMethod("moyasar")}
+              checked={method === card}
+              onPick={() => setMethod(card)}
               icon={CreditCard}
               title="مدى، فيزا، ماستركارد، Apple Pay"
               body="دفع فوري وتفعيل مباشر عبر بوابة دفع سعودية."
@@ -458,7 +461,7 @@ function CheckoutDialog({
             body="للشركات والجهات الحكومية. يُفعّل بعد تأكيد وصول التحويل."
           />
         </div>
-        {!providers.includes("moyasar") ? (
+        {!card ? (
           <p className="mt-3 text-xs text-slate">الدفع بالبطاقة ومدى وApple Pay قريبًا.</p>
         ) : null}
       </fieldset>

@@ -9,7 +9,7 @@ import type { InvoiceRow } from "../tenancy-core.ts";
  * never marks an invoice paid from what the browser says: `verify` asks the
  * provider itself, and only then `markInvoicePaidCore` runs.
  */
-export type ProviderId = "manual" | "moyasar";
+export type ProviderId = "manual" | "moyasar" | "edfapay";
 
 export type BankDetails = {
   bankName: string | null;
