@@ -84,7 +84,7 @@ export const getVoiceToken = createServerFn({ method: "POST" })
     });
   });
 
-export type StartedCall = { callId: string; to: string; rec: "1" | "0"; sig: string };
+export type StartedCall = { callId: string; to: string; rec: "1" | "0"; sig: string; exp: string };
 
 /** Record the call and sign its dial parameters; the browser then connects with them. */
 export const startCall = createServerFn({ method: "POST" })
@@ -110,7 +110,7 @@ export const startCall = createServerFn({ method: "POST" })
         conversationId: data.conversationId ?? null,
       });
       const rec = call.recorded ? "1" : "0";
-      return { callId: call.id, to: call.to, rec, sig: dialSignature(call.id, call.to, rec) };
+      return { callId: call.id, to: call.to, rec, ...dialSignature(call.id, call.to, rec) };
     });
   });
 

@@ -42,7 +42,7 @@ export function AdminForbidden({
           ) : null}
           <div className="mt-6 grid gap-2 sm:grid-cols-2">
             <a href="/client" className={buttonClass("dark")}>
-              الذهاب إلى مشاريعي
+              الذهاب إلى حسابي
             </a>
             {onSignOut ? (
               <button

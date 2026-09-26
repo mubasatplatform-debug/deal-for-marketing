@@ -40,12 +40,15 @@ export function hashVisitorIp(ip: string, secret: string): string {
 }
 
 /**
- * Best-effort client IP from proxy headers. Headers the edge overwrites
- * (Cloudflare in front of Render, Vercel's `x-real-ip`) come first because a
- * visitor cannot forge them; `x-forwarded-for`'s first hop is the last resort.
+ * Best-effort client IP from proxy headers. Only headers the edge overwrites
+ * come first (Cloudflare's `cf-connecting-ip` in front of Render, Vercel's
+ * `x-real-ip`), because a visitor cannot forge them; `x-forwarded-for`'s first
+ * hop is the last resort. `true-client-ip` is deliberately ignored: outside
+ * Cloudflare Enterprise it passes through from the visitor untouched, so
+ * trusting it would let anyone pick a fresh "IP" per request.
  */
 export function ipFromHeaders(h: Headers | undefined): string {
   const pick = (name: string) => h?.get(name)?.trim() || "";
   const forwarded = h?.get("x-forwarded-for")?.split(",")[0]?.trim() || "";
-  return (pick("cf-connecting-ip") || pick("true-client-ip") || pick("x-real-ip") || forwarded || "unknown").slice(0, 64);
+  return (pick("cf-connecting-ip") || pick("x-real-ip") || forwarded || "unknown").slice(0, 64);
 }

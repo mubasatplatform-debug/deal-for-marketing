@@ -75,7 +75,7 @@ export function ClientRequestDetail({
       actions={
         <Link to="/client" className={buttonClass("ghost")}>
           <ArrowRight className="size-4" />
-          طلباتي
+          حسابي
         </Link>
       }
     >
@@ -99,7 +99,7 @@ export function ClientRequestDetail({
             body="قد يكون الرابط غير صحيح، أو أن الطلب أُرسل من حساب آخر."
             action={
               <Link to="/client" className={buttonClass("primary")}>
-                العودة إلى طلباتي
+                العودة إلى حسابي
               </Link>
             }
           />

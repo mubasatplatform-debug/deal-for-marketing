@@ -1,5 +1,6 @@
 import { getSql } from "@/lib/db";
-import { markInvoicePaidCore, type InvoiceRow } from "./tenancy-core";
+import { invoiceSettleable, markInvoicePaidCore, type InvoiceRow } from "./tenancy-core";
+import { alertLatePayment } from "./late-payment.server";
 import { moyasarProvider, moyasarWebhookSecretOk } from "./payments/moyasar";
 
 /**
@@ -29,9 +30,12 @@ export async function handleMoyasarWebhook(request: Request): Promise<Response> 
     from workspace_invoices
     where provider = 'moyasar' and provider_ref = ${ref}
   `;
-  if (!invoice || invoice.status !== "pending") return new Response(null, { status: 204 });
+  if (!invoice || !invoiceSettleable(invoice)) return new Response(null, { status: 204 });
   try {
-    if ((await moyasarProvider.verify(invoice)) === "paid") await markInvoicePaidCore(sql, invoice.id, null);
+    if ((await moyasarProvider.verify(invoice)) === "paid") {
+      const res = await markInvoicePaidCore(sql, invoice.id, null, { providerVerified: true });
+      if (res && invoice.status === "cancelled") await alertLatePayment(invoice);
+    }
   } catch (err) {
     console.error("[moyasar] webhook verification failed:", err);
     // Let Moyasar retry later.

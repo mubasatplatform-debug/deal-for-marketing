@@ -16,7 +16,7 @@
 import { planHas } from "../saas/plans.ts";
 import { UUID_RE, WorkspaceError, type SqlTag, type WorkspaceAccess } from "../saas/tenancy-core.ts";
 import type { Llm } from "./agent/agent-core.ts";
-import { can } from "./permissions.ts";
+import { can, canSeeCallContent } from "./permissions.ts";
 import { assertClient } from "./practice-core.ts";
 import { PAGE_SIZE, plain, plainRows } from "./rows.ts";
 import {
@@ -277,6 +277,16 @@ function normalizeCall(r: CallRow): CallRow {
   return { ...r, duration_sec: Number(r.duration_sec) };
 }
 
+/** Hide what was said on a call from members who may only see the log. */
+function redactCall(r: CallRow, access: WorkspaceAccess): CallRow {
+  if (canSeeCallContent(access.role, access.userId, r.user_id)) return r;
+  return { ...r, has_recording: false, transcript: null, ai_summary: null };
+}
+
+function assertCallContent(access: WorkspaceAccess, callUserId: string | null) {
+  if (!canSeeCallContent(access.role, access.userId, callUserId)) throw new WorkspaceError("role");
+}
+
 export type CallPage = { rows: CallRow[]; total: number; page: number; pageSize: number };
 
 export async function listCallsCore(
@@ -300,7 +310,7 @@ export async function listCallsCore(
      where k.workspace_id = $1 and ($2::text is null or k.user_id = $2) and ($3::uuid is null or k.client_id = $3)`,
     [access.workspace.id, mine, clientId],
   );
-  return { rows: plainRows<CallRow>(rows).map(normalizeCall), total: Number(t?.n ?? 0), page, pageSize: PAGE_SIZE };
+  return { rows: plainRows<CallRow>(rows).map((r) => redactCall(normalizeCall(r), access)), total: Number(t?.n ?? 0), page, pageSize: PAGE_SIZE };
 }
 
 export async function getCallCore(sql: SqlTag, access: WorkspaceAccess, id: string): Promise<CallRow> {
@@ -310,21 +320,27 @@ export async function getCallCore(sql: SqlTag, access: WorkspaceAccess, id: stri
     access.workspace.id,
   ]);
   if (!r) notFound();
-  return normalizeCall(plain<CallRow>(r));
+  return redactCall(normalizeCall(plain<CallRow>(r)), access);
 }
 
 /** The recording of one of this office's calls (SID only; the audio stays at Twilio). */
 export async function callRecordingCore(sql: SqlTag, access: WorkspaceAccess, id: string): Promise<string | null> {
   checkId(id);
-  const [r] = await sql<{ recording_sid: string | null }>`
-    select recording_sid from law_calls where id = ${id} and workspace_id = ${access.workspace.id}
+  const [r] = await sql<{ recording_sid: string | null; user_id: string | null }>`
+    select recording_sid, user_id from law_calls where id = ${id} and workspace_id = ${access.workspace.id}
   `;
   if (!r) notFound();
+  assertCallContent(access, r.user_id);
   return r.recording_sid;
 }
 
 export async function setTranscriptCore(sql: SqlTag, access: WorkspaceAccess, id: string, transcript: string): Promise<void> {
   checkId(id);
+  const [owner] = await sql<{ user_id: string | null }>`
+    select user_id from law_calls where id = ${id} and workspace_id = ${access.workspace.id}
+  `;
+  if (!owner) notFound();
+  assertCallContent(access, owner.user_id);
   const text = transcript.trim().slice(0, 60000);
   const rows = await sql`
     update law_calls set transcript = ${text || null}, updated_at = now()
@@ -337,7 +353,11 @@ export async function setTranscriptCore(sql: SqlTag, access: WorkspaceAccess, id
 /* Conversation log                                                          */
 /* ------------------------------------------------------------------------ */
 
-/** «مكالمة صادرة · المدة 3:12 · بواسطة فلان» (+ the AI summary when there is one). */
+/**
+ * «مكالمة صادرة · المدة 3:12 · بواسطة فلان». The inbox is open to reception,
+ * so what was said (the AI summary) stays on the calls page, which shows it
+ * only to lawyers and the caller — the log just says a summary exists.
+ */
 export function callLogText(c: {
   direction: "outbound" | "inbound";
   status: CallStatus;
@@ -353,7 +373,7 @@ export function callLogText(c: {
   if (c.user_name) parts.push(`بواسطة ${c.user_name}`);
   if (c.recorded) parts.push("مسجّلة");
   let text = parts.join(" · ");
-  if (c.ai_summary?.trim()) text += `\n\nملخص المكالمة:\n${c.ai_summary.trim()}`;
+  if (c.ai_summary?.trim()) text += "\n\nملخص المكالمة متاح في صفحة «المكالمات».";
   return text.slice(0, 4000);
 }
 
@@ -499,6 +519,12 @@ export async function summarizeCallCore(
   deps: { llm: Llm | null; transcribe: Transcriber | null },
 ): Promise<{ summary: string }> {
   if (!planHas(access.workspace.plan, "aiDrafting")) throw new WorkspaceError("plan_feature");
+  checkId(id);
+  const [owner] = await sql<{ user_id: string | null }>`
+    select user_id from law_calls where id = ${id} and workspace_id = ${access.workspace.id}
+  `;
+  if (!owner) notFound();
+  assertCallContent(access, owner.user_id);
   const { summary } = await summarizeCallByIdCore(sql, access.workspace.id, id, deps);
   return { summary };
 }

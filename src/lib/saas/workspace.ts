@@ -103,9 +103,16 @@ export const setActiveWorkspace = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** One line: names end up in email subjects and headers. */
+const oneLine = (max: number) =>
+  z
+    .string()
+    .transform((v) => v.replace(/\s+/g, " ").trim())
+    .pipe(z.string().min(2).max(max));
+
 const officeFields = z.object({
-  name: z.string().trim().min(2).max(120),
-  city: z.string().trim().min(2).max(60),
+  name: oneLine(120),
+  city: oneLine(60),
   crNumber: z
     .string()
     .trim()
@@ -422,18 +429,23 @@ export const confirmCheckout = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const { requireWorkspace } = await guard();
     const access = await requireWorkspace(context.userId, data.workspaceId, "admin");
-    const { listInvoicesCore, markInvoicePaidCore } = await core();
+    const { listInvoicesCore, markInvoicePaidCore, invoiceSettleable } = await core();
     const sql = await getSql();
     const invoice = (await listInvoicesCore(sql, access.workspace.id)).find((i) => i.id === data.invoiceId);
     if (!invoice) return { status: "unknown" as const };
-    if (invoice.status !== "pending") return { status: invoice.status };
+    if (!invoiceSettleable(invoice)) return { status: invoice.status };
     const { paymentProvider } = await import("./payments/index");
     const provider = paymentProvider(invoice.provider);
-    if (!provider.enabled()) return { status: "pending" as const };
+    if (!provider.enabled()) return { status: invoice.status === "cancelled" ? ("cancelled" as const) : ("pending" as const) };
     const verdict = await provider.verify(invoice);
     if (verdict === "paid") {
-      await markInvoicePaidCore(sql, invoice.id, null);
+      const res = await markInvoicePaidCore(sql, invoice.id, null, { providerVerified: true });
+      if (res && invoice.status === "cancelled") {
+        const { alertLatePayment } = await import("./late-payment.server");
+        await alertLatePayment(invoice);
+      }
       return { status: "paid" as const };
     }
+    if (invoice.status === "cancelled") return { status: "cancelled" as const };
     return { status: verdict };
   });

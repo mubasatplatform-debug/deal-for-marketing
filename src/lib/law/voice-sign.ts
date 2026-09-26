@@ -2,9 +2,11 @@
  * Signatures shared with the `deal-voice` relay — **server-only** (node:crypto;
  * the secret never reaches the browser). Pure otherwise, so node tests import it.
  *
- *   - dial:   sig = hex(HMAC-SHA256(secret, `${callId}|${to}|${rec}`)), computed
- *             here when a member starts a call; the browser passes it through
- *             to the relay, which refuses a dial whose parameters were changed.
+ *   - dial:   sig = hex(HMAC-SHA256(secret, `${callId}|${to}|${rec}|${exp}`)),
+ *             computed here when a member starts a call; the browser passes it
+ *             through to the relay, which refuses a dial whose parameters were
+ *             changed or whose `exp` (unix seconds) has passed — so a signed
+ *             dial can't be replayed later to get around the call caps.
  *   - events: the relay signs `${timestamp}.${rawBody}` the same way and sends
  *             `x-deal-voice-timestamp` / `x-deal-voice-signature`; we accept a
  *             matching signature within ±300 s (constant-time comparison).
@@ -17,8 +19,11 @@ export function hmacHex(secret: string, message: string): string {
   return createHmac("sha256", secret).update(message, "utf8").digest("hex");
 }
 
-export function signDial(secret: string, callId: string, to: string, rec: "1" | "0"): string {
-  return hmacHex(secret, `${callId}|${to}|${rec}`);
+/** How long a signed dial stays usable: enough to connect, not to replay. */
+export const DIAL_TTL_SEC = 120;
+
+export function signDial(secret: string, callId: string, to: string, rec: "1" | "0", exp: number): string {
+  return hmacHex(secret, `${callId}|${to}|${rec}|${exp}`);
 }
 
 export type VerifyResult = { ok: true } | { ok: false; reason: "missing" | "stale" | "signature" };

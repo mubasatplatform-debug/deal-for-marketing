@@ -1,6 +1,6 @@
 /** WhatsApp-code error codes and their Arabic messages (`OTP:<code>`). Client-safe. */
 
-export type OtpErrorCode = "bad_phone" | "rate_limited" | "send_failed" | "bad_code" | "unavailable" | "not_enabled";
+export type OtpErrorCode = "bad_phone" | "rate_limited" | "send_failed" | "bad_code" | "unavailable" | "not_enabled" | "no_office";
 
 /** Arabic messages the pages show for `OTP:<code>` errors. Client-safe. */
 export const OTP_MESSAGES: Record<OtpErrorCode, string> = {
@@ -10,6 +10,7 @@ export const OTP_MESSAGES: Record<OtpErrorCode, string> = {
   bad_code: "الرمز غير صحيح أو انتهت صلاحيته. اطلب رمزًا جديدًا.",
   unavailable: "التحقق برمز الجوال غير متاح حاليًا.",
   not_enabled: "التحقق بخطوتين غير مفعّل لهذا الحساب.",
+  no_office: "التحقق بخطوتين متاح لأعضاء المكاتب. أنشئ مكتبك أو اقبل دعوة أولًا.",
 };
 
 export function otpErrorCode(err: unknown): OtpErrorCode | null {

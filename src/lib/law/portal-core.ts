@@ -17,6 +17,7 @@
  * documents the office explicitly shared with this client.
  */
 import { randomBytes } from "node:crypto";
+import { effectiveStatus } from "../saas/lifecycle.ts";
 import { UUID_RE, WorkspaceError, type SqlTag, type WorkspaceAccess } from "../saas/tenancy-core.ts";
 import { hashMeetToken, isMeetTokenShape } from "./meet-token.ts";
 import type { CaseStage, ConsultMode } from "./options.ts";
@@ -154,8 +155,18 @@ export type PortalSubject = {
  */
 export async function resolvePortalCore(sql: SqlTag, tokenHash: string): Promise<PortalSubject | null> {
   if (!/^[0-9a-f]{64}$/.test(tokenHash)) return null;
-  const [r] = await sql<{ ws_id: string; ws_name: string; ws_city: string; client_id: string; client_name: string }>`
-    select w.id as ws_id, w.name as ws_name, w.city as ws_city, c.id as client_id, c.name as client_name
+  const [r] = await sql<{
+    ws_id: string;
+    ws_name: string;
+    ws_city: string;
+    client_id: string;
+    client_name: string;
+    status: string;
+    trial_ends_at: string | Date | null;
+    current_period_end: string | Date | null;
+  }>`
+    select w.id as ws_id, w.name as ws_name, w.city as ws_city, c.id as client_id, c.name as client_name,
+           w.status, w.trial_ends_at, w.current_period_end
     from law_client_portals p
     join workspaces w on w.id = p.workspace_id
     join law_clients c on c.id = p.client_id and c.workspace_id = p.workspace_id
@@ -163,7 +174,9 @@ export async function resolvePortalCore(sql: SqlTag, tokenHash: string): Promise
       and p.revoked_at is null
       and w.status not in ('suspended', 'cancelled')
   `;
-  if (!r) return null;
+  // A lapsed office past its grace period is read-only for its own team; its
+  // client links go dark the same way a suspended office's do.
+  if (!r || effectiveStatus(r).readOnly) return null;
   return {
     workspace: { id: r.ws_id, name: r.ws_name, city: r.ws_city },
     client: { id: r.client_id, name: r.client_name },

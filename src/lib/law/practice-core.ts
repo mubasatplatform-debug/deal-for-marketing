@@ -422,15 +422,20 @@ export async function createCaseCore(sql: SqlTag, access: WorkspaceAccess, input
   await assertMembers(sql, access, input.lawyerIds);
   const ws = access.workspace.id;
   const opened = input.openedOn ?? riyadhYmd();
-  // ref_no is max+1 per office; a concurrent insert trips the unique key and
-  // the statement is simply retried.
+  // ref_no is max+1 per office (never reusing a deleted case's number); a
+  // concurrent insert trips the unique key and the statement is simply retried.
   for (let attempt = 0; ; attempt += 1) {
     try {
       const [r] = await sql<{ id: string; ref_no: number }>`
         with ins as (
           insert into law_cases (workspace_id, ref_no, title, client_id, case_type, stage, court, court_case_no,
             opposing_party, description, fees_halalas, paid_halalas, opened_on, closed_on, created_by)
-          select ${ws}, coalesce(max(ref_no), 0) + 1, ${input.title}, ${input.clientId}, ${input.caseType},
+          select ${ws}, greatest(coalesce(max(ref_no), 0), (
+                   -- Numbers of deleted cases are never handed out again: the
+                   -- audit log already refers to them.
+                   select coalesce(max((detail ->> 'ref')::int), 0) from workspace_events
+                   where workspace_id = ${ws} and kind = 'case_created'
+                 )) + 1, ${input.title}, ${input.clientId}, ${input.caseType},
                  ${input.stage}, ${input.court}, ${input.courtCaseNo}, ${input.opposingParty}, ${input.description},
                  ${input.feesHalalas}, ${input.paidHalalas}, ${opened}::date,
                  case when ${input.stage} = 'closed' then ${riyadhYmd()}::date else null end, ${access.userId}
@@ -528,7 +533,6 @@ export async function addPaymentCore(sql: SqlTag, access: WorkspaceAccess, id: s
   checkId(id);
   if (!Number.isInteger(amount) || amount <= 0) throw new WorkspaceError("invalid", 422);
   const ws = access.workspace.id;
-  const riyals = (amount / 100).toLocaleString("en-US", { maximumFractionDigits: 2 });
   const rows = await sql<{ id: string }>`
     with upd as (
       update law_cases set paid_halalas = paid_halalas + ${amount}, updated_at = now()
@@ -537,7 +541,9 @@ export async function addPaymentCore(sql: SqlTag, access: WorkspaceAccess, id: s
     ),
     note as (
       insert into law_notes (workspace_id, case_id, kind, body, author_id, is_demo)
-      select ${ws}, upd.id, 'event', ${`سُجّلت دفعة بمبلغ ${riyals} ر.س`}, ${access.userId}, upd.is_demo from upd
+      -- The timeline is visible to reception, who may not see fees: the
+      -- amount stays in the case's fee fields and the audit event.
+      select ${ws}, upd.id, 'event', ${"سُجّلت دفعة على القضية"}, ${access.userId}, upd.is_demo from upd
     ),
     ev as (
       insert into workspace_events (workspace_id, actor_id, kind, detail)
@@ -882,10 +888,13 @@ export async function reportsCore(sql: SqlTag, access: WorkspaceAccess): Promise
         select stage, count(*)::int as count from law_cases where workspace_id = ${ws} group by stage
       `,
       sql<{ ym: string; count: number }>`
-        select to_char(date_trunc('month', created_at at time zone 'Asia/Riyadh'), 'YYYY-MM') as ym,
+        select to_char(date_trunc('month', coalesce(opened_on, (created_at at time zone 'Asia/Riyadh')::date)), 'YYYY-MM') as ym,
                count(*)::int as count
         from law_cases
-        where workspace_id = ${ws} and created_at >= (now() - interval '5 months')
+        where workspace_id = ${ws}
+          -- Whole Riyadh months: the chart's oldest bucket starts on its 1st.
+          and coalesce(opened_on, (created_at at time zone 'Asia/Riyadh')::date)
+              >= (date_trunc('month', now() at time zone 'Asia/Riyadh') - interval '5 months')::date
         group by 1
       `,
       sql<{ id: string; name: string; billed: string; collected: string }>`

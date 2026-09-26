@@ -263,7 +263,9 @@ test("roles: staff runs reception but cannot delete, edit cases, or see fees", a
   await addPaymentCore(sql, lawyer, k.id, 150000);
   const after = await getCaseCore(sql, lawyer, k.id);
   assert.equal(after.case.paid_halalas, 150000);
-  assert.ok(after.notes.some((x) => x.kind === "event" && x.body.includes("1,500")));
+  assert.ok(after.notes.some((x) => x.kind === "event" && x.body.includes("دفعة")));
+  // The timeline is shared with reception, so it never carries the amount.
+  assert.ok((await getCaseCore(sql, staff, k.id)).notes.every((x) => !x.body.includes("1,500")));
 
   // Stage moves are logged on the timeline.
   await setCaseStageCore(sql, lawyer, k.id, "filed");

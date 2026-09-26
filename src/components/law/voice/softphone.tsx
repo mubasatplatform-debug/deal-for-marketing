@@ -79,8 +79,30 @@ function callError(err: unknown): string {
   return "تعذّر إكمال المكالمة. حاول مرة أخرى بعد قليل.";
 }
 
+/** The document's Permissions-Policy forbids the microphone (a page opened outside /app). */
+function micPolicyBlocked(): boolean {
+  const doc = document as Document & { permissionsPolicy?: { allowsFeature: (f: string) => boolean } };
+  try {
+    return doc.permissionsPolicy ? !doc.permissionsPolicy.allowsFeature("microphone") : false;
+  } catch {
+    return false;
+  }
+}
+
 export function SoftphoneProvider({ children }: { children: ReactNode }) {
   const { active } = useLawApp();
+  // The server allows the microphone on /app/** only; arriving here by in-app
+  // navigation from the public site keeps that page's policy, so reload once.
+  useEffect(() => {
+    if (!micPolicyBlocked()) return;
+    try {
+      if (sessionStorage.getItem("policy-reload:app")) return;
+      sessionStorage.setItem("policy-reload:app", "1");
+    } catch {
+      return;
+    }
+    window.location.reload();
+  }, []);
   const wsId = active.workspace.id;
   const readOnly = active.lifecycle.readOnly;
   const [setup, setSetup] = useState<VoiceSetup | null>(null);
@@ -193,7 +215,7 @@ export function SoftphoneProvider({ children }: { children: ReactNode }) {
           }
         });
         const c = await d.connect({
-          params: { To: started.to, callId: started.callId, rec: started.rec, sig: started.sig },
+          params: { To: started.to, callId: started.callId, rec: started.rec, sig: started.sig, exp: started.exp },
         });
         call.current = c;
         c.on("ringing", () => patch({ phase: "ringing" }));

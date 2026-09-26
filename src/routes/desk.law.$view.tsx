@@ -7,12 +7,14 @@ const views = ["home", "book", "crm", "staff", "docs", "cases", "video"] as cons
 
 export const Route = createFileRoute("/desk/law/$view")({
   // Internal screenshot stage for the product stills — never indexed.
+  beforeLoad: ({ params }) => {
+    if (!views.includes(params.view as LawView)) throw notFound();
+  },
   head: ({ params }) => pageHead({ title: lawDeskTitle(params.view), noindex: true }),
   component: DeskLaw,
 });
 
 function DeskLaw() {
   const { view } = Route.useParams();
-  if (!views.includes(view as LawView)) throw notFound();
   return <LawDesk view={view as LawView} />;
 }

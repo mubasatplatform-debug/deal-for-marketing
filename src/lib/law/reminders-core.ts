@@ -376,6 +376,9 @@ export async function processRemindersCore(
       if (await attempt(d.kind, d.refId, d.recipient, () => send.digest(d))) counts.digests += 1;
     }
   }
+  // Claims only matter for the day or two a reminder can be due; keep the
+  // table from growing forever.
+  await sql`delete from law_reminders_sent where sent_at < ${new Date(now - 30 * 86_400_000).toISOString()}::timestamptz`;
   return counts;
 }
 

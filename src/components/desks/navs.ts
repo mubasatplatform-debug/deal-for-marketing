@@ -80,7 +80,7 @@ export const payMore: DeskNavItem[] = [
 
 export type PayView = (typeof payNav)[number]["id"];
 
-export const PAY_PRODUCT = "مبسط باي";
+export const PAY_PRODUCT = "الدفع المبسط";
 
-/** Document title for a pay desk view, e.g. "الفواتير — مبسط باي". */
+/** Document title for a pay desk view, e.g. "الفواتير — الدفع المبسط". */
 export const payDeskTitle = (view: string) => deskTitle(payNav, view, PAY_PRODUCT);

@@ -116,7 +116,13 @@ export async function sendThreadNotice(input: ThreadNotice): Promise<boolean> {
  * POST one fixed-purpose message to the relay. Never throws; returns whether
  * the relay accepted it.
  */
+/** RFC 2606 / 6761 names: mail there always bounces (test accounts). */
+const RESERVED_DOMAIN = /@(?:[^@]+\.)?(?:example\.(?:com|net|org)|example|test|invalid|localhost)$/i;
+
 async function postRelay(body: Record<string, unknown>, what: string): Promise<boolean> {
+  // Subjects are headers: never let a line break from user data through.
+  if (typeof body.subject === "string") body = { ...body, subject: body.subject.replace(/[\r\n]+/g, " ").trim() };
+  if (typeof body.to === "string" && RESERVED_DOMAIN.test(body.to.trim())) return false;
   const endpoint = process.env.MAIL_RELAY_URL?.trim();
   const token = process.env.MAIL_RELAY_TOKEN?.trim();
   if (!endpoint || !token) {

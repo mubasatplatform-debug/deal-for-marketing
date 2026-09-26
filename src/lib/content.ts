@@ -20,7 +20,7 @@ export const nav = [
   { href: "/#works", label: "أعمالنا" },
   { href: "/#about", label: "من نحن" },
   { href: "/start", label: "اطلب خدمتك" },
-  { href: "/client", label: "مشاريعي" },
+  { href: "/client", label: "حسابي" },
   { href: "/#contact", label: "تواصل معنا" },
 ] as const;
 

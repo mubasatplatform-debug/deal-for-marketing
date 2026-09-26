@@ -7,12 +7,22 @@ import type { Llm, LlmResult } from "./agent-core";
  * Returns null when not configured, so the assistant reports "unavailable"
  * instead of failing.
  */
+const GLOBAL_DAILY_CALLS = () => Number(process.env.LAW_AI_GLOBAL_DAILY_CAP) || 5000;
+
 export function agentLlm(): Llm | null {
   const base = process.env.LAW_AGENT_URL?.trim();
   const token = process.env.LAW_AGENT_TOKEN?.trim();
   if (!base || !token) return null;
   const url = `${base.replace(/\/+$/, "")}/chat/completions`;
   return async (messages, opts): Promise<LlmResult> => {
+    // One ceiling for the whole deployment, on top of the per-member and
+    // per-office caps: many free-trial offices can never run the model
+    // account's spend past this many calls a day.
+    const { tryHit } = await import("@/lib/rate-limit.server");
+    if (!(await tryHit("law-ai:all", GLOBAL_DAILY_CALLS(), 86_400))) {
+      console.error("[law-agent] global daily AI budget reached (LAW_AI_GLOBAL_DAILY_CAP)");
+      throw new Error("WS:ai_limit");
+    }
     const res = await fetch(url, {
       method: "POST",
       headers: { "content-type": "application/json", authorization: `Bearer ${token}` },

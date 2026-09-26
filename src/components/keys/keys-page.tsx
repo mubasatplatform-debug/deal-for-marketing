@@ -179,7 +179,7 @@ export function ClientKeysPage({ user, onSignOut }: { user: ShellUser; onSignOut
   const atLimit = activeCount >= MAX_ACTIVE_KEYS;
 
   const nav: NavItem[] = [
-    { href: "/client", label: "طلباتي", icon: ClipboardList },
+    { href: "/client", label: "حسابي", icon: ClipboardList },
     { href: "/start", label: "طلب جديد", icon: Plus },
     { href: "/client/keys", label: "مفاتيح API", icon: KeyRound, active: true },
     { href: "/developers", label: "دليل المطوّرين", icon: BookOpen },

@@ -105,10 +105,7 @@ function Login() {
             .
           </p>
           <p className="mt-2 text-center text-xs leading-relaxed text-slate">
-            <a href="/forgot-password" className="font-semibold text-pine underline underline-offset-4">
-              نسيت كلمة المرور؟
-            </a>{" "}
-            · تحتاج مساعدة؟{" "}
+            تحتاج مساعدة؟{" "}
             <a
               href={`https://wa.me/${mobile.wa}?text=${encodeURIComponent("أحتاج مساعدة في الدخول لحسابي في ديل")}`}
               className="font-semibold text-pine underline underline-offset-4"

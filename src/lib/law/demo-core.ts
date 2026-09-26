@@ -422,6 +422,11 @@ export async function demoBlockersCore(sql: SqlTag, access: WorkspaceAccess): Pr
          and (case_id in (select id from dk) or client_id in (select id from dc)))
     + (select count(*) from law_invoices where workspace_id = ${ws}
          and (case_id in (select id from dk) or client_id in (select id from dc)))
+    -- Real conversations, calls and portal links on a demo client: deleting
+    -- the client would unlink or delete them.
+    + (select count(*) from law_conversations where workspace_id = ${ws} and client_id in (select id from dc))
+    + (select count(*) from law_calls where workspace_id = ${ws} and client_id in (select id from dc))
+    + (select count(*) from law_client_portals where workspace_id = ${ws} and client_id in (select id from dc))
     )::int as n
   `;
   return Number(r?.n ?? 0);
@@ -454,6 +459,9 @@ export async function clearDemoCore(sql: SqlTag, access: WorkspaceAccess): Promi
       and not exists (select 1 from law_notes n where n.client_id = c.id and not n.is_demo)
       and not exists (select 1 from law_appointments a where a.client_id = c.id and not a.is_demo)
       and not exists (select 1 from law_documents d where d.client_id = c.id)
+      and not exists (select 1 from law_conversations v where v.client_id = c.id and v.workspace_id = c.workspace_id)
+      and not exists (select 1 from law_calls k where k.client_id = c.id and k.workspace_id = c.workspace_id)
+      and not exists (select 1 from law_client_portals p where p.client_id = c.id and p.workspace_id = c.workspace_id)
     returning id
   `;
   await sql`

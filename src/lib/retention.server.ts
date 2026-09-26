@@ -19,18 +19,27 @@ export async function pruneExpiredRequests(): Promise<void> {
   globalRef.__requestsPrunedDay__ = day;
   try {
     const sql = await getSql();
-    // Blob-stored attachments live outside the database: collect their paths
-    // before the cascade removes the rows, then delete them (best effort).
-    const blobs = await sql<{ blob_path: string }>`
-      select f.blob_path from request_files f
-      join requests r on r.id = f.request_id
-      where r.created_at < now() - interval '2 years'
-        and f.storage = 'blob' and f.blob_path is not null
-    `;
-    await sql`delete from requests where created_at < now() - interval '2 years'`;
-    if (blobs.length) {
-      const { discardStored } = await import("@/lib/files/storage.server");
-      await discardStored(blobs.map((b) => b.blob_path));
+    // In batches, so one call never holds a long delete; each batch removes
+    // its Blob-stored bytes FIRST and only then the rows — if the storage
+    // delete fails the rows stay and the next run retries, instead of losing
+    // the paths and leaving the files behind for good.
+    for (let batch = 0; batch < 20; batch += 1) {
+      const expired = await sql<{ id: number }>`
+        select id from requests where created_at < now() - interval '2 years'
+        order by created_at limit 200
+      `;
+      if (!expired.length) break;
+      const ids = expired.map((r) => r.id);
+      const blobs = await sql<{ blob_path: string }>`
+        select blob_path from request_files
+        where request_id = any(${ids}::int[]) and storage = 'blob' and blob_path is not null
+      `;
+      if (blobs.length) {
+        const { discardStored } = await import("@/lib/files/storage.server");
+        await discardStored(blobs.map((b) => b.blob_path));
+      }
+      await sql`delete from requests where id = any(${ids}::int[])`;
+      if (expired.length < 200) break;
     }
   } catch (err) {
     globalRef.__requestsPrunedDay__ = undefined;
