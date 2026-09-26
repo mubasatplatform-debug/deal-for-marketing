@@ -47,6 +47,7 @@ type NavEntry = {
 
 const MAIN: NavEntry[] = [
   { to: "/app", label: "الرئيسية", icon: LayoutDashboard },
+  { to: "/app/assistant", label: "مساعد المكتب", icon: Sparkles },
   ...MODULES.map((m) => ({ to: `/app/${m.id}`, label: m.label, icon: m.icon })),
 ];
 

@@ -78,7 +78,7 @@ test("bearer header parsing", () => {
 });
 
 test("scope catalogue: client and admin scopes partition the list", () => {
-  assert.deepEqual([...CLIENT_SCOPES], ["services:read", "requests:read", "requests:write"]);
+  assert.deepEqual([...CLIENT_SCOPES], ["services:read", "requests:read", "requests:write", "law:read", "law:write"]);
   assert.deepEqual([...ADMIN_SCOPES], ["admin:requests:read", "admin:requests:write"]);
   assert.equal(SCOPE_INFO.length, SCOPES.length);
   for (const info of SCOPE_INFO) assert.ok(info.label && info.body, info.scope);

@@ -26,6 +26,7 @@ import { Route as AdminLawRouteImport } from './routes/admin_.law'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppAppointmentsRouteImport } from './routes/app.appointments'
+import { Route as AppAssistantRouteImport } from './routes/app.assistant'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppDocumentsRouteImport } from './routes/app.documents'
 import { Route as AppReportsRouteImport } from './routes/app.reports'
@@ -149,6 +150,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppAppointmentsRoute = AppAppointmentsRouteImport.update({
   id: '/appointments',
   path: '/appointments',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAssistantRoute = AppAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
   getParentRoute: () => AppRoute,
 } as any)
 const AppBillingRoute = AppBillingRouteImport.update({
@@ -364,6 +370,7 @@ export interface FileRoutesByFullPath {
   '/admin/law': typeof AdminLawRoute
   '/api/mcp': typeof ApiMcpRoute
   '/app/appointments': typeof AppAppointmentsRoute
+  '/app/assistant': typeof AppAssistantRoute
   '/app/billing': typeof AppBillingRoute
   '/app/documents': typeof AppDocumentsRoute
   '/app/reports': typeof AppReportsRoute
@@ -420,6 +427,7 @@ export interface FileRoutesByTo {
   '/admin/law': typeof AdminLawRoute
   '/api/mcp': typeof ApiMcpRoute
   '/app/appointments': typeof AppAppointmentsRoute
+  '/app/assistant': typeof AppAssistantRoute
   '/app/billing': typeof AppBillingRoute
   '/app/documents': typeof AppDocumentsRoute
   '/app/reports': typeof AppReportsRoute
@@ -479,6 +487,7 @@ export interface FileRoutesById {
   '/admin_/law': typeof AdminLawRoute
   '/api/mcp': typeof ApiMcpRoute
   '/app/appointments': typeof AppAppointmentsRoute
+  '/app/assistant': typeof AppAssistantRoute
   '/app/billing': typeof AppBillingRoute
   '/app/documents': typeof AppDocumentsRoute
   '/app/reports': typeof AppReportsRoute
@@ -539,6 +548,7 @@ export interface FileRouteTypes {
     | '/admin/law'
     | '/api/mcp'
     | '/app/appointments'
+    | '/app/assistant'
     | '/app/billing'
     | '/app/documents'
     | '/app/reports'
@@ -595,6 +605,7 @@ export interface FileRouteTypes {
     | '/admin/law'
     | '/api/mcp'
     | '/app/appointments'
+    | '/app/assistant'
     | '/app/billing'
     | '/app/documents'
     | '/app/reports'
@@ -653,6 +664,7 @@ export interface FileRouteTypes {
     | '/admin_/law'
     | '/api/mcp'
     | '/app/appointments'
+    | '/app/assistant'
     | '/app/billing'
     | '/app/documents'
     | '/app/reports'
@@ -855,6 +867,13 @@ declare module '@tanstack/react-router' {
       path: '/appointments'
       fullPath: '/app/appointments'
       preLoaderRoute: typeof AppAppointmentsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/assistant': {
+      id: '/app/assistant'
+      path: '/assistant'
+      fullPath: '/app/assistant'
+      preLoaderRoute: typeof AppAssistantRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/billing': {
@@ -1135,6 +1154,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAppointmentsRoute: typeof AppAppointmentsRoute
+  AppAssistantRoute: typeof AppAssistantRoute
   AppBillingRoute: typeof AppBillingRoute
   AppDocumentsRoute: typeof AppDocumentsRoute
   AppReportsRoute: typeof AppReportsRoute
@@ -1152,6 +1172,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAppointmentsRoute: AppAppointmentsRoute,
+  AppAssistantRoute: AppAssistantRoute,
   AppBillingRoute: AppBillingRoute,
   AppDocumentsRoute: AppDocumentsRoute,
   AppReportsRoute: AppReportsRoute,
