@@ -1,6 +1,6 @@
-import { useId, useState, type FormEvent } from "react";
+import { useEffect, useId, useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Loader2, Save, ShieldCheck } from "lucide-react";
+import { Loader2, ReceiptText, Save, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button, Card, CardHeader } from "@/components/dash/ui";
 import { PageHead } from "@/components/law/app-frame";
@@ -11,6 +11,10 @@ import { BookingSettingsCard } from "@/components/law/booking-settings";
 import { Field, SelectInput, TextInput } from "@/components/law/fields";
 import { CITIES, TEAM_SIZE_OPTIONS, toLatinDigits } from "@/components/law/office-options";
 import { dateAr } from "@/components/law/format";
+import { TextArea, useLoad } from "@/components/law/kit";
+import { getTaxProfile, saveTaxProfile } from "@/lib/law/invoices";
+import { VAT_NUMBER_RE } from "@/lib/law/invoices-core";
+import { can } from "@/lib/law/permissions";
 import { workspaceErrorMessage } from "@/lib/saas/errors";
 import { ROLE_LABELS } from "@/lib/saas/lifecycle";
 import { updateWorkspace, type TeamSize } from "@/lib/saas/workspace";
@@ -167,12 +171,137 @@ function Settings() {
           </Card>
         </div>
       </div>
+      {can(active.role, "settings.tax") ? <TaxSettingsCard readOnly={active.lifecycle.readOnly} /> : null}
       <BookingSettingsCard />
       <div className="mt-6 grid gap-6">
         <AiIntegrationsCard />
         <AiAuditCard />
       </div>
     </>
+  );
+}
+
+const utf8Len = (v: string) => new TextEncoder().encode(v).length;
+
+/**
+ * «بيانات الفوترة الضريبية» — the seller identity printed on every tax
+ * invoice and encoded in its QR code. Managers only; invoices are refused
+ * until it is set. Issued invoices keep the values they were issued with.
+ */
+function TaxSettingsCard({ readOnly }: { readOnly: boolean }) {
+  const { active } = useLawApp();
+  const uid = useId();
+  const res = useLoad(() => getTaxProfile({ data: { workspaceId: active.workspace.id } }), [active.workspace.id]);
+  const saved = res.data;
+  const [legalName, setLegalName] = useState("");
+  const [vat, setVat] = useState("");
+  const [address, setAddress] = useState("");
+  const [errors, setErrors] = useState<Partial<Record<"legalName" | "vat" | "address", string>>>({});
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    setLegalName(saved?.legal_name ?? "");
+    setVat(saved?.vat_number ?? "");
+    setAddress(saved?.address ?? "");
+  }, [saved]);
+
+  const dirty =
+    legalName !== (saved?.legal_name ?? "") || vat !== (saved?.vat_number ?? "") || address !== (saved?.address ?? "");
+
+  async function save(e: FormEvent) {
+    e.preventDefault();
+    if (busy || readOnly) return;
+    const next: typeof errors = {};
+    const name = legalName.trim();
+    if (name.length < 2) next.legalName = "اكتب الاسم النظامي كما في شهادة التسجيل في ضريبة القيمة المضافة.";
+    else if (utf8Len(name) > 255) next.legalName = "الاسم أطول من المسموح في رمز الاستجابة السريعة. اختصره.";
+    if (!VAT_NUMBER_RE.test(vat)) next.vat = "الرقم الضريبي ١٥ رقمًا، يبدأ بـ 3 وينتهي بـ 3.";
+    if (address.trim().length > 300) next.address = "العنوان طويل جدًا.";
+    setErrors(next);
+    if (Object.keys(next).length) return;
+    setBusy(true);
+    try {
+      await saveTaxProfile({ data: { workspaceId: active.workspace.id, legalName: name, vatNumber: vat, address: address.trim() } });
+      toast.success("حُفظت بيانات الفوترة الضريبية");
+      await res.reload();
+    } catch (err) {
+      toast.error(workspaceErrorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section id="tax" className="scroll-mt-20">
+      <h2 className="mt-10 mb-4 flex items-center gap-2 text-[15px] font-bold">
+        <ReceiptText className="size-[18px] text-pine" aria-hidden="true" />
+        بيانات الفوترة الضريبية
+      </h2>
+      <Card>
+        <CardHeader
+          title="البائع في الفواتير الضريبية"
+          description="تظهر في كل فاتورة وفي رمز الاستجابة السريعة (QR). لا تتغير الفواتير الصادرة عند تعديلها."
+        />
+        {!saved && res.loading ? (
+          <div className="m-5 h-40 animate-pulse rounded-xl bg-pine-50/40 md:m-6" />
+        ) : (
+          <form onSubmit={save} noValidate className="grid gap-5 px-5 pt-5 pb-6 md:grid-cols-2 md:px-6">
+            <div className="md:col-span-2">
+              <Field id={`${uid}-ln`} label="الاسم النظامي للمنشأة" error={errors.legalName}>
+                <TextInput
+                  id={`${uid}-ln`}
+                  value={legalName}
+                  maxLength={200}
+                  disabled={readOnly}
+                  onChange={(e) => setLegalName(e.target.value)}
+                  invalid={Boolean(errors.legalName)}
+                  placeholder="مثال: شركة الأمانة للمحاماة والاستشارات القانونية"
+                />
+              </Field>
+            </div>
+            <Field id={`${uid}-vat`} label="الرقم الضريبي (VAT)" error={errors.vat} hint="١٥ رقمًا يبدأ وينتهي بالرقم 3.">
+              <TextInput
+                id={`${uid}-vat`}
+                inputMode="numeric"
+                dir="ltr"
+                maxLength={15}
+                value={vat}
+                disabled={readOnly}
+                onChange={(e) => setVat(toLatinDigits(e.target.value).replace(/\D/g, ""))}
+                placeholder="3xxxxxxxxxxxxx3"
+                invalid={Boolean(errors.vat)}
+                className="text-left font-ui"
+              />
+            </Field>
+            <div className="md:col-span-2">
+              <Field id={`${uid}-ad`} label="العنوان" optional error={errors.address} hint="المدينة، الحي، الشارع، الرمز البريدي.">
+                <TextArea
+                  id={`${uid}-ad`}
+                  value={address}
+                  maxLength={300}
+                  disabled={readOnly}
+                  onChange={(e) => setAddress(e.target.value)}
+                  invalid={Boolean(errors.address)}
+                  className="min-h-20"
+                />
+              </Field>
+            </div>
+            <p className="text-[13px] leading-relaxed text-slate md:col-span-2">
+              يغطي النظام المرحلة الأولى من الفوترة الإلكترونية (مرحلة الإصدار). الربط مع منصة «فاتورة» (المرحلة
+              الثانية) غير مشمول حاليًا.
+            </p>
+            {!readOnly ? (
+              <div className="flex items-center gap-3 md:col-span-2">
+                <Button type="submit" variant="primary" disabled={busy || !dirty} icon={busy ? Loader2 : Save}>
+                  {busy ? "جارٍ الحفظ…" : "حفظ بيانات الفوترة"}
+                </Button>
+                {!saved ? <span className="text-[13px] text-slate">لن تُصدر فواتير قبل حفظ هذه البيانات</span> : null}
+              </div>
+            ) : null}
+          </form>
+        )}
+      </Card>
+    </section>
   );
 }
 

@@ -64,6 +64,10 @@ export type WorkspaceErrorCode =
   | "status"
   | "slug_taken"
   | "video_unavailable"
+  // Tax invoices (src/lib/law/invoices-core.ts)
+  | "tax_profile"
+  | "credit_exceeded"
+  | "has_invoices"
   // AI assistant (src/lib/law/agent)
   | "ai_limit"
   | "ai_unavailable"

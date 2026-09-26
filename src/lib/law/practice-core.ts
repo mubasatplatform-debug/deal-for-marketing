@@ -82,6 +82,16 @@ async function assertCase(sql: SqlTag, access: WorkspaceAccess, caseId: string |
   if (!r) notFound();
 }
 
+/** Issued tax invoices are legal records: their client / case stays. */
+async function assertNoInvoices(sql: SqlTag, ws: string, by: { clientId?: string; caseId?: string }) {
+  const [r] = await sql<{ n: number }>`
+    select count(*)::int as n from law_invoices
+    where workspace_id = ${ws}
+      and (client_id = ${by.clientId ?? null}::uuid or case_id = ${by.caseId ?? null}::uuid)
+  `;
+  if ((r?.n ?? 0) > 0) throw new WorkspaceError("has_invoices", 409);
+}
+
 export { assertCase, assertClient, assertMembers };
 
 /* ------------------------------------------------------------------------ */
@@ -198,6 +208,7 @@ export async function deleteClientCore(sql: SqlTag, access: WorkspaceAccess, id:
           + (select count(*) from law_documents where workspace_id = ${ws} and client_id = ${id}))::int as n
   `;
   if ((links?.n ?? 0) > 0) throw new WorkspaceError("has_records", 409);
+  await assertNoInvoices(sql, ws, { clientId: id });
   const rows = await sql<{ id: string; name: string }>`
     delete from law_clients where id = ${id} and workspace_id = ${ws} returning id, name
   `;
@@ -532,6 +543,7 @@ export async function addPaymentCore(sql: SqlTag, access: WorkspaceAccess, id: s
 export async function deleteCaseCore(sql: SqlTag, access: WorkspaceAccess, id: string) {
   need(access, "case.delete");
   checkId(id);
+  await assertNoInvoices(sql, access.workspace.id, { caseId: id });
   const rows = await sql<{ id: string; ref_no: number; title: string }>`
     delete from law_cases where id = ${id} and workspace_id = ${access.workspace.id} returning id, ref_no, title
   `;
