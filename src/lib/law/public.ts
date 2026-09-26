@@ -72,6 +72,8 @@ export type BookingOffice = {
   horizonDays: number;
   /** The client confirms their number with a WhatsApp code before booking. */
   verifyPhone: boolean;
+  /** «مركز التواصل»: the web-chat widget is on (null when off). */
+  chat: { welcome: string } | null;
 };
 
 async function verifyPhoneOn(): Promise<boolean> {
@@ -87,7 +89,7 @@ function publicView(o: {
   modes: ConsultMode[];
   lawyers: { id: string; name: string }[];
   settings: BookingSettings;
-}, verifyPhone: boolean): BookingOffice {
+}, verifyPhone: boolean, chat: BookingOffice["chat"] = null): BookingOffice {
   return {
     name: o.name,
     city: o.city,
@@ -99,6 +101,7 @@ function publicView(o: {
     note: o.open ? o.settings.bookingNote : "",
     horizonDays: o.settings.horizonDays,
     verifyPhone,
+    chat,
   };
 }
 
@@ -112,7 +115,10 @@ export const getBookingOffice = createServerFn({ method: "GET" })
     const { publicOfficeCore } = await core();
     const { getSql } = await import("@/lib/db");
     const office = await publicOfficeCore((await getSql()) as never, data.slug);
-    return office ? publicView(office, await verifyPhoneOn()) : null;
+    if (!office) return null;
+    const { chatOfficeCore } = await import("./inbox-core");
+    const chat = await chatOfficeCore((await getSql()) as never, data.slug);
+    return publicView(office, await verifyPhoneOn(), chat?.open ? { welcome: chat.settings.welcome } : null);
   });
 
 export const getBookingSlots = createServerFn({ method: "GET" })

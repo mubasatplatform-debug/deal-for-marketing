@@ -31,6 +31,7 @@ import {
   type BookingResult,
 } from "@/lib/law/public";
 import { CodeInput, Resend, SentTo } from "@/components/otp/code-input";
+import { ChatWidget } from "@/components/law/inbox/chat-widget";
 import { normalizePhone } from "@/lib/phone";
 import { pageHead } from "@/lib/seo";
 import { cn } from "@/lib/utils";
@@ -75,12 +76,14 @@ function BookPage() {
           title="الحجز الإلكتروني غير متاح حاليًا"
           body="تواصل مع المكتب مباشرة لتحديد موعد استشارتك."
         />
+        {office.chat ? <ChatWidget slug={office.slug} office={office.name} welcome={office.chat.welcome} /> : null}
       </PublicShell>
     );
   }
   return (
     <PublicShell office={office.name} city={office.city} eyebrow="احجز استشارة">
       <Booking office={office} />
+      {office.chat ? <ChatWidget slug={office.slug} office={office.name} welcome={office.chat.welcome} /> : null}
       <Toaster position="top-center" dir="rtl" richColors />
     </PublicShell>
   );
