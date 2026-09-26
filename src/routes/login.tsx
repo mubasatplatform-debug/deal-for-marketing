@@ -105,7 +105,10 @@ function Login() {
             .
           </p>
           <p className="mt-2 text-center text-xs leading-relaxed text-slate">
-            نسيت كلمة المرور أو تحتاج مساعدة؟{" "}
+            <a href="/forgot-password" className="font-semibold text-pine underline underline-offset-4">
+              نسيت كلمة المرور؟
+            </a>{" "}
+            · تحتاج مساعدة؟{" "}
             <a
               href={`https://wa.me/${mobile.wa}?text=${encodeURIComponent("أحتاج مساعدة في الدخول لحسابي في ديل")}`}
               className="font-semibold text-pine underline underline-offset-4"
@@ -123,7 +126,7 @@ function Login() {
       </main>
 
       {/* Brand panel — on phones a compact band above the form. */}
-      <aside className="relative isolate order-first overflow-hidden bg-ink text-snow lg:order-last lg:min-h-dvh">
+      <aside className="on-dark relative isolate order-first overflow-hidden bg-ink text-snow lg:order-last lg:min-h-dvh">
         <div
           aria-hidden="true"
           className="absolute inset-0 -z-10 bg-[radial-gradient(120%_80%_at_0%_100%,rgba(36,72,76,0.85),transparent_60%),radial-gradient(70%_60%_at_100%_0%,rgba(194,207,48,0.10),transparent_70%)]"

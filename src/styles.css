@@ -69,6 +69,8 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    /* Anchor jumps (/#systems …) land below the fixed 64/72px header. */
+    scroll-padding-top: 5rem;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: clip;
@@ -114,6 +116,10 @@
   }
   .on-dark :focus-visible {
     outline-color: var(--color-lime);
+  }
+  /* Lime surfaces (the Pro plan card, the brand bands) take an ink ring. */
+  .bg-lime :focus-visible {
+    outline-color: var(--color-ink);
   }
 }
 

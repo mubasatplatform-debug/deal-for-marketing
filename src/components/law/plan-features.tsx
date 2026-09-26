@@ -14,7 +14,7 @@ const SHOWN_FEATURES: FeatureFlag[] = [
 ];
 
 /** Seats + the feature list of a plan (billing page and the /law pricing). */
-export function PlanFeatures({ plan, dark }: { plan: Plan; dark?: boolean }) {
+export function PlanFeatures({ plan, dark, onLime }: { plan: Plan; dark?: boolean; onLime?: boolean }) {
   return (
     <ul className="space-y-2.5 text-sm">
       <li className="flex items-center gap-2.5 font-semibold">
@@ -28,7 +28,8 @@ export function PlanFeatures({ plan, dark }: { plan: Plan; dark?: boolean }) {
           key={f}
           className={cn(
             "flex items-center gap-2.5",
-            !plan.features[f] && (dark ? "text-snow/35 line-through" : "text-slate/60 line-through"),
+            !plan.features[f] &&
+              (dark ? "text-snow/35 line-through" : onLime ? "text-pine-deep/70 line-through" : "text-slate/60 line-through"),
           )}
         >
           <span

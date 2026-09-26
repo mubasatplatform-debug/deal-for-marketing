@@ -180,9 +180,9 @@ export function LawFeatures() {
       <Reveal className="px-8 pt-20 text-center md:px-16">
         <p className="text-kicker text-lime">وحدات المكتب //</p>
       </Reveal>
-      <ul className="mt-8 grid border-t border-hair sm:grid-cols-2 lg:grid-cols-4">
+      <ul className="mt-8 grid border-t border-hair sm:grid-cols-2 lg:grid-cols-3">
         {MODULES.map((m) => (
-          <li key={m.id} className="border-b border-hair px-8 py-8 sm:odd:border-e lg:border-e lg:last:border-e-0">
+          <li key={m.id} className="border-b border-hair px-8 py-8 sm:odd:border-e lg:border-e lg:[&:nth-child(3n)]:border-e-0">
             <m.icon className="size-6 text-lime" />
             <h3 className="mt-5 font-display text-xl text-snow">{m.title}</h3>
             <p className="mt-2 font-display text-sm leading-relaxed text-mist">{m.blurb}</p>
@@ -321,7 +321,7 @@ export function LawPricing() {
                   الضريبة
                 </p>
                 <div className="mt-8 flex-1">
-                  <PlanFeatures plan={p} dark={!lime} />
+                  <PlanFeatures plan={p} dark={!lime} onLime={lime} />
                 </div>
                 <a
                   href={SIGNUP}
@@ -374,7 +374,7 @@ const FAQ = [
   },
   {
     q: "كيف تعمل الاستشارات بالفيديو؟",
-    a: "تحدد أوقات عملك، وتشارك صفحة الحجز مع عملائك. يحجز العميل وقتًا متاحًا، وبعد تأكيدك يدخل من رابط خاص به من المتصفح دون تطبيق، وينتظر حتى تسمح له بالدخول.",
+    a: "تحدد أوقات عملك، وتشارك صفحة الحجز مع عملائك. يحجز العميل وقتًا متاحًا، وبعد تأكيدك يدخل من رابط خاص به من المتصفح دون تطبيق، وينتظر حتى تسمح له بالدخول. الاستشارات المرئية متاحة في خطتي «احترافي» و«مؤسسي»، ويمكنك فيهما أيضًا استخدام رابط Zoom أو Google Meet أو Teams بدلًا منها.",
   },
   {
     q: "أين تُحفظ مستندات المكتب؟",
