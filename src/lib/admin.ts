@@ -45,8 +45,7 @@ export const ADMIN_FORBIDDEN = "Forbidden";
 /**
  * Staff are the signed-in users whose account email is listed in
  * `ADMIN_EMAILS` (comma separated), through a **Google** sign-in or an
- * email/password account (off-platform deploys; the owner's account is
- * created at deploy time so nobody else can register that email first).
+ * email/password account whose email is verified (off-platform deploys).
  * X accounts are never admins: the broker gives them synthetic, unverified
  * emails that anyone could collide with.
  */
@@ -60,7 +59,10 @@ export async function assertAdmin(userId: string): Promise<void> {
   const rows = await sql<{ email: string }>`
     select u.email from "user" u
     join "account" a on a."userId" = u.id
-    where u.id = ${userId} and a."providerId" in ('grok-google', 'credential')
+    where u.id = ${userId}
+      -- A password account counts only once its email is proven: otherwise
+      -- anyone could register a listed address first and become staff.
+      and (a."providerId" = 'grok-google' or (a."providerId" = 'credential' and u."emailVerified" = true))
     limit 1
   `;
   const email = rows[0]?.email?.toLowerCase();

@@ -9,7 +9,7 @@ import { listMyRequests, type RequestRow } from "@/lib/requests";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/client")({
-  head: () => pageHead({ title: "مشاريعي", noindex: true }),
+  head: () => pageHead({ title: "حسابي", noindex: true }),
   component: ClientHome,
 });
 

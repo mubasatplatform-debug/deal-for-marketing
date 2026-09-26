@@ -83,3 +83,39 @@ services:
       # Optional: secret for client meeting links (defaults to BETTER_AUTH_SECRET)
       - key: LAW_MEET_SECRET
         sync: false
+      # Scheduled jobs (reminders): the bearer the pg_cron caller sends.
+      - key: CRON_SECRET
+        sync: false
+      # WhatsApp / SMS codes (two-step sign-in, booking phone check) via the
+      # deal-otp relay. OTP_BOOKING=on also checks booking phones in production.
+      - key: OTP_RELAY_URL
+        sync: false
+      - key: OTP_RELAY_TOKEN
+        sync: false
+      - key: OTP_BOOKING
+        sync: false
+      # Browser softphone / call centre via the deal-voice relay.
+      - key: VOICE_RELAY_URL
+        sync: false
+      - key: VOICE_RELAY_TOKEN
+        sync: false
+      - key: VOICE_SIGNING_SECRET
+        sync: false
+      # «مساعد المكتب» and inbox AI via the deal-law-agent relay, with caps.
+      - key: LAW_AGENT_URL
+        sync: false
+      - key: LAW_AGENT_TOKEN
+        sync: false
+      - key: LAW_AGENT_DAILY_CAP
+        sync: false
+      - key: LAW_AI_GLOBAL_DAILY_CAP
+        sync: false
+      - key: INBOX_AI_DAILY_CAP
+        sync: false
+      - key: LINE_DAILY_CAP
+        sync: false
+      # EdfaPay hosted checkout (merchant API key + webhook HMAC secret).
+      - key: EDFAPAY_API_KEY
+        sync: false
+      - key: EDFAPAY_WEBHOOK_SECRET
+        sync: false

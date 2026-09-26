@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { SiteChrome } from "@/components/site-chrome";
 import { SignedIn, SignedOut } from "@/lib/auth/gates";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,9 @@ const ACCOUNT_LABEL = "حسابي";
 const knownErrors: string[] = Object.values(LEAD_ERRORS);
 
 export const Route = createFileRoute("/start/$slug")({
+  loader: ({ params }) => {
+    if (!serviceBySlug(params.slug)) throw notFound();
+  },
   head: ({ params }) => {
     const service = serviceBySlug(params.slug);
     return service
@@ -28,7 +31,28 @@ export const Route = createFileRoute("/start/$slug")({
       : pageHead({ noindex: true });
   },
   component: StartService,
+  notFoundComponent: ServiceNotFound,
 });
+
+function ServiceNotFound() {
+  return (
+    <SiteChrome>
+      <main className="grid min-h-[70dvh] place-items-center bg-ink px-6 pt-24 pb-16 text-center">
+        <div className="max-w-md">
+          <p className="text-kicker text-lime">اطلب خدمتك //</p>
+          <h1 className="mt-4 font-display text-3xl text-snow">هذه الخدمة غير موجودة</h1>
+          <p className="mt-3 text-mist">ربما تغيّر الرابط. اختر خدمتك من القائمة وسنكمل من هناك.</p>
+          <Link
+            to="/start"
+            className="mt-8 inline-flex h-12 items-center border border-lime bg-lime px-8 font-display text-ink"
+          >
+            عرض كل الخدمات
+          </Link>
+        </div>
+      </main>
+    </SiteChrome>
+  );
+}
 
 function StartService() {
   const { slug } = Route.useParams();
@@ -73,25 +97,7 @@ function StartService() {
     }
   }, [slug]);
 
-  if (!service) {
-    return (
-      <SiteChrome>
-        <main className="grid min-h-[70dvh] place-items-center bg-ink px-6 pt-24 pb-16 text-center">
-          <div className="max-w-md">
-            <p className="text-kicker text-lime">اطلب خدمتك //</p>
-            <h1 className="mt-4 font-display text-3xl text-snow">هذه الخدمة غير موجودة</h1>
-            <p className="mt-3 text-mist">ربما تغيّر الرابط. اختر خدمتك من القائمة وسنكمل من هناك.</p>
-            <Link
-              to="/start"
-              className="mt-8 inline-flex h-12 items-center border border-lime bg-lime px-8 font-display text-ink"
-            >
-              عرض كل الخدمات
-            </Link>
-          </div>
-        </main>
-      </SiteChrome>
-    );
-  }
+  if (!service) return <ServiceNotFound />;
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();

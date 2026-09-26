@@ -77,12 +77,14 @@ export async function sendAccountVerificationEmail(email: string, callbackURL = 
 /**
  * Ask for a reset link. Always resolves to null on a well-formed request —
  * whether or not the email has an account — so the page can't be used to
- * discover accounts; only a network failure yields a message.
+ * discover accounts; only a server or network failure yields a message.
  */
 export async function requestPasswordReset(email: string): Promise<string | null> {
   try {
-    await authClient.requestPasswordReset({ email, redirectTo: `${window.location.origin}/reset-password` });
-    return null;
+    const { error } = await authClient.requestPasswordReset({ email, redirectTo: `${window.location.origin}/reset-password` });
+    if (!error) return null;
+    if (error.status === 429) return "طلبات كثيرة، انتظر قليلًا ثم حاول مرة أخرى.";
+    return "تعذر إرسال رابط الاستعادة، حاول مرة أخرى.";
   } catch {
     return "تعذر الاتصال، تحقق من الإنترنت وحاول مرة أخرى.";
   }

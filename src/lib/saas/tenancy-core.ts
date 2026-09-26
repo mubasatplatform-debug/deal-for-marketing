@@ -43,6 +43,7 @@ export type WorkspaceErrorCode =
   | "role"
   | "read_only"
   | "seat_limit"
+  | "plan_too_small"
   | "already_member"
   | "last_owner"
   | "not_member"
@@ -523,9 +524,16 @@ export async function createInvoiceCore(
   if (!roleAtLeast(access.role, "admin")) throw new WorkspaceError("role");
   const q = quote(planId, cycle);
   const wsId = access.workspace.id;
+  // A smaller plan must still fit the team: seats are only checked on invite,
+  // so a downgrade would otherwise keep every member above the new limit.
+  const seats = await seatUsage(sql, wsId, planId);
+  if (seats.used > seats.limit) throw new WorkspaceError("plan_too_small", 409);
+  // Only reuse a request that never reached a payment page: once the provider
+  // has issued one, a second checkout gets its own invoice, so a payment made
+  // on the first page can never be orphaned by a new provider reference.
   const existing = await sql.query<InvoiceRow>(`select ${INVOICE_COLS} from workspace_invoices
      where workspace_id = $1 and status = 'pending' and plan = $2 and cycle = $3 and provider = $4
-       and total = $5 and created_at > now() - interval '7 days'
+       and total = $5 and provider_ref is null and created_at > now() - interval '7 days'
      order by created_at desc limit 1`, [wsId, planId, cycle, provider, q.total]);
   if (existing[0]) return { invoice: normalizeInvoice(existing[0]), reused: true };
   const rows = await sql.query<InvoiceRow>(`with cancel as (
@@ -546,6 +554,15 @@ export async function createInvoiceCore(
   return { invoice: normalizeInvoice(rows[0]), reused: false };
 }
 
+/**
+ * Whether a provider-side payment for this invoice can still settle it: a
+ * pending invoice, or one a later checkout cancelled after its payment page
+ * was issued (the payer may have completed that page anyway).
+ */
+export function invoiceSettleable(invoice: Pick<InvoiceRow, "status" | "provider_ref">): boolean {
+  return invoice.status === "pending" || (invoice.status === "cancelled" && invoice.provider_ref !== null);
+}
+
 export async function setInvoiceProviderRef(sql: SqlTag, invoiceId: string, ref: string) {
   await sql`update workspace_invoices set provider_ref = ${ref} where id = ${invoiceId} and status = 'pending'`;
 }
@@ -554,19 +571,26 @@ export async function setInvoiceProviderRef(sql: SqlTag, invoiceId: string, ref:
  * Mark a pending invoice paid and extend the office — one statement, so the
  * payment and the activation can never disagree. The new period runs from the
  * later of now and the current period end (paying early never loses days).
- * Returns null when the invoice is not pending (already paid, cancelled, or
+ * Returns null when the invoice is not payable (already paid, cancelled, or
  * unknown) — the call is idempotent.
+ *
+ * `providerVerified`: the payment provider itself confirmed this invoice was
+ * paid. Such an invoice is settled even if a later checkout cancelled it —
+ * the money was taken, so the office must get its period.
  */
 export async function markInvoicePaidCore(
   sql: SqlTag,
   invoiceId: string,
   actorId: string | null,
+  opts: { providerVerified?: boolean } = {},
 ): Promise<{ workspaceId: string; periodEnd: string } | null> {
   if (!UUID_RE.test(invoiceId)) return null;
+  const settleCancelled = opts.providerVerified === true;
   const rows = await sql<{ id: string; current_period_end: string | Date }>`
     with inv as (
       update workspace_invoices set status = 'paid', paid_at = now(), marked_paid_by = ${actorId}
-      where id = ${invoiceId} and status = 'pending'
+      where id = ${invoiceId}
+        and (status = 'pending' or (${settleCancelled} and status = 'cancelled' and provider_ref is not null))
       returning workspace_id, plan, cycle, number
     ),
     ws as (

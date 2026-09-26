@@ -87,9 +87,17 @@ export const halalas = z.number().int().min(0).max(100_000_000_000);
 /* Clients                                                                   */
 /* ------------------------------------------------------------------------ */
 
+/** A person's name on one line (it reaches email subjects and headers). */
+function oneLineName(max: number) {
+  return z
+    .string()
+    .transform((v) => v.replace(/\s+/g, " ").trim())
+    .pipe(z.string().min(2).max(max));
+}
+
 export const clientFields = z.object({
   kind: z.enum(CLIENT_KINDS),
-  name: z.string().trim().min(2).max(160),
+  name: oneLineName(160),
   phone: phoneField,
   email: emailField,
   idNumber: idNumberField,
@@ -234,7 +242,7 @@ export const bookingForm = z.object({
   mode: z.enum(MODES),
   lawyerId: memberId.nullish().transform((v) => v ?? null),
   start: z.string().datetime({ offset: true }),
-  name: z.string().trim().min(2).max(120),
+  name: oneLineName(120),
   phone: phoneField.refine((v) => v !== null, "phone"),
   email: emailField,
   topic: z.string().trim().min(5).max(500),

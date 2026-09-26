@@ -13,7 +13,7 @@ export const Route = createFileRoute("/law/terms")({
   head: () =>
     pageHead({
       title: "شروط استخدام مكتب المحامي",
-      description: "شروط استخدام خدمة «مكتب المحامي» من ديل للتسويق — مسودة قيد المراجعة القانونية.",
+      description: "شروط استخدام خدمة «مكتب المحامي» من ديل للتسويق.",
       path: "/law/terms",
     }),
   component: Terms,

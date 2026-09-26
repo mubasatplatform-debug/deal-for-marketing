@@ -89,6 +89,7 @@ function Billing() {
           await reload();
         } else if (r.status === "failed") toast.error("لم تكتمل عملية الدفع. يمكنك المحاولة مرة أخرى.");
         else if (r.status === "pending") toast.message("نتحقق من الدفع… سيُفعّل الاشتراك فور تأكيده.");
+        else if (r.status === "cancelled") toast.message("أُلغي طلب الدفع هذا بطلب أحدث. إن كنت دفعته فسيُحتسب فور تأكيد بوابة الدفع.");
         await load();
       })
       .catch(() => undefined)

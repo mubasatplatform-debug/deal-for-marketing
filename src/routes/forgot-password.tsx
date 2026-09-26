@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Loader2, MailCheck } from "lucide-react";
 import { AuthCard, authButtonClass, authFieldClass } from "@/components/auth-card";
 import { requestPasswordReset } from "@/lib/auth/client";
+import { emailAndPasswordEnabled } from "@/lib/auth/email-password";
 import { pageHead } from "@/lib/seo";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -30,6 +31,16 @@ function ForgotPassword() {
     setBusy(false);
     if (problem) return setErr(problem);
     setSentTo(value);
+  }
+
+  if (!emailAndPasswordEnabled) {
+    return (
+      <AuthCard title="لا تحتاج كلمة مرور" subtitle="الدخول إلى ديل يتم بحساب Google أو X مباشرة، بدون كلمة مرور.">
+        <a href="/login" className={authButtonClass}>
+          الذهاب لتسجيل الدخول
+        </a>
+      </AuthCard>
+    );
   }
 
   if (sentTo) {

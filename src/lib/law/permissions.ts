@@ -60,6 +60,10 @@ export const PERMISSIONS = {
   "invoice.view": "lawyer",
   "invoice.issue": "lawyer",
 
+  // What was said on a call — recording, transcript, AI summary. Reception
+  // sees the call log; the content is the lawyer's (or the caller's own).
+  "call.content": "lawyer",
+
   "settings.booking": "admin",
   "settings.tax": "admin",
 } as const satisfies Record<string, Role>;
@@ -70,6 +74,11 @@ export const ACTIONS = Object.keys(PERMISSIONS) as Action[];
 
 export function can(role: Role, action: Action): boolean {
   return roleAtLeast(role, PERMISSIONS[action]);
+}
+
+/** Call recordings, transcripts and summaries: lawyers and up, or the member who made the call. */
+export function canSeeCallContent(role: Role, userId: string, callUserId: string | null): boolean {
+  return can(role, "call.content") || (callUserId !== null && callUserId === userId);
 }
 
 /** Notes: an author may delete their own; admins may delete any. */

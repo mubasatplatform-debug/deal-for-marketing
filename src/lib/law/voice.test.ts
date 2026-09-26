@@ -254,7 +254,9 @@ test("voice: a finished call is logged in its conversation (or the client's open
     select max(body) as body, count(*)::int as n from law_messages where channel_meta ->> 'call_id' = ${call.id}
   `;
   assert.equal(Number(after.n), 1);
-  assert.match(after.body, /ملخص المكالمة:\n- طلبت العميلة موعدًا/);
+  // The inbox is open to reception: it says a summary exists, never what was said.
+  assert.match(after.body, /ملخص المكالمة متاح في صفحة «المكالمات»/);
+  assert.doesNotMatch(after.body, /طلبت العميلة/);
 
   // Directly into the given conversation, even without a client.
   const direct = await createCallCore(sql, owner, { to: "0501112223", conversationId: conv.conversationId });
@@ -320,9 +322,11 @@ test("voice: transcript and AI summary (plan, recording, scripted model)", async
 test("voice: dial and event signatures", () => {
   const secret = "s3cret";
   const id = "7b0f6a6e-2d1c-4c1e-9d8b-0a1b2c3d4e5f";
-  const expected = createHmac("sha256", secret).update(`${id}|+966501112223|1`).digest("hex");
-  assert.equal(signDial(secret, id, "+966501112223", "1"), expected);
-  assert.notEqual(signDial(secret, id, "+966501112223", "0"), expected);
+  const expected = createHmac("sha256", secret).update(`${id}|+966501112223|1|1800000120`).digest("hex");
+  assert.equal(signDial(secret, id, "+966501112223", "1", 1_800_000_120), expected);
+  assert.notEqual(signDial(secret, id, "+966501112223", "0", 1_800_000_120), expected);
+  // The expiry is signed: a later exp can't be substituted.
+  assert.notEqual(signDial(secret, id, "+966501112223", "1", 1_800_009_999), expected);
 
   const body = JSON.stringify({ type: "status", callId: id, status: "ringing" });
   const now = 1_800_000_000;
@@ -340,4 +344,27 @@ test("voice: dial and event signatures", () => {
   assert.deepEqual(verifyEventSignature(secret, null, sig, body, now), { ok: false, reason: "missing" });
   assert.deepEqual(verifyEventSignature(secret, ts, null, body, now), { ok: false, reason: "missing" });
   assert.deepEqual(verifyEventSignature("", ts, sig, body, now), { ok: false, reason: "missing" });
+});
+
+test("voice: call content is for lawyers and the caller, not the rest of reception", async () => {
+  const { sql, owner, staff } = await setup();
+  const call = await createCallCore(sql, owner, { to: "0501112223" });
+  await sql`update law_calls set recording_sid = 'RE1', transcript = 'نص', ai_summary = '- ملخص' where id = ${call.id}`;
+
+  const asStaff = await getCallCore(sql, staff, call.id);
+  assert.equal(asStaff.transcript, null);
+  assert.equal(asStaff.ai_summary, null);
+  assert.equal(asStaff.has_recording, false);
+  assert.equal((await listCallsCore(sql, staff)).rows.find((r) => r.id === call.id)?.ai_summary, null);
+  await assert.rejects(callRecordingCore(sql, staff, call.id), /WS:role/);
+
+  const asOwner = await getCallCore(sql, owner, call.id);
+  assert.equal(asOwner.transcript, "نص");
+  assert.equal(await callRecordingCore(sql, owner, call.id), "RE1");
+
+  // The member who made the call sees their own call's content.
+  const own = await createCallCore(sql, staff, { to: "0501112223" });
+  await sql`update law_calls set recording_sid = 'RE2', ai_summary = '- خاص' where id = ${own.id}`;
+  assert.equal((await getCallCore(sql, staff, own.id)).ai_summary, "- خاص");
+  assert.equal(await callRecordingCore(sql, staff, own.id), "RE2");
 });

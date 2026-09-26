@@ -205,8 +205,25 @@ function AssistantBubble({ tool }: { tool: (p: ToolCallMessagePartProps) => Reac
   );
 }
 
+/**
+ * Model output is untrusted: images are dropped (a prompt-injected image URL
+ * would leak data on render) and links open in a new tab without a referrer.
+ */
+const markdownComponents = {
+  img: () => null,
+  a: ({ node: _node, ...props }: React.ComponentProps<"a"> & { node?: unknown }) => (
+    <a {...props} target="_blank" rel="noopener noreferrer nofollow" />
+  ),
+};
+
 function MarkdownText() {
-  return <MarkdownTextPrimitive remarkPlugins={[remarkGfm]} className="agent-md text-[15px] leading-relaxed text-pine-deep" />;
+  return (
+    <MarkdownTextPrimitive
+      remarkPlugins={[remarkGfm]}
+      components={markdownComponents}
+      className="agent-md text-[15px] leading-relaxed text-pine-deep"
+    />
+  );
 }
 
 function Steps({ steps }: { steps: AgentStep[] }) {

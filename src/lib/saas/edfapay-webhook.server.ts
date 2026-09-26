@@ -1,5 +1,6 @@
 import { getSql } from "@/lib/db";
-import { markInvoicePaidCore, type InvoiceRow } from "./tenancy-core";
+import { invoiceSettleable, markInvoicePaidCore, type InvoiceRow } from "./tenancy-core";
+import { alertLatePayment } from "./late-payment.server";
 import { edfapayProvider, edfapayWebhookSignatureOk } from "./payments/edfapay";
 
 /**
@@ -33,10 +34,13 @@ export async function handleEdfapayWebhook(request: Request): Promise<Response> 
     from workspace_invoices
     where provider = 'edfapay' and provider_ref = ${orderId}
   `;
-  if (!invoice || invoice.status !== "pending") return new Response(null, { status: 204 });
+  if (!invoice || !invoiceSettleable(invoice)) return new Response(null, { status: 204 });
 
   try {
-    if ((await edfapayProvider.verify(invoice)) === "paid") await markInvoicePaidCore(sql, invoice.id, null);
+    if ((await edfapayProvider.verify(invoice)) === "paid") {
+      const res = await markInvoicePaidCore(sql, invoice.id, null, { providerVerified: true });
+      if (res && invoice.status === "cancelled") await alertLatePayment(invoice);
+    }
   } catch (err) {
     console.error("[edfapay] webhook verification failed:", err);
     // Let EdfaPay retry later.

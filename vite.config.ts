@@ -148,6 +148,8 @@ function authPopupPlugin(): Plugin {
 /** Permissions-Policy of the video-consultation pages (see routeRules below). */
 const CALL_PERMISSIONS =
   "camera=(self), microphone=(self), display-capture=(self), geolocation=(), payment=()";
+/** The office app: the browser softphone (calls page, client page, inbox) needs the microphone. */
+const APP_PERMISSIONS = "camera=(), microphone=(self), geolocation=(), payment=()";
 
 /** Build for a standalone host (Render, a VPS) instead of the Grok/Vercel platform. */
 const standalone = process.env.DEAL_STANDALONE === "1";
@@ -193,8 +195,9 @@ export default defineConfig(({ command, isPreview }) => ({
             // (that middleware is Grok-hosted chrome). Keep "./server" on this
             // line: scripts/grok-pwa-plugin.test.mjs guards it.
             serverDir: standalone ? false : "./server",
-            // Baseline hardening. No CSP / frame-ancestors yet: the Grok live
-            // preview frames the app and injects its extensions script.
+            // Baseline hardening. Standalone (Render) builds are never framed,
+            // so they refuse other sites' frames (clickjacking); platform builds
+            // keep framing open for the Grok live preview. No full CSP yet.
             routeRules: {
               "/**": {
                 headers: {
@@ -202,8 +205,12 @@ export default defineConfig(({ command, isPreview }) => ({
                   "X-Content-Type-Options": "nosniff",
                   "Referrer-Policy": "strict-origin-when-cross-origin",
                   "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+                  ...(standalone
+                    ? { "Content-Security-Policy": "frame-ancestors 'self'", "X-Frame-Options": "SAMEORIGIN" }
+                    : {}),
                 },
               },
+              "/app/**": { headers: { "Permissions-Policy": APP_PERMISSIONS } },
               // «مكتب المحامي» video consultations run in these pages (LiveKit in
               // the page itself, no third-party iframe), so they — and only they —
               // may use the camera, microphone and screen sharing. In-app

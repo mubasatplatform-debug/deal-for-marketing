@@ -1,7 +1,7 @@
 import { getSql } from "@/lib/db";
 import type { SqlTag } from "@/lib/saas/tenancy-core";
 import { agentLlm } from "./agent/llm.server";
-import { signDial, verifyEventSignature } from "./voice-sign";
+import { DIAL_TTL_SEC, signDial, verifyEventSignature } from "./voice-sign";
 import type { Transcriber } from "./voice-core";
 
 /**
@@ -76,8 +76,9 @@ export const relayTranscribe: Transcriber = async (recordingSid) => {
   return typeof body.text === "string" ? body.text : "";
 };
 
-export function dialSignature(callId: string, to: string, rec: "1" | "0"): string {
-  return signDial(need().secret, callId, to, rec);
+export function dialSignature(callId: string, to: string, rec: "1" | "0"): { sig: string; exp: string } {
+  const exp = Math.floor(Date.now() / 1000) + DIAL_TTL_SEC;
+  return { sig: signDial(need().secret, callId, to, rec, exp), exp: String(exp) };
 }
 
 export function verifyRelayEvent(timestamp: string | null, signature: string | null, rawBody: string) {

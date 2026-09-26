@@ -95,6 +95,10 @@ export const sendEnrollCode = createServerFn({ method: "POST" })
     // Changing the number needs this session to have passed the current one.
     const state = await c.core.twoFactorStateCore(c.sql, context.userId, c.sessionId);
     if (state.enabled && !state.verified) throw new c.core.OtpError("not_enabled");
+    // Only office members protect office data with it; without this, any new
+    // account could send paid codes to arbitrary numbers.
+    const [m] = await c.sql<{ n: number }>`select count(*)::int as n from workspace_members where user_id = ${context.userId}`;
+    if (!m?.n) throw new c.core.OtpError("no_office");
     const sender = need(c);
     await throttle(c, `otp-send:${context.userId}`, 5, 900);
     await throttle(c, "otp-send:all", 1000, 86_400);

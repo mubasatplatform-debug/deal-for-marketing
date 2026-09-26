@@ -11,6 +11,7 @@ import {
   createInviteCore,
   createInvoiceCore,
   createWorkspaceCore,
+  invoiceSettleable,
   markInvoicePaidCore,
   pickActiveWorkspace,
   previewInviteCore,
@@ -18,6 +19,7 @@ import {
   resolveMembership,
   revokeInviteCore,
   seatUsage,
+  setInvoiceProviderRef,
   setRoleCore,
   teamCore,
   WorkspaceError,
@@ -360,6 +362,52 @@ test("billing: pending requests are reused; paying activates and extends the per
   assert.ok(a.lifecycle.daysLeft >= 27 && a.lifecycle.daysLeft <= 32);
   // Idempotent: a second confirmation changes nothing.
   assert.equal(await markInvoicePaidCore(sql, other.invoice.id, "deal"), null);
+  await pg.close();
+});
+
+test("billing: a payment page once issued is never orphaned or lost", async () => {
+  const { pg, sql } = await freshDb();
+  await addUser(pg, "o", "o@x.sa");
+  const W = await office(sql, "o");
+  const owner = await resolveMembership(sql, "o", W.id, "admin");
+
+  // A hosted payment page was issued for A: a second click makes a new invoice
+  // (never overwriting A's provider reference).
+  const a = await createInvoiceCore(sql, owner, "pro", "monthly", "edfapay");
+  await setInvoiceProviderRef(sql, a.invoice.id, a.invoice.id);
+  const b = await createInvoiceCore(sql, owner, "pro", "monthly", "edfapay");
+  assert.equal(b.reused, false);
+  assert.notEqual(b.invoice.id, a.invoice.id);
+  const [aRow] = (await pg.query<{ status: string; provider_ref: string }>(
+    `select status, provider_ref from workspace_invoices where id = $1`, [a.invoice.id],
+  )).rows;
+  assert.equal(aRow.status, "cancelled");
+  assert.equal(aRow.provider_ref, a.invoice.id);
+
+  // A was paid on its page anyway: without the provider's word it stays
+  // cancelled; confirmed by the provider it settles and activates the office.
+  assert.ok(invoiceSettleable({ status: "cancelled", provider_ref: a.invoice.id }));
+  assert.ok(!invoiceSettleable({ status: "cancelled", provider_ref: null }));
+  assert.equal(await markInvoicePaidCore(sql, a.invoice.id, null), null);
+  assert.ok(await markInvoicePaidCore(sql, a.invoice.id, null, { providerVerified: true }));
+  assert.equal((await resolveMembership(sql, "o", W.id)).lifecycle.status, "active");
+  // Still idempotent.
+  assert.equal(await markInvoicePaidCore(sql, a.invoice.id, null, { providerVerified: true }), null);
+  await pg.close();
+});
+
+test("billing: a plan smaller than the team cannot be bought", async () => {
+  const { pg, sql } = await freshDb();
+  await addUser(pg, "o", "o@x.sa");
+  const W = await office(sql, "o");
+  for (const u of ["m1", "m2", "m3"]) {
+    await addUser(pg, u, `${u}@x.sa`);
+    await pg.query(`insert into workspace_members (workspace_id, user_id, role) values ($1, $2, 'staff')`, [W.id, u]);
+  }
+  const owner = await resolveMembership(sql, "o", W.id, "admin");
+  // 4 members, basic has 3 seats.
+  await rejects(createInvoiceCore(sql, owner, "basic", "monthly", "manual"), "plan_too_small");
+  assert.ok(await createInvoiceCore(sql, owner, "pro", "monthly", "manual"));
   await pg.close();
 });
 

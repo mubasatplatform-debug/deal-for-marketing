@@ -58,15 +58,18 @@ async function call<T>(method: "GET" | "POST", path: string, body?: unknown): Pr
 }
 
 type InitiateResponse = { code?: number; data?: { redirectUrl?: string } };
-type StatusRow = { orderId?: string; status?: string; amount?: string | number };
+type StatusRow = { orderId?: string; status?: string; amount?: string | number; currency?: string };
 type StatusResponse = { data?: { content?: StatusRow[] } };
 
 /** Map EdfaPay's transaction status to our verdict, checking the amount too. */
 function verdictFor(row: StatusRow | undefined, invoice: InvoiceRow): VerifyResult {
   if (!row) return "pending";
   const status = (row.status ?? "").toLowerCase();
-  const amountOk = row.amount === undefined || Number(row.amount) === invoice.total / 100;
-  if (status === "success" && amountOk) return "paid";
+  // A success only counts for the exact amount (and currency, when given) we
+  // asked for — a row without an amount proves nothing.
+  const amountOk = row.amount !== undefined && row.amount !== null && Math.round(Number(row.amount) * 100) === invoice.total;
+  const currencyOk = !row.currency || row.currency.toUpperCase() === "SAR";
+  if (status === "success" && amountOk && currencyOk) return "paid";
   if (["declined", "failed", "cancelled", "canceled", "expired", "error"].includes(status)) return "failed";
   return "pending";
 }
@@ -104,7 +107,8 @@ export const edfapayProvider: PaymentProvider = {
       "GET",
       `/transactions/filterTransaction?orderId=${encodeURIComponent(orderId)}`,
     );
-    const rows = res.data?.content ?? [];
+    // Only rows for THIS order count, whatever the filter returned.
+    const rows = (res.data?.content ?? []).filter((r) => r.orderId === orderId);
     // A settled Success wins over any pending attempt for the same order.
     const paid = rows.find((r) => (r.status ?? "").toLowerCase() === "success");
     return verdictFor(paid ?? rows[0], invoice);

@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import {
   ArrowRight,
   CalendarCheck2,
@@ -24,7 +24,6 @@ import { MODE_LABELS, WEEKDAY_LABELS, type ConsultMode } from "@/lib/law/options
 import {
   NEED_CODE,
   createBooking,
-  getBookingOffice,
   getBookingSlots,
   sendBookingCode,
   type BookingOffice,
@@ -37,7 +36,13 @@ import { pageHead } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/o/$slug/book")({
-  loader: async ({ params }) => ({ office: await getBookingOffice({ data: { slug: params.slug } }) }),
+  // Dynamic import keeps @/lib/law/public (and zod) out of the entry chunk.
+  loader: async ({ params }) => {
+    const { getBookingOffice } = await import("@/lib/law/public");
+    const office = await getBookingOffice({ data: { slug: params.slug } });
+    if (!office) throw notFound();
+    return { office };
+  },
   head: ({ loaderData }) =>
     pageHead({
       title: loaderData?.office ? `احجز استشارة — ${loaderData.office.name}` : "حجز استشارة",
@@ -47,6 +52,7 @@ export const Route = createFileRoute("/o/$slug/book")({
       noindex: true,
     }),
   component: BookPage,
+  notFoundComponent: OfficeNotFound,
 });
 
 const MODE_ICON = { video: Video, in_office: Users, phone: Phone } as const;
@@ -59,15 +65,16 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 type Day = { date: string; weekday: number; slots: { start: string; time: string }[] };
 
+function OfficeNotFound() {
+  return (
+    <PublicShell office={null} eyebrow="حجز استشارة">
+      <Notice icon={CalendarX2} title="الصفحة غير موجودة" body="تحقق من الرابط الذي وصلك من المكتب." />
+    </PublicShell>
+  );
+}
+
 function BookPage() {
   const { office } = Route.useLoaderData();
-  if (!office) {
-    return (
-      <PublicShell office={null} eyebrow="حجز استشارة">
-        <Notice icon={CalendarX2} title="الصفحة غير موجودة" body="تحقق من الرابط الذي وصلك من المكتب." />
-      </PublicShell>
-    );
-  }
   if (!office.open) {
     return (
       <PublicShell office={office.name} city={office.city} eyebrow="حجز استشارة">

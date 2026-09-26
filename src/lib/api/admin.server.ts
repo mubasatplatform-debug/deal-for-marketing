@@ -19,7 +19,10 @@ export async function isAdminUser(userId: string): Promise<boolean> {
   const rows = await sql<{ email: string }>`
     select u.email from "user" u
     join "account" a on a."userId" = u.id
-    where u.id = ${userId} and a."providerId" in ('grok-google', 'credential')
+    where u.id = ${userId}
+      -- A password account counts only once its email is proven: otherwise
+      -- anyone could register a listed address first and become staff.
+      and (a."providerId" = 'grok-google' or (a."providerId" = 'credential' and u."emailVerified" = true))
     limit 1
   `;
   const email = rows[0]?.email?.toLowerCase();

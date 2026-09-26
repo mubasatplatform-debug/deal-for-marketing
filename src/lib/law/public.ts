@@ -48,7 +48,7 @@ export const PUBLIC_ERRORS = {
   notConfirmed: "لم يؤكد المكتب الاستشارة بعد.",
   notVideo: "هذه الاستشارة ليست مكالمة فيديو.",
   video: "تعذّر تجهيز غرفة الفيديو. حاول بعد لحظات.",
-  phone: "أدخل رقم جوال صحيحًا. مثال: 0501234567",
+  phone: "أدخل رقم جوال سعودي صحيحًا. مثال: 0501234567",
   code: "الرمز غير صحيح أو انتهت صلاحيته. اطلب رمزًا جديدًا.",
   send: "تعذّر إرسال الرمز. تأكد من الرقم وحاول بعد لحظات.",
 } as const;
@@ -176,7 +176,9 @@ export const sendBookingCode = createServerFn({ method: "POST" })
     const { whatsappPhone, maskPhone, OtpError } = await import("@/lib/otp/otp-core");
     const { bookingOtpSender: otpSender } = await import("@/lib/otp/otp.server");
     const phone = whatsappPhone(data.phone);
-    if (!phone) throw new Error(PUBLIC_ERRORS.phone);
+    // Clients book Saudi offices: Saudi mobiles only, so the public form can't
+    // be used to pump paid messages to numbers abroad.
+    if (!phone || !phone.startsWith("+9665")) throw new Error(PUBLIC_ERRORS.phone);
     const sender = otpSender();
     if (!sender) throw new Error(PUBLIC_ERRORS.send);
     const { publicOfficeCore } = await core();
@@ -187,7 +189,10 @@ export const sendBookingCode = createServerFn({ method: "POST" })
     const { takeHit, RateLimitError } = await import("@/lib/rate-limit.server");
     try {
       await takeHit(`book-otp-phone:${phone}`, 3, 900);
-      await takeHit("otp-send:all", 1000, 86_400);
+      await takeHit(`book-otp-office:${office.id}`, 100, 86_400);
+      // Visitors have their own daily budget: draining it can never stop
+      // members from getting their two-step sign-in codes (otp-send:all).
+      await takeHit("otp-send:booking", 600, 86_400);
     } catch (err) {
       if (err instanceof RateLimitError) throw new Error(PUBLIC_ERRORS.busy);
       throw err;
