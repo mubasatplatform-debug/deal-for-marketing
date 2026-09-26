@@ -21,6 +21,7 @@ import { useLawApp } from "@/components/law/app-context";
 import { AppointmentFormDialog } from "@/components/law/appointment-form";
 import { CaseFormDialog } from "@/components/law/case-form";
 import { ClientFormDialog } from "@/components/law/client-form";
+import { ClientPortalCard } from "@/components/law/client-portal";
 import { DocumentRows, UploadDialog } from "@/components/law/documents-ui";
 import { dateAr, phoneAr, whenAr } from "@/components/law/format";
 import { ConfirmDialog, ErrorCard, InfoRow, ModePill, StagePill, StatusPill, Tabs, useCan, useLoad } from "@/components/law/kit";
@@ -71,83 +72,86 @@ function ClientProfile() {
     <>
       <BackLink />
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <Card className="p-5 md:p-6 xl:col-span-1">
-          <div className="flex items-start gap-4">
-            {c.kind === "company" ? (
-              <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-pine-50 text-pine">
-                <Building2 className="size-6" aria-hidden="true" />
-              </span>
-            ) : (
-              <Avatar name={c.name} className="size-14 text-lg" />
-            )}
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl leading-snug font-extrabold break-words">{c.name}</h1>
-              <p className="mt-1 text-[13px] text-slate">
-                {CLIENT_KIND_LABELS[c.kind]} · عميل منذ {dateAr(c.created_at)}
+        <div className="space-y-4 xl:col-span-1">
+          <Card className="p-5 md:p-6">
+            <div className="flex items-start gap-4">
+              {c.kind === "company" ? (
+                <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-pine-50 text-pine">
+                  <Building2 className="size-6" aria-hidden="true" />
+                </span>
+              ) : (
+                <Avatar name={c.name} className="size-14 text-lg" />
+              )}
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl leading-snug font-extrabold break-words">{c.name}</h1>
+                <p className="mt-1 text-[13px] text-slate">
+                  {CLIENT_KIND_LABELS[c.kind]} · عميل منذ {dateAr(c.created_at)}
+                </p>
+              </div>
+            </div>
+            {c.tags.length ? (
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {c.tags.map((t) => (
+                  <Pill key={t} tone="pine" dot={false}>
+                    {t}
+                  </Pill>
+                ))}
+              </div>
+            ) : null}
+            <div className="mt-5 flex flex-wrap gap-2">
+              {c.phone ? (
+                <a href={`tel:${c.phone}`} className="inline-flex h-9 items-center gap-2 rounded-xl border border-line px-3 text-[13px] font-semibold hover:bg-paper">
+                  <Phone className="size-4 text-pine" aria-hidden="true" />
+                  اتصال
+                </a>
+              ) : null}
+              {wa ? (
+                <a
+                  href={`https://wa.me/${wa}`}
+                  target="_blank"
+                  rel="noopener"
+                  className="inline-flex h-9 items-center gap-2 rounded-xl border border-line px-3 text-[13px] font-semibold hover:bg-paper"
+                >
+                  <MessageCircle className="size-4 text-pine" aria-hidden="true" />
+                  واتساب
+                </a>
+              ) : null}
+              {c.email ? (
+                <a href={`mailto:${c.email}`} className="inline-flex h-9 items-center gap-2 rounded-xl border border-line px-3 text-[13px] font-semibold hover:bg-paper">
+                  <Mail className="size-4 text-pine" aria-hidden="true" />
+                  بريد
+                </a>
+              ) : null}
+            </div>
+            <dl className="mt-5 divide-y divide-line border-t border-line">
+              <InfoRow k="الجوال" v={<span dir="ltr" className="font-ui">{phoneAr(c.phone)}</span>} />
+              <InfoRow k="البريد" v={<span dir="ltr" className="font-ui text-[13px]">{c.email ?? "—"}</span>} />
+              <InfoRow
+                k={c.kind === "company" ? "السجل التجاري" : "الهوية / الإقامة"}
+                v={<span className="font-ui">{c.id_number ?? "—"}</span>}
+              />
+              <InfoRow k="قضايا مفتوحة" v={<span className="font-ui">{c.open_cases}</span>} />
+            </dl>
+            {c.notes ? (
+              <p className="mt-4 rounded-xl bg-paper px-4 py-3 text-[13px] leading-relaxed whitespace-pre-wrap text-pine-deep ring-1 ring-line">
+                {c.notes}
               </p>
+            ) : null}
+            <div className="mt-5 flex flex-wrap gap-2">
+              {allowed("client.edit") ? (
+                <Button icon={Pencil} size="sm" onClick={() => setDialog("edit")}>
+                  تعديل
+                </Button>
+              ) : null}
+              {allowed("client.delete") ? (
+                <Button icon={Trash2} size="sm" variant="ghost" onClick={() => setDialog("delete")} className="hover:bg-red-50 hover:text-red-700">
+                  حذف
+                </Button>
+              ) : null}
             </div>
-          </div>
-          {c.tags.length ? (
-            <div className="mt-4 flex flex-wrap gap-1.5">
-              {c.tags.map((t) => (
-                <Pill key={t} tone="pine" dot={false}>
-                  {t}
-                </Pill>
-              ))}
-            </div>
-          ) : null}
-          <div className="mt-5 flex flex-wrap gap-2">
-            {c.phone ? (
-              <a href={`tel:${c.phone}`} className="inline-flex h-9 items-center gap-2 rounded-xl border border-line px-3 text-[13px] font-semibold hover:bg-paper">
-                <Phone className="size-4 text-pine" aria-hidden="true" />
-                اتصال
-              </a>
-            ) : null}
-            {wa ? (
-              <a
-                href={`https://wa.me/${wa}`}
-                target="_blank"
-                rel="noopener"
-                className="inline-flex h-9 items-center gap-2 rounded-xl border border-line px-3 text-[13px] font-semibold hover:bg-paper"
-              >
-                <MessageCircle className="size-4 text-pine" aria-hidden="true" />
-                واتساب
-              </a>
-            ) : null}
-            {c.email ? (
-              <a href={`mailto:${c.email}`} className="inline-flex h-9 items-center gap-2 rounded-xl border border-line px-3 text-[13px] font-semibold hover:bg-paper">
-                <Mail className="size-4 text-pine" aria-hidden="true" />
-                بريد
-              </a>
-            ) : null}
-          </div>
-          <dl className="mt-5 divide-y divide-line border-t border-line">
-            <InfoRow k="الجوال" v={<span dir="ltr" className="font-ui">{phoneAr(c.phone)}</span>} />
-            <InfoRow k="البريد" v={<span dir="ltr" className="font-ui text-[13px]">{c.email ?? "—"}</span>} />
-            <InfoRow
-              k={c.kind === "company" ? "السجل التجاري" : "الهوية / الإقامة"}
-              v={<span className="font-ui">{c.id_number ?? "—"}</span>}
-            />
-            <InfoRow k="قضايا مفتوحة" v={<span className="font-ui">{c.open_cases}</span>} />
-          </dl>
-          {c.notes ? (
-            <p className="mt-4 rounded-xl bg-paper px-4 py-3 text-[13px] leading-relaxed whitespace-pre-wrap text-pine-deep ring-1 ring-line">
-              {c.notes}
-            </p>
-          ) : null}
-          <div className="mt-5 flex flex-wrap gap-2">
-            {allowed("client.edit") ? (
-              <Button icon={Pencil} size="sm" onClick={() => setDialog("edit")}>
-                تعديل
-              </Button>
-            ) : null}
-            {allowed("client.delete") ? (
-              <Button icon={Trash2} size="sm" variant="ghost" onClick={() => setDialog("delete")} className="hover:bg-red-50 hover:text-red-700">
-                حذف
-              </Button>
-            ) : null}
-          </div>
-        </Card>
+          </Card>
+          <ClientPortalCard clientId={c.id} clientName={c.name} />
+        </div>
 
         <div className="space-y-4 xl:col-span-2">
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">

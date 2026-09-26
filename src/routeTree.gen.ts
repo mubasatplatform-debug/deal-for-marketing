@@ -29,6 +29,7 @@ import { Route as AppAppointmentsRouteImport } from './routes/app.appointments'
 import { Route as AppAssistantRouteImport } from './routes/app.assistant'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppDocumentsRouteImport } from './routes/app.documents'
+import { Route as AppInvoicesRouteImport } from './routes/app.invoices'
 import { Route as AppReportsRouteImport } from './routes/app.reports'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppTasksRouteImport } from './routes/app.tasks'
@@ -38,9 +39,11 @@ import { Route as LawIndexRouteImport } from './routes/law.index'
 import { Route as LawSignupRouteImport } from './routes/law.signup'
 import { Route as LawTermsRouteImport } from './routes/law.terms'
 import { Route as MeetTokenRouteImport } from './routes/meet.$token'
+import { Route as PortalTokenRouteImport } from './routes/portal.$token'
 import { Route as StartIndexRouteImport } from './routes/start.index'
 import { Route as StartSlugRouteImport } from './routes/start.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiCronRemindersRouteImport } from './routes/api/cron/reminders'
 import { Route as ApiFilesIdRouteImport } from './routes/api/files.$id'
 import { Route as ApiLawEdfapayRouteImport } from './routes/api/law/edfapay'
 import { Route as ApiLawMoyasarRouteImport } from './routes/api/law/moyasar'
@@ -54,6 +57,7 @@ import { Route as AppClientsIdRouteImport } from './routes/app.clients.$id'
 import { Route as AppConsultationsIndexRouteImport } from './routes/app.consultations.index'
 import { Route as AppConsultationsIdRouteImport } from './routes/app.consultations.$id'
 import { Route as AppInviteTokenRouteImport } from './routes/app_.invite.$token'
+import { Route as AppInvoicesIdRouteImport } from './routes/app_.invoices.$id'
 import { Route as ClientRequestsIdRouteImport } from './routes/client_.requests.$id'
 import { Route as DeskCrmViewRouteImport } from './routes/desk.crm.$view'
 import { Route as DeskLawViewRouteImport } from './routes/desk.law.$view'
@@ -61,6 +65,7 @@ import { Route as DeskPayViewRouteImport } from './routes/desk.pay.$view'
 import { Route as OSlugBookRouteImport } from './routes/o.$slug.book'
 import { Route as ApiLawDocumentsIdRouteImport } from './routes/api/law/documents.$id'
 import { Route as ApiLawDocumentsUploadRouteImport } from './routes/api/law/documents.upload'
+import { Route as ApiPortalDocumentsIdRouteImport } from './routes/api/portal/documents.$id'
 import { Route as ApiRequestsIdMessagesRouteImport } from './routes/api/requests.$id.messages'
 import { Route as ApiV1AdminRequestsRouteImport } from './routes/api/v1/admin/requests'
 import { Route as ApiV1RequestsIdRouteImport } from './routes/api/v1/requests.$id'
@@ -167,6 +172,11 @@ const AppDocumentsRoute = AppDocumentsRouteImport.update({
   path: '/documents',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInvoicesRoute = AppInvoicesRouteImport.update({
+  id: '/invoices',
+  path: '/invoices',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppReportsRoute = AppReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -212,6 +222,11 @@ const MeetTokenRoute = MeetTokenRouteImport.update({
   path: '/meet/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortalTokenRoute = PortalTokenRouteImport.update({
+  id: '/portal/$token',
+  path: '/portal/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StartIndexRoute = StartIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -225,6 +240,11 @@ const StartSlugRoute = StartSlugRouteImport.update({
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronRemindersRoute = ApiCronRemindersRouteImport.update({
+  id: '/api/cron/reminders',
+  path: '/api/cron/reminders',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiFilesIdRoute = ApiFilesIdRouteImport.update({
@@ -292,6 +312,11 @@ const AppInviteTokenRoute = AppInviteTokenRouteImport.update({
   path: '/app/invite/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppInvoicesIdRoute = AppInvoicesIdRouteImport.update({
+  id: '/app_/invoices/$id',
+  path: '/app/invoices/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ClientRequestsIdRoute = ClientRequestsIdRouteImport.update({
   id: '/client_/requests/$id',
   path: '/client/requests/$id',
@@ -325,6 +350,11 @@ const ApiLawDocumentsIdRoute = ApiLawDocumentsIdRouteImport.update({
 const ApiLawDocumentsUploadRoute = ApiLawDocumentsUploadRouteImport.update({
   id: '/api/law/documents/upload',
   path: '/api/law/documents/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPortalDocumentsIdRoute = ApiPortalDocumentsIdRouteImport.update({
+  id: '/api/portal/documents/$id',
+  path: '/api/portal/documents/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRequestsIdMessagesRoute = ApiRequestsIdMessagesRouteImport.update({
@@ -373,6 +403,7 @@ export interface FileRoutesByFullPath {
   '/app/assistant': typeof AppAssistantRoute
   '/app/billing': typeof AppBillingRoute
   '/app/documents': typeof AppDocumentsRoute
+  '/app/invoices': typeof AppInvoicesRoute
   '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/tasks': typeof AppTasksRoute
@@ -381,11 +412,13 @@ export interface FileRoutesByFullPath {
   '/law/signup': typeof LawSignupRoute
   '/law/terms': typeof LawTermsRoute
   '/meet/$token': typeof MeetTokenRoute
+  '/portal/$token': typeof PortalTokenRoute
   '/start/$slug': typeof StartSlugRoute
   '/app/': typeof AppIndexRoute
   '/law/': typeof LawIndexRoute
   '/start/': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/reminders': typeof ApiCronRemindersRoute
   '/api/files/$id': typeof ApiFilesIdRoute
   '/api/law/edfapay': typeof ApiLawEdfapayRoute
   '/api/law/moyasar': typeof ApiLawMoyasarRoute
@@ -396,6 +429,7 @@ export interface FileRoutesByFullPath {
   '/app/clients/$id': typeof AppClientsIdRoute
   '/app/consultations/$id': typeof AppConsultationsIdRoute
   '/app/invite/$token': typeof AppInviteTokenRoute
+  '/app/invoices/$id': typeof AppInvoicesIdRoute
   '/client/requests/$id': typeof ClientRequestsIdRoute
   '/desk/crm/$view': typeof DeskCrmViewRoute
   '/desk/law/$view': typeof DeskLawViewRoute
@@ -406,6 +440,7 @@ export interface FileRoutesByFullPath {
   '/app/consultations/': typeof AppConsultationsIndexRoute
   '/api/law/documents/$id': typeof ApiLawDocumentsIdRoute
   '/api/law/documents/upload': typeof ApiLawDocumentsUploadRoute
+  '/api/portal/documents/$id': typeof ApiPortalDocumentsIdRoute
   '/api/requests/$id/messages': typeof ApiRequestsIdMessagesRoute
   '/api/v1/admin/requests': typeof ApiV1AdminRequestsRouteWithChildren
   '/api/v1/requests/$id': typeof ApiV1RequestsIdRoute
@@ -430,6 +465,7 @@ export interface FileRoutesByTo {
   '/app/assistant': typeof AppAssistantRoute
   '/app/billing': typeof AppBillingRoute
   '/app/documents': typeof AppDocumentsRoute
+  '/app/invoices': typeof AppInvoicesRoute
   '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/tasks': typeof AppTasksRoute
@@ -438,11 +474,13 @@ export interface FileRoutesByTo {
   '/law/signup': typeof LawSignupRoute
   '/law/terms': typeof LawTermsRoute
   '/meet/$token': typeof MeetTokenRoute
+  '/portal/$token': typeof PortalTokenRoute
   '/start/$slug': typeof StartSlugRoute
   '/app': typeof AppIndexRoute
   '/law': typeof LawIndexRoute
   '/start': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/reminders': typeof ApiCronRemindersRoute
   '/api/files/$id': typeof ApiFilesIdRoute
   '/api/law/edfapay': typeof ApiLawEdfapayRoute
   '/api/law/moyasar': typeof ApiLawMoyasarRoute
@@ -453,6 +491,7 @@ export interface FileRoutesByTo {
   '/app/clients/$id': typeof AppClientsIdRoute
   '/app/consultations/$id': typeof AppConsultationsIdRoute
   '/app/invite/$token': typeof AppInviteTokenRoute
+  '/app/invoices/$id': typeof AppInvoicesIdRoute
   '/client/requests/$id': typeof ClientRequestsIdRoute
   '/desk/crm/$view': typeof DeskCrmViewRoute
   '/desk/law/$view': typeof DeskLawViewRoute
@@ -463,6 +502,7 @@ export interface FileRoutesByTo {
   '/app/consultations': typeof AppConsultationsIndexRoute
   '/api/law/documents/$id': typeof ApiLawDocumentsIdRoute
   '/api/law/documents/upload': typeof ApiLawDocumentsUploadRoute
+  '/api/portal/documents/$id': typeof ApiPortalDocumentsIdRoute
   '/api/requests/$id/messages': typeof ApiRequestsIdMessagesRoute
   '/api/v1/admin/requests': typeof ApiV1AdminRequestsRouteWithChildren
   '/api/v1/requests/$id': typeof ApiV1RequestsIdRoute
@@ -490,6 +530,7 @@ export interface FileRoutesById {
   '/app/assistant': typeof AppAssistantRoute
   '/app/billing': typeof AppBillingRoute
   '/app/documents': typeof AppDocumentsRoute
+  '/app/invoices': typeof AppInvoicesRoute
   '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/tasks': typeof AppTasksRoute
@@ -498,11 +539,13 @@ export interface FileRoutesById {
   '/law/signup': typeof LawSignupRoute
   '/law/terms': typeof LawTermsRoute
   '/meet/$token': typeof MeetTokenRoute
+  '/portal/$token': typeof PortalTokenRoute
   '/start/$slug': typeof StartSlugRoute
   '/app/': typeof AppIndexRoute
   '/law/': typeof LawIndexRoute
   '/start/': typeof StartIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/reminders': typeof ApiCronRemindersRoute
   '/api/files/$id': typeof ApiFilesIdRoute
   '/api/law/edfapay': typeof ApiLawEdfapayRoute
   '/api/law/moyasar': typeof ApiLawMoyasarRoute
@@ -513,6 +556,7 @@ export interface FileRoutesById {
   '/app/clients/$id': typeof AppClientsIdRoute
   '/app/consultations/$id': typeof AppConsultationsIdRoute
   '/app_/invite/$token': typeof AppInviteTokenRoute
+  '/app_/invoices/$id': typeof AppInvoicesIdRoute
   '/client_/requests/$id': typeof ClientRequestsIdRoute
   '/desk/crm/$view': typeof DeskCrmViewRoute
   '/desk/law/$view': typeof DeskLawViewRoute
@@ -523,6 +567,7 @@ export interface FileRoutesById {
   '/app/consultations/': typeof AppConsultationsIndexRoute
   '/api/law/documents/$id': typeof ApiLawDocumentsIdRoute
   '/api/law/documents/upload': typeof ApiLawDocumentsUploadRoute
+  '/api/portal/documents/$id': typeof ApiPortalDocumentsIdRoute
   '/api/requests/$id/messages': typeof ApiRequestsIdMessagesRoute
   '/api/v1/admin/requests': typeof ApiV1AdminRequestsRouteWithChildren
   '/api/v1/requests/$id': typeof ApiV1RequestsIdRoute
@@ -551,6 +596,7 @@ export interface FileRouteTypes {
     | '/app/assistant'
     | '/app/billing'
     | '/app/documents'
+    | '/app/invoices'
     | '/app/reports'
     | '/app/settings'
     | '/app/tasks'
@@ -559,11 +605,13 @@ export interface FileRouteTypes {
     | '/law/signup'
     | '/law/terms'
     | '/meet/$token'
+    | '/portal/$token'
     | '/start/$slug'
     | '/app/'
     | '/law/'
     | '/start/'
     | '/api/auth/$'
+    | '/api/cron/reminders'
     | '/api/files/$id'
     | '/api/law/edfapay'
     | '/api/law/moyasar'
@@ -574,6 +622,7 @@ export interface FileRouteTypes {
     | '/app/clients/$id'
     | '/app/consultations/$id'
     | '/app/invite/$token'
+    | '/app/invoices/$id'
     | '/client/requests/$id'
     | '/desk/crm/$view'
     | '/desk/law/$view'
@@ -584,6 +633,7 @@ export interface FileRouteTypes {
     | '/app/consultations/'
     | '/api/law/documents/$id'
     | '/api/law/documents/upload'
+    | '/api/portal/documents/$id'
     | '/api/requests/$id/messages'
     | '/api/v1/admin/requests'
     | '/api/v1/requests/$id'
@@ -608,6 +658,7 @@ export interface FileRouteTypes {
     | '/app/assistant'
     | '/app/billing'
     | '/app/documents'
+    | '/app/invoices'
     | '/app/reports'
     | '/app/settings'
     | '/app/tasks'
@@ -616,11 +667,13 @@ export interface FileRouteTypes {
     | '/law/signup'
     | '/law/terms'
     | '/meet/$token'
+    | '/portal/$token'
     | '/start/$slug'
     | '/app'
     | '/law'
     | '/start'
     | '/api/auth/$'
+    | '/api/cron/reminders'
     | '/api/files/$id'
     | '/api/law/edfapay'
     | '/api/law/moyasar'
@@ -631,6 +684,7 @@ export interface FileRouteTypes {
     | '/app/clients/$id'
     | '/app/consultations/$id'
     | '/app/invite/$token'
+    | '/app/invoices/$id'
     | '/client/requests/$id'
     | '/desk/crm/$view'
     | '/desk/law/$view'
@@ -641,6 +695,7 @@ export interface FileRouteTypes {
     | '/app/consultations'
     | '/api/law/documents/$id'
     | '/api/law/documents/upload'
+    | '/api/portal/documents/$id'
     | '/api/requests/$id/messages'
     | '/api/v1/admin/requests'
     | '/api/v1/requests/$id'
@@ -667,6 +722,7 @@ export interface FileRouteTypes {
     | '/app/assistant'
     | '/app/billing'
     | '/app/documents'
+    | '/app/invoices'
     | '/app/reports'
     | '/app/settings'
     | '/app/tasks'
@@ -675,11 +731,13 @@ export interface FileRouteTypes {
     | '/law/signup'
     | '/law/terms'
     | '/meet/$token'
+    | '/portal/$token'
     | '/start/$slug'
     | '/app/'
     | '/law/'
     | '/start/'
     | '/api/auth/$'
+    | '/api/cron/reminders'
     | '/api/files/$id'
     | '/api/law/edfapay'
     | '/api/law/moyasar'
@@ -690,6 +748,7 @@ export interface FileRouteTypes {
     | '/app/clients/$id'
     | '/app/consultations/$id'
     | '/app_/invite/$token'
+    | '/app_/invoices/$id'
     | '/client_/requests/$id'
     | '/desk/crm/$view'
     | '/desk/law/$view'
@@ -700,6 +759,7 @@ export interface FileRouteTypes {
     | '/app/consultations/'
     | '/api/law/documents/$id'
     | '/api/law/documents/upload'
+    | '/api/portal/documents/$id'
     | '/api/requests/$id/messages'
     | '/api/v1/admin/requests'
     | '/api/v1/requests/$id'
@@ -727,8 +787,10 @@ export interface RootRouteChildren {
   LawSignupRoute: typeof LawSignupRoute
   LawTermsRoute: typeof LawTermsRoute
   MeetTokenRoute: typeof MeetTokenRoute
+  PortalTokenRoute: typeof PortalTokenRoute
   LawIndexRoute: typeof LawIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiCronRemindersRoute: typeof ApiCronRemindersRoute
   ApiFilesIdRoute: typeof ApiFilesIdRoute
   ApiLawEdfapayRoute: typeof ApiLawEdfapayRoute
   ApiLawMoyasarRoute: typeof ApiLawMoyasarRoute
@@ -736,6 +798,7 @@ export interface RootRouteChildren {
   ApiV1RequestsRoute: typeof ApiV1RequestsRouteWithChildren
   ApiV1ServicesRoute: typeof ApiV1ServicesRoute
   AppInviteTokenRoute: typeof AppInviteTokenRoute
+  AppInvoicesIdRoute: typeof AppInvoicesIdRoute
   ClientRequestsIdRoute: typeof ClientRequestsIdRoute
   DeskCrmViewRoute: typeof DeskCrmViewRoute
   DeskLawViewRoute: typeof DeskLawViewRoute
@@ -743,6 +806,7 @@ export interface RootRouteChildren {
   OSlugBookRoute: typeof OSlugBookRoute
   ApiLawDocumentsIdRoute: typeof ApiLawDocumentsIdRoute
   ApiLawDocumentsUploadRoute: typeof ApiLawDocumentsUploadRoute
+  ApiPortalDocumentsIdRoute: typeof ApiPortalDocumentsIdRoute
   ApiRequestsIdMessagesRoute: typeof ApiRequestsIdMessagesRoute
   ApiV1AdminRequestsRoute: typeof ApiV1AdminRequestsRouteWithChildren
   AppConsultationsIdCallRoute: typeof AppConsultationsIdCallRoute
@@ -890,6 +954,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDocumentsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/invoices': {
+      id: '/app/invoices'
+      path: '/invoices'
+      fullPath: '/app/invoices'
+      preLoaderRoute: typeof AppInvoicesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/reports': {
       id: '/app/reports'
       path: '/reports'
@@ -953,6 +1024,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MeetTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/portal/$token': {
+      id: '/portal/$token'
+      path: '/portal/$token'
+      fullPath: '/portal/$token'
+      preLoaderRoute: typeof PortalTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/start/': {
       id: '/start/'
       path: '/'
@@ -972,6 +1050,13 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/reminders': {
+      id: '/api/cron/reminders'
+      path: '/api/cron/reminders'
+      fullPath: '/api/cron/reminders'
+      preLoaderRoute: typeof ApiCronRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/files/$id': {
@@ -1065,6 +1150,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInviteTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app_/invoices/$id': {
+      id: '/app_/invoices/$id'
+      path: '/app/invoices/$id'
+      fullPath: '/app/invoices/$id'
+      preLoaderRoute: typeof AppInvoicesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/client_/requests/$id': {
       id: '/client_/requests/$id'
       path: '/client/requests/$id'
@@ -1114,6 +1206,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLawDocumentsUploadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/portal/documents/$id': {
+      id: '/api/portal/documents/$id'
+      path: '/api/portal/documents/$id'
+      fullPath: '/api/portal/documents/$id'
+      preLoaderRoute: typeof ApiPortalDocumentsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/requests/$id/messages': {
       id: '/api/requests/$id/messages'
       path: '/api/requests/$id/messages'
@@ -1157,6 +1256,7 @@ interface AppRouteChildren {
   AppAssistantRoute: typeof AppAssistantRoute
   AppBillingRoute: typeof AppBillingRoute
   AppDocumentsRoute: typeof AppDocumentsRoute
+  AppInvoicesRoute: typeof AppInvoicesRoute
   AppReportsRoute: typeof AppReportsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppTasksRoute: typeof AppTasksRoute
@@ -1175,6 +1275,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAssistantRoute: AppAssistantRoute,
   AppBillingRoute: AppBillingRoute,
   AppDocumentsRoute: AppDocumentsRoute,
+  AppInvoicesRoute: AppInvoicesRoute,
   AppReportsRoute: AppReportsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppTasksRoute: AppTasksRoute,
@@ -1245,8 +1346,10 @@ const rootRouteChildren: RootRouteChildren = {
   LawSignupRoute: LawSignupRoute,
   LawTermsRoute: LawTermsRoute,
   MeetTokenRoute: MeetTokenRoute,
+  PortalTokenRoute: PortalTokenRoute,
   LawIndexRoute: LawIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiCronRemindersRoute: ApiCronRemindersRoute,
   ApiFilesIdRoute: ApiFilesIdRoute,
   ApiLawEdfapayRoute: ApiLawEdfapayRoute,
   ApiLawMoyasarRoute: ApiLawMoyasarRoute,
@@ -1254,6 +1357,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiV1RequestsRoute: ApiV1RequestsRouteWithChildren,
   ApiV1ServicesRoute: ApiV1ServicesRoute,
   AppInviteTokenRoute: AppInviteTokenRoute,
+  AppInvoicesIdRoute: AppInvoicesIdRoute,
   ClientRequestsIdRoute: ClientRequestsIdRoute,
   DeskCrmViewRoute: DeskCrmViewRoute,
   DeskLawViewRoute: DeskLawViewRoute,
@@ -1261,6 +1365,7 @@ const rootRouteChildren: RootRouteChildren = {
   OSlugBookRoute: OSlugBookRoute,
   ApiLawDocumentsIdRoute: ApiLawDocumentsIdRoute,
   ApiLawDocumentsUploadRoute: ApiLawDocumentsUploadRoute,
+  ApiPortalDocumentsIdRoute: ApiPortalDocumentsIdRoute,
   ApiRequestsIdMessagesRoute: ApiRequestsIdMessagesRoute,
   ApiV1AdminRequestsRoute: ApiV1AdminRequestsRouteWithChildren,
   AppConsultationsIdCallRoute: AppConsultationsIdCallRoute,

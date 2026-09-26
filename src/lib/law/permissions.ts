@@ -10,9 +10,10 @@
  *   staff  — reception: clients, appointments, consultations (booking and
  *            status), tasks, uploads. No fees, no private call notes, no
  *            deleting records, no case edits.
- *   lawyer — the legal work: cases, hearings, fees, documents, running video
- *            consultations and their private notes.
- *   admin  — deletes records, office booking settings.
+ *   lawyer — the legal work: cases, hearings, fees, tax invoices, documents,
+ *            running video consultations and their private notes, the client
+ *            portal link and what it shares.
+ *   admin  — deletes records, office booking and tax settings.
  *   owner  — everything admin can (plus the subscription, phase 1).
  */
 import { roleAtLeast, type Role } from "../saas/lifecycle.ts";
@@ -22,6 +23,8 @@ export const PERMISSIONS = {
   "client.create": "staff",
   "client.edit": "staff",
   "client.delete": "admin",
+  // The client portal link and which documents it shows (portal-core.ts).
+  "client.portal": "lawyer",
 
   "case.view": "staff",
   "case.create": "lawyer",
@@ -52,7 +55,13 @@ export const PERMISSIONS = {
   "document.upload": "staff",
   "document.delete": "lawyer",
 
+  // Tax invoices (ZATCA phase 1): whoever sees fees sees and issues them;
+  // the office's tax identity is a manager setting.
+  "invoice.view": "lawyer",
+  "invoice.issue": "lawyer",
+
   "settings.booking": "admin",
+  "settings.tax": "admin",
 } as const satisfies Record<string, Role>;
 
 export type Action = keyof typeof PERMISSIONS;

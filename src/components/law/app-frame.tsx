@@ -12,6 +12,7 @@ import {
   Menu,
   MessageCircle,
   Plus,
+  ReceiptText,
   Scale,
   Settings,
   Sparkles,
@@ -24,6 +25,7 @@ import { buttonClass } from "@/components/dash/button-class";
 import { MODULES } from "@/components/law/modules";
 import { VerifyEmailBanner } from "@/components/verify-email-banner";
 import { daysAr, dateAr, officeInitial } from "@/components/law/format";
+import { can, type Action } from "@/lib/law/permissions";
 import { ROLE_LABELS, type Lifecycle } from "@/lib/saas/lifecycle";
 import { getPlan } from "@/lib/saas/plans";
 import type { AppContext, ActiveWorkspace, MembershipSummary } from "@/lib/saas/workspace";
@@ -43,6 +45,8 @@ type NavEntry = {
   label: string;
   icon: ComponentType<{ className?: string }>;
   soon?: boolean;
+  /** Shown only to roles allowed this action. */
+  need?: Action;
 };
 
 const MAIN: NavEntry[] = [
@@ -52,6 +56,7 @@ const MAIN: NavEntry[] = [
 ];
 
 const OFFICE: NavEntry[] = [
+  { to: "/app/invoices", label: "الفواتير", icon: ReceiptText, need: "invoice.view" },
   { to: "/app/reports", label: "التقارير", icon: BarChart3 },
   { to: "/app/team", label: "الفريق", icon: Users },
   { to: "/app/settings", label: "الإعدادات", icon: Settings },
@@ -215,7 +220,7 @@ function Sidebar({
         </ul>
         <p className="mt-6 px-3 pb-1.5 text-[11px] font-semibold text-snow/40">المكتب</p>
         <ul className="space-y-0.5">
-          {OFFICE.map((item) => (
+          {OFFICE.filter((item) => !item.need || can(active.role, item.need)).map((item) => (
             <NavRow key={item.to} item={item} current={isActive(item.to)} />
           ))}
         </ul>

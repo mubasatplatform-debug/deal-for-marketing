@@ -64,11 +64,18 @@ export type WorkspaceErrorCode =
   | "status"
   | "slug_taken"
   | "video_unavailable"
+  // Tax invoices (src/lib/law/invoices-core.ts)
+  | "tax_profile"
+  | "credit_exceeded"
+  | "has_invoices"
   // AI assistant (src/lib/law/agent)
   | "ai_limit"
   | "ai_unavailable"
   // Two-step sign-in (src/lib/otp)
-  | "otp_required";
+  | "otp_required"
+  // Sample data (src/lib/law/demo-core.ts)
+  | "demo_exists"
+  | "demo_in_use";
 
 export const WORKSPACE_ERROR_PREFIX = "WS:";
 
