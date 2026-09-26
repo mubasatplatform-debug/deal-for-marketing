@@ -176,7 +176,7 @@ function CallItem({ c, canSummarize, onChanged }: { c: CallRow; canSummarize: bo
                 {who}
               </Link>
             ) : (
-              <span className="truncate text-[14px] font-bold">{who}</span>
+              <span dir={c.client_name ? undefined : "ltr"} className="truncate font-ui text-[14px] font-bold">{who}</span>
             )}
             <Pill tone={STATUS_TONE[c.status]}>{CALL_STATUS_LABELS[c.status]}</Pill>
             {c.recorded ? (

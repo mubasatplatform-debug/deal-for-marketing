@@ -333,7 +333,9 @@ function CallPanel({
           {live && !connected && cur.phase !== "ringing" ? <Loader2 className="size-5 animate-spin" /> : <Phone className="size-5" />}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[15px] font-bold">{cur.target.label}</p>
+          <p className="truncate text-[15px] font-bold">
+            <bdi>{cur.target.label}</bdi>
+          </p>
           <p dir="ltr" className="text-end font-ui text-[12.5px] text-snow/60">
             {phoneAr(cur.to)}
           </p>
