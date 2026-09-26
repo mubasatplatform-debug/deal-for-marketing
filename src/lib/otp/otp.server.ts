@@ -36,11 +36,18 @@ export function bookingOtpSender(): Sender | null {
 /**
  * The office-data half of two-step sign-in: a session that has not passed its
  * WhatsApp code gets `WS:otp_required`. API-key requests (MCP) carry no
- * session and are not affected — the key is their credential.
+ * session and are not affected — the key is their credential, and minting
+ * one requires a passed session (createApiKey).
  */
 export async function assertSecondFactor(userId: string): Promise<void> {
   const sessionId = currentSessionId();
   if (!sessionId) return;
+  // No way to send codes (relay unset in production): enforcing would lock
+  // every enrolled member out of their office with no path back in.
+  if (!otpSender()) {
+    console.error("[otp] two-step sign-in not enforced: no OTP sender configured (OTP_RELAY_URL / OTP_RELAY_TOKEN)");
+    return;
+  }
   const sql = (await getSql()) as unknown as SqlTag;
   if (await secondFactorMissingCore(sql, userId, sessionId)) throw new WorkspaceError("otp_required", 403);
 }

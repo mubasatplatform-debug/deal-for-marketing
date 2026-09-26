@@ -135,6 +135,14 @@ export const createApiKey = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator(parseCreate)
   .handler(async ({ context, data }): Promise<{ key: ApiKeyRow; secret: string }> => {
+    // A key outlives the session and skips the per-session code check, so a
+    // session that has not passed two-step sign-in must not mint one.
+    const { assertSecondFactor } = await import("@/lib/otp/otp.server");
+    try {
+      await assertSecondFactor(context.userId);
+    } catch {
+      throw new Error("أكمل التحقق بخطوتين أولًا: افتح «مكتب المحامي» وأدخل الرمز المرسل إلى جوالك، ثم أنشئ المفتاح.");
+    }
     const admin = await isAdmin(context.userId);
     const scopes = normalizeRequestedScopes(data.scopes, admin);
     const sql = await getSql();

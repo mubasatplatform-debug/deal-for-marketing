@@ -851,7 +851,7 @@ export function firstResponderPrompt(meta: {
 
 export const HANDOFF_PUBLIC = "حوّلنا محادثتك إلى فريق المكتب، وسيرد عليك أحد أعضائه في أقرب وقت.";
 
-export type AiOutcome = { replied: boolean; handoff: null | "request" | "model" | "cap" | "daily_cap" | "error" };
+export type AiOutcome = { replied: boolean; handoff: null | "request" | "model" | "cap" | "daily_cap" | "off" | "error" };
 
 async function handoff(sql: SqlTag, conv: { id: string; workspace_id: string }, reason: NonNullable<AiOutcome["handoff"]>, tellVisitor: boolean) {
   const rows = await sql`
@@ -865,6 +865,7 @@ async function handoff(sql: SqlTag, conv: { id: string; workspace_id: string }, 
     cap: "بلغ المساعد الآلي حد الردود في هذه المحادثة، فحُوّلت إلى الفريق.",
     daily_cap: "بلغ المساعد الآلي الحد اليومي للمكتب، فحُوّلت المحادثة إلى الفريق.",
     error: "تعذّر رد المساعد الآلي، فحُوّلت المحادثة إلى الفريق.",
+    off: "أُوقف المساعد الآلي للمكتب، فحُوّلت المحادثة إلى الفريق.",
   };
   await event(sql, null, conv, internal[reason]);
   if (tellVisitor) await event(sql, null, conv, HANDOFF_PUBLIC, true);
@@ -880,13 +881,19 @@ export async function aiFirstReplyCore(
   office: ChatOffice,
   conversationId: string,
   llm: Llm | null,
-  opts: { bookingUrl: string | null; dailyCap: number },
+  opts: { bookingUrl: string | null; dailyCap: number; aiAllowed?: boolean },
 ): Promise<AiOutcome> {
   const [conv] = await sql<VisitorConversation>`
     select id, workspace_id, status, contact_name, contact_phone, subject from law_conversations
     where id = ${conversationId} and workspace_id = ${office.id}
   `;
   if (!conv || conv.status !== "bot") return { replied: false, handoff: null };
+  // Settings can change after the chat started: the office turned the AI off
+  // (or the caller found its plan no longer includes it), or went read-only.
+  if (!office.settings.aiFirstReply || office.readOnly || opts.aiAllowed === false) {
+    await handoff(sql, conv, "off", false);
+    return { replied: false, handoff: "off" };
+  }
   const history = await sql<{ direction: string; author_kind: string; body: string }>`
     select direction, author_kind, body from (
       select direction, author_kind, body, created_at, id from law_messages

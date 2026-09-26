@@ -420,6 +420,8 @@ export async function demoBlockersCore(sql: SqlTag, access: WorkspaceAccess): Pr
          and (case_id in (select id from dk) or client_id in (select id from dc)))
     + (select count(*) from law_documents where workspace_id = ${ws}
          and (case_id in (select id from dk) or client_id in (select id from dc)))
+    + (select count(*) from law_invoices where workspace_id = ${ws}
+         and (case_id in (select id from dk) or client_id in (select id from dc)))
     )::int as n
   `;
   return Number(r?.n ?? 0);

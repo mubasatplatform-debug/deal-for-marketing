@@ -71,9 +71,11 @@ async function aiTurn(office: Awaited<ReturnType<typeof openOffice>>, conversati
     const { aiFirstReplyCore } = await core();
     const { agentLlm } = await import("./agent/llm.server");
     const { bookingUrlFor } = await import("./consult.server");
+    const { planHas } = await import("@/lib/saas/plans");
     await aiFirstReplyCore(await sqlTag(), office, conversationId, agentLlm(), {
       bookingUrl: office.hours.bookingEnabled ? bookingUrlFor(office.slug) : null,
       dailyCap: AI_DAILY_CAP(),
+      aiAllowed: planHas(office.plan, "aiDrafting"),
     });
   } catch (err) {
     console.error("[inbox] AI first reply failed:", err);

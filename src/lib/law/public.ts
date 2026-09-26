@@ -221,7 +221,9 @@ async function assertBookingPhone(sql: never, phone: string, otpCode: string | n
     ok = await sender.check(phone, otpCode);
   } catch (err) {
     if (err instanceof OtpError && err.code === "rate_limited") throw new Error(PUBLIC_ERRORS.busy);
-    throw new Error(PUBLIC_ERRORS.code);
+    if (err instanceof OtpError && err.code === "bad_code") throw new Error(PUBLIC_ERRORS.code);
+    // The relay is down or failed: not the client's code.
+    throw new Error(PUBLIC_ERRORS.send);
   }
   if (!ok) throw new Error(PUBLIC_ERRORS.code);
   await rememberPhoneCore(sql, "book", phone, visitor);
