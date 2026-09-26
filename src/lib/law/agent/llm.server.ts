@@ -16,7 +16,13 @@ export function agentLlm(): Llm | null {
     const res = await fetch(url, {
       method: "POST",
       headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
-      body: JSON.stringify({ messages, tools: opts.tools, tool_choice: opts.toolChoice, temperature: 0.2, max_tokens: 2000 }),
+      // A plain completion (no tools, e.g. the inbox) omits tool_choice: providers reject it without tools.
+      body: JSON.stringify({
+        messages,
+        ...(opts.tools.length ? { tools: opts.tools, tool_choice: opts.toolChoice } : {}),
+        temperature: 0.2,
+        max_tokens: 2000,
+      }),
       signal: AbortSignal.timeout(55_000),
     });
     if (!res.ok) {
