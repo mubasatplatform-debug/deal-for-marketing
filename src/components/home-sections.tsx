@@ -295,7 +295,7 @@ export function Story() {
 
 export function Systems() {
   return (
-    <section id="systems" className="border-y border-hair bg-ink">
+    <section id="systems" className="scroll-mt-20 border-y border-hair bg-ink">
       {systems.map((s) => (
         <a
           key={s.href}
@@ -313,7 +313,7 @@ export function Systems() {
 
 export function Instant() {
   return (
-    <section id="instant" className="bg-ink">
+    <section id="instant" className="scroll-mt-20 bg-ink">
       <Shot src="/images/ops-inbox.jpg" alt="وارد الحل اللحظي — واتساب وملف العميل" />
 
       <Reveal className="px-8 py-14 text-center md:px-16">
@@ -355,7 +355,7 @@ export function Instant() {
 
 export function DealLineTeaser() {
   return (
-    <section id="line" className="border-y border-hair bg-ink">
+    <section id="line" className="scroll-mt-20 border-y border-hair bg-ink">
       <Reveal className="px-8 py-20 text-center md:px-16">
         <p className="text-kicker text-lime">خط ديل //</p>
         <h2 className="mt-5 font-display text-poster text-snow">
@@ -376,7 +376,7 @@ export function DealLineTeaser() {
 
 export function Lawyers() {
   return (
-    <section id="law" className="bg-ink">
+    <section id="law" className="scroll-mt-20 bg-ink">
       <Shot src="/images/desk-home.jpg" alt="لوحة تحكم مكتب المحامي" />
 
       <Reveal className="px-8 py-14 text-center md:px-16">
@@ -396,7 +396,7 @@ export function Lawyers() {
 
 export function AiUse() {
   return (
-    <section id="ai" className="bg-ink">
+    <section id="ai" className="scroll-mt-20 bg-ink">
       <Shot src="/images/ops-ai.jpg" alt="الذكاء يدير خط ديل" />
 
       <Reveal className="px-8 py-14 text-center md:px-16">
@@ -420,7 +420,7 @@ export function AiUse() {
 
 export function Pay() {
   return (
-    <section id="pay" className="bg-ink">
+    <section id="pay" className="scroll-mt-20 bg-ink">
       <Shot src="/images/pay-home.jpg" alt="تحصيل الدفع المبسط" />
       <Reveal className="px-8 py-14 text-center md:px-16">
         <p className="text-kicker text-lime">التحصيل // 04</p>
@@ -457,7 +457,7 @@ export function Services() {
   const s = agency[i];
 
   return (
-    <section id="services" className="bg-ink pb-8">
+    <section id="services" className="scroll-mt-20 bg-ink pb-8">
       <Reveal kind="clip-in" className="relative">
         <Pic
           src="/images/service.jpg"
@@ -507,7 +507,7 @@ export function Services() {
 
 export function About() {
   return (
-    <section id="about" className="relative isolate mt-10 min-h-[34rem] overflow-hidden md:min-h-[42rem]">
+    <section id="about" className="scroll-mt-20 relative isolate mt-10 min-h-[34rem] overflow-hidden md:min-h-[42rem]">
       <Pic
         src="/images/about.jpg"
         alt=""
@@ -541,7 +541,7 @@ export function About() {
 
 export function Works() {
   return (
-    <section id="works" className="bg-ink pt-16 pb-4">
+    <section id="works" className="scroll-mt-20 bg-ink pt-16 pb-4">
       <Reveal className="px-8 text-center md:px-16">
         <p className="text-kicker text-lime">أعمالنا //</p>
         <h2 className="mt-5 font-display text-poster text-snow">
@@ -587,7 +587,7 @@ export function Clients() {
   return (
     <>
       <Marquee />
-      <section id="clients" className="bg-ink px-8 py-16 md:px-16">
+      <section id="clients" className="scroll-mt-20 bg-ink px-8 py-16 md:px-16">
         <Reveal className="text-center">
           <p className="text-kicker text-lime">عملاؤنا //</p>
           <p className="mt-4 font-display text-xl text-mist">علامات نبني معها حضورًا يبقى.</p>
@@ -688,7 +688,7 @@ export function Quote() {
 
 export function Footer() {
   return (
-    <footer id="contact" className="bg-ink px-8 pt-20 pb-12 md:px-16">
+    <footer id="contact" className="scroll-mt-20 bg-ink px-8 pt-20 pb-12 md:px-16">
       <Reveal>
         <a
           href="mailto:info@mubasat.net"
