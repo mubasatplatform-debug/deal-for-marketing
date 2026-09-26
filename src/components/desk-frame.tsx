@@ -220,7 +220,7 @@ export function DeskFrame({
           </div>
           <div className="absolute inset-x-0 mx-auto flex h-6 w-[420px] items-center justify-center gap-2 rounded-md bg-white/[0.06] font-ui text-[12px] text-snow/55">
             <Lock className="size-3" />
-            app.deal.mubasat.net<span className="text-snow/35">/{path}</span>
+            deal.mubasat.net<span className="text-snow/35">/{path}</span>
           </div>
         </div>
         <div className="min-h-0 flex-1">{app}</div>
