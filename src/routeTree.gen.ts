@@ -28,6 +28,7 @@ import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppAppointmentsRouteImport } from './routes/app.appointments'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppDocumentsRouteImport } from './routes/app.documents'
+import { Route as AppReportsRouteImport } from './routes/app.reports'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppTasksRouteImport } from './routes/app.tasks'
 import { Route as AppTeamRouteImport } from './routes/app.team'
@@ -158,6 +159,11 @@ const AppBillingRoute = AppBillingRouteImport.update({
 const AppDocumentsRoute = AppDocumentsRouteImport.update({
   id: '/documents',
   path: '/documents',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReportsRoute = AppReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
@@ -360,6 +366,7 @@ export interface FileRoutesByFullPath {
   '/app/appointments': typeof AppAppointmentsRoute
   '/app/billing': typeof AppBillingRoute
   '/app/documents': typeof AppDocumentsRoute
+  '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/tasks': typeof AppTasksRoute
   '/app/team': typeof AppTeamRoute
@@ -415,6 +422,7 @@ export interface FileRoutesByTo {
   '/app/appointments': typeof AppAppointmentsRoute
   '/app/billing': typeof AppBillingRoute
   '/app/documents': typeof AppDocumentsRoute
+  '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/tasks': typeof AppTasksRoute
   '/app/team': typeof AppTeamRoute
@@ -473,6 +481,7 @@ export interface FileRoutesById {
   '/app/appointments': typeof AppAppointmentsRoute
   '/app/billing': typeof AppBillingRoute
   '/app/documents': typeof AppDocumentsRoute
+  '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/tasks': typeof AppTasksRoute
   '/app/team': typeof AppTeamRoute
@@ -532,6 +541,7 @@ export interface FileRouteTypes {
     | '/app/appointments'
     | '/app/billing'
     | '/app/documents'
+    | '/app/reports'
     | '/app/settings'
     | '/app/tasks'
     | '/app/team'
@@ -587,6 +597,7 @@ export interface FileRouteTypes {
     | '/app/appointments'
     | '/app/billing'
     | '/app/documents'
+    | '/app/reports'
     | '/app/settings'
     | '/app/tasks'
     | '/app/team'
@@ -644,6 +655,7 @@ export interface FileRouteTypes {
     | '/app/appointments'
     | '/app/billing'
     | '/app/documents'
+    | '/app/reports'
     | '/app/settings'
     | '/app/tasks'
     | '/app/team'
@@ -857,6 +869,13 @@ declare module '@tanstack/react-router' {
       path: '/documents'
       fullPath: '/app/documents'
       preLoaderRoute: typeof AppDocumentsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/reports': {
+      id: '/app/reports'
+      path: '/reports'
+      fullPath: '/app/reports'
+      preLoaderRoute: typeof AppReportsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/settings': {
@@ -1118,6 +1137,7 @@ interface AppRouteChildren {
   AppAppointmentsRoute: typeof AppAppointmentsRoute
   AppBillingRoute: typeof AppBillingRoute
   AppDocumentsRoute: typeof AppDocumentsRoute
+  AppReportsRoute: typeof AppReportsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppTasksRoute: typeof AppTasksRoute
   AppTeamRoute: typeof AppTeamRoute
@@ -1134,6 +1154,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAppointmentsRoute: AppAppointmentsRoute,
   AppBillingRoute: AppBillingRoute,
   AppDocumentsRoute: AppDocumentsRoute,
+  AppReportsRoute: AppReportsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppTasksRoute: AppTasksRoute,
   AppTeamRoute: AppTeamRoute,

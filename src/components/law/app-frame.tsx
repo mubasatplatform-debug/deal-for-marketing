@@ -7,6 +7,7 @@ import {
   CreditCard,
   LayoutDashboard,
   LockKeyhole,
+  BarChart3,
   LogOut,
   Menu,
   MessageCircle,
@@ -50,6 +51,7 @@ const MAIN: NavEntry[] = [
 ];
 
 const OFFICE: NavEntry[] = [
+  { to: "/app/reports", label: "التقارير", icon: BarChart3 },
   { to: "/app/team", label: "الفريق", icon: Users },
   { to: "/app/settings", label: "الإعدادات", icon: Settings },
   { to: "/app/billing", label: "الاشتراك", icon: CreditCard },

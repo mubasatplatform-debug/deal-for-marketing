@@ -22,6 +22,7 @@ import type {
   ClientPage,
   HomeView,
   MemberOption,
+  ReportsView,
   TaskRow,
 } from "./practice-core";
 
@@ -59,6 +60,14 @@ export const getLawHome = createServerFn({ method: "GET" })
   .handler(async ({ context, data }): Promise<HomeView> => {
     const { homeCore } = await core();
     return exec(context.userId, data.workspaceId, false, (sql, access) => homeCore(sql, access));
+  });
+
+export const getLawReports = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .validator((input: unknown) => ws.parse(input))
+  .handler(async ({ context, data }): Promise<ReportsView> => {
+    const { reportsCore } = await core();
+    return exec(context.userId, data.workspaceId, false, (sql, access) => reportsCore(sql, access));
   });
 
 export const getLawMembers = createServerFn({ method: "GET" })
