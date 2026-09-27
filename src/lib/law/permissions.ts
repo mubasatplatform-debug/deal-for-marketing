@@ -64,6 +64,11 @@ export const PERMISSIONS = {
   // sees the call log; the content is the lawyer's (or the caller's own).
   "call.content": "lawyer",
 
+  // AI over the office's files: asking and summarizing is reading (anyone who
+  // sees the documents); writing legal drafts is the lawyer's work.
+  "ai.documents": "staff",
+  "draft.manage": "lawyer",
+
   "settings.booking": "admin",
   "settings.tax": "admin",
 } as const satisfies Record<string, Role>;

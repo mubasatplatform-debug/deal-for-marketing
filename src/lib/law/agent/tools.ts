@@ -145,6 +145,36 @@ export const AGENT_TOOLS: AgentTool[] = [
     run: ({ sql, access }, a) => getCaseCore(sql, access, a.case_id),
   }),
   tool({
+    name: "ask_case_documents",
+    title: "قراءة ملفات القضية",
+    description:
+      "Answer a question from the text of the office's uploaded files (PDF, Word, scans) for a case or a client — summaries, dates, amounts, what each party claimed. Returns an answer with citations [مN صP] and the source file names. Use it whenever the question depends on what the documents say.",
+    input: { case_id: id.optional(), client_id: id.optional(), question: z.string().min(2).max(2000) },
+    run: async ({ sql, access }, a) => {
+      const { planHas } = await import("../../saas/plans.ts");
+      const { WorkspaceError } = await import("../../saas/tenancy-core.ts");
+      if (!planHas(access.workspace.plan, "aiDrafting")) throw new WorkspaceError("plan_feature");
+      if (!a.case_id && !a.client_id) throw new WorkspaceError("invalid", 422);
+      const { askDocumentsCore } = await import("../ai/docai-core.ts");
+      const { answerCompleter, documentReader, needsOcr, queueReading } = await import("../ai/ai.server.ts");
+      const { tryHit } = await import("@/lib/rate-limit.server");
+      if (!(await tryHit(`law-docai:ws:${access.workspace.id}`, Number(process.env.LAW_DOCAI_DAILY_CAP) || 400, 86_400))) {
+        throw new WorkspaceError("ai_limit", 429);
+      }
+      const r = await askDocumentsCore(sql, access, { caseId: a.case_id ?? null, clientId: a.client_id ?? null, question: a.question }, {
+        complete: answerCompleter,
+        read: documentReader(access.workspace.id),
+        queue: (ids) => queueReading(access.workspace.id, ids),
+        needsOcr,
+      });
+      return {
+        answer: r.answer,
+        sources: r.sources.map((s) => `م${s.n}: ${s.name}`),
+        still_reading: r.pending.map((p) => p.name),
+      };
+    },
+  }),
+  tool({
     name: "list_tasks",
     title: "المهام",
     description: "Tasks: scope 'mine' (assigned to me), 'today', 'overdue' or 'all'.",

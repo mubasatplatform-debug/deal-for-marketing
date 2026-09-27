@@ -45,3 +45,52 @@ export function agentLlm(): Llm | null {
     return { content: msg.content ?? null, tool_calls: msg.tool_calls };
   };
 }
+
+/** A message for `aiComplete`: plain text, or parts (text + an image or PDF to read). */
+export type AiMessage = {
+  role: "system" | "user" | "assistant";
+  content:
+    | string
+    | Array<
+        | { type: "text"; text: string }
+        | { type: "image_url"; image_url: { url: string } }
+        | { type: "file"; file: { filename: string; file_data: string } }
+      >;
+};
+
+/**
+ * One long completion through the same relay (drafts, document questions,
+ * reading scanned pages) — no tools, a larger output and time budget than an
+ * assistant turn. Counts against the same deployment-wide daily ceiling.
+ * Throws `WS:ai_unavailable` / `WS:ai_limit`.
+ */
+export async function aiComplete(
+  messages: AiMessage[],
+  opts: { maxTokens: number; timeoutMs: number; temperature?: number },
+): Promise<string> {
+  const base = process.env.LAW_AGENT_URL?.trim();
+  const token = process.env.LAW_AGENT_TOKEN?.trim();
+  if (!base || !token) throw new Error("WS:ai_unavailable");
+  const { tryHit } = await import("@/lib/rate-limit.server");
+  if (!(await tryHit("law-ai:all", GLOBAL_DAILY_CALLS(), 86_400))) {
+    console.error("[law-agent] global daily AI budget reached (LAW_AI_GLOBAL_DAILY_CAP)");
+    throw new Error("WS:ai_limit");
+  }
+  const res = await fetch(`${base.replace(/\/+$/, "")}/chat/completions`, {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+    body: JSON.stringify({ messages, temperature: opts.temperature ?? 0.2, max_tokens: opts.maxTokens }),
+    signal: AbortSignal.timeout(opts.timeoutMs),
+  }).catch((err) => {
+    console.error("[law-agent] long completion failed:", err);
+    throw new Error("WS:ai_unavailable");
+  });
+  if (!res.ok) {
+    console.error(`[law-agent] relay answered ${res.status}: ${(await res.text().catch(() => "")).slice(0, 300)}`);
+    throw new Error("WS:ai_unavailable");
+  }
+  const body = (await res.json()) as { choices?: { message?: { content?: string | null }; finish_reason?: string }[] };
+  const text = body.choices?.[0]?.message?.content?.trim();
+  if (!text) throw new Error("WS:ai_unavailable");
+  return text;
+}
