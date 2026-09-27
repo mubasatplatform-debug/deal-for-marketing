@@ -83,7 +83,7 @@ export function searchTerms(text: string): string[] {
   for (const raw of normalizeForSearch(text).split(/[^\p{L}\p{N}]+/u)) {
     if (!raw || STOP.has(raw)) continue;
     let w = raw;
-    for (const p of ["وال", "بال", "كال", "فال", "لل", "ال"]) {
+    for (const p of ["وبال", "وال", "بال", "كال", "فال", "ولل", "لل", "ال"]) {
       if (w.startsWith(p) && w.length - p.length >= 2) {
         w = w.slice(p.length);
         break;
@@ -184,4 +184,56 @@ export function parseCitations(answer: string, sourceCount: number): Citation[] 
     out.push({ source, page });
   }
   return out;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Article numbers written as words («المادة الحادية والعشرون»)              */
+/* ------------------------------------------------------------------------ */
+
+const UNITS_F = ["", "الأولى", "الثانية", "الثالثة", "الرابعة", "الخامسة", "السادسة", "السابعة", "الثامنة", "التاسعة"];
+const TEEN_UNIT = ["", "الحادية", "الثانية", "الثالثة", "الرابعة", "الخامسة", "السادسة", "السابعة", "الثامنة", "التاسعة"];
+const TENS = ["", "العاشرة", "العشرون", "الثلاثون", "الأربعون", "الخمسون", "الستون", "السبعون", "الثمانون", "التسعون"];
+const HUNDREDS = ["", "المائة", "المائتين", "الثلاثمائة", "الأربعمائة", "الخمسمائة", "الستمائة", "السبعمائة", "الثمانمائة", "التسعمائة"];
+const HUNDREDS_ALONE = ["", "المائة", "المائتان", "الثلاثمائة", "الأربعمائة", "الخمسمائة", "الستمائة", "السبعمائة", "الثمانمائة", "التسعمائة"];
+
+/** 1–99 as a feminine ordinal («الحادية والعشرون»); `first` picks «الأولى» / «الحادية» for units after tens. */
+function below100(n: number, one: "الأولى" | "الحادية"): string {
+  if (n < 10) return n === 1 ? one : UNITS_F[n];
+  if (n === 10) return "العاشرة";
+  if (n < 20) return `${TEEN_UNIT[n - 10]} عشرة`;
+  const t = Math.floor(n / 10);
+  const u = n % 10;
+  return u ? `${u === 1 ? "الحادية" : UNITS_F[u]} و${TENS[t]}` : TENS[t];
+}
+
+/**
+ * The ordinal wordings an article number is written with in Saudi
+ * legislation («المادة الثالثة والعشرون», «الحادية بعد المائة», «المائتان»).
+ * Several spellings for the hundreds, since publishers differ.
+ */
+export function articleOrdinals(n: number): string[] {
+  if (!Number.isInteger(n) || n < 1 || n > 999) return [];
+  const h = Math.floor(n / 100);
+  const rest = n % 100;
+  if (!h) return [below100(n, "الأولى")];
+  if (!rest) return [HUNDREDS_ALONE[h], HUNDREDS[h]];
+  const out = new Set<string>();
+  for (const one of ["الحادية", "الأولى"] as const) {
+    for (const hw of [HUNDREDS[h], h === 1 ? "المائة" : HUNDREDS_ALONE[h]]) out.add(`${below100(rest, one)} بعد ${hw}`);
+  }
+  return [...out];
+}
+
+/** Article number from «المادة 23», «م23», «٢٣» or the ordinal words, else null. */
+export function articleNumber(text: string): number | null {
+  const norm = normalizeForSearch(text).replace(/^\s*(الماده|ماده|م)\s*/, "").trim();
+  const digits = /^(\d{1,3})\b/.exec(norm);
+  if (digits) return Number(digits[1]);
+  const words = norm.replace(/\s+/g, " ");
+  for (let n = 999; n >= 1; n -= 1) {
+    for (const w of articleOrdinals(n)) {
+      if (words === normalizeForSearch(w)) return n;
+    }
+  }
+  return null;
 }
