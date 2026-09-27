@@ -38,3 +38,21 @@ create table if not exists law_contract_reviews (
 create index if not exists law_contract_reviews_ws_idx on law_contract_reviews (workspace_id, created_at desc);
 create index if not exists law_contract_reviews_doc_idx on law_contract_reviews (document_id);
 create index if not exists law_contract_reviews_case_idx on law_contract_reviews (workspace_id, case_id);
+
+-- A case's AI work products that are rebuilt on demand, one current version
+-- per kind: the chronology of events and the hearing briefing.
+create table if not exists law_case_ai (
+  id uuid primary key default gen_random_uuid(),
+  workspace_id uuid not null references workspaces (id) on delete cascade,
+  case_id uuid not null,
+  kind text not null check (kind in ('chronology', 'briefing')),
+  status text not null default 'pending' check (status in ('pending', 'ready', 'failed')),
+  result jsonb,
+  error text,
+  created_by text references "user" (id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (case_id, kind),
+  foreign key (workspace_id, case_id) references law_cases (workspace_id, id) on delete cascade
+);
+create index if not exists law_case_ai_ws_idx on law_case_ai (workspace_id);

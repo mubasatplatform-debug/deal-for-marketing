@@ -7,6 +7,7 @@ import {
   ChevronsUpDown,
   CreditCard,
   FilePenLine,
+  FileSearch,
   Landmark,
   KeyRound,
   LayoutDashboard,
@@ -61,6 +62,7 @@ const MAIN: NavEntry[] = [
   { to: "/app/calls", label: "المكالمات", icon: PhoneCall },
   ...MODULES.map((m) => ({ to: `/app/${m.id}`, label: m.label, icon: m.icon })),
   { to: "/app/drafts", label: "المسودات", icon: FilePenLine, need: "draft.manage" },
+  { to: "/app/reviews", label: "مراجعة العقود", icon: FileSearch, need: "draft.manage" },
   { to: "/app/laws", label: "الأنظمة", icon: Landmark },
 ];
 

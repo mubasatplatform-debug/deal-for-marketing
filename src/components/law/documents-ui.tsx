@@ -5,6 +5,7 @@ import {
   FileArchive,
   FileImage,
   FileSpreadsheet,
+  FileSearch,
   FileText,
   FileVideo,
   Loader2,
@@ -20,6 +21,8 @@ import { useLawApp } from "@/components/law/app-context";
 import { Field } from "@/components/law/fields";
 import { dateAr } from "@/components/law/format";
 import { ClientPicker, ConfirmDialog, useCan, type PickedClient } from "@/components/law/kit";
+import { ReviewDialog } from "@/components/law/ai/review-dialog";
+import { isReviewable } from "@/components/law/ai/review-kinds";
 import { deleteDocument, LAW_MAX_FILES, LAW_MAX_FILE_BYTES } from "@/lib/law/documents";
 import type { DocumentRow } from "@/lib/law/documents-core";
 import { setDocumentShared } from "@/lib/law/portal";
@@ -55,10 +58,12 @@ export function DocumentRows({
   const { active } = useLawApp();
   const allowed = useCan();
   const [confirm, setConfirm] = useState<DocumentRow | null>(null);
+  const [reviewing, setReviewing] = useState<DocumentRow | null>(null);
   // Optimistic share state until the parent reloads.
   const [shared, setShared] = useState<Record<string, boolean>>({});
   const [sharing, setSharing] = useState<string | null>(null);
   const canShare = allowed("client.portal");
+  const canReview = allowed("draft.manage");
 
   async function toggleShare(d: DocumentRow, next: boolean) {
     setSharing(d.id);
@@ -123,6 +128,17 @@ export function DocumentRows({
                     <span className="hidden md:inline">مشاركة مع العميل</span>
                   </button>
                 ) : null}
+                {canReview && isReviewable(d.name) ? (
+                  <button
+                    type="button"
+                    aria-label="مراجعة العقد"
+                    title={`مراجعة العقد: ${d.name}`}
+                    onClick={() => setReviewing(d)}
+                    className="grid size-10 place-items-center sm:size-9 rounded-lg text-slate hover:bg-paper hover:text-pine-deep"
+                  >
+                    <FileSearch className="size-4" />
+                  </button>
+                ) : null}
                 {viewable ? (
                   <a
                     href={documentUrl(active.workspace.id, d.id, true)}
@@ -156,6 +172,9 @@ export function DocumentRows({
           );
         })}
       </ul>
+      {reviewing ? (
+        <ReviewDialog document={{ id: reviewing.id, name: reviewing.name }} onClose={() => setReviewing(null)} />
+      ) : null}
       {confirm ? (
         <ConfirmDialog
           title="حذف المستند؟"

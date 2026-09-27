@@ -63,6 +63,8 @@ import { Route as AppConsultationsIndexRouteImport } from './routes/app.consulta
 import { Route as AppConsultationsIdRouteImport } from './routes/app.consultations.$id'
 import { Route as AppDraftsIndexRouteImport } from './routes/app.drafts.index'
 import { Route as AppDraftsIdRouteImport } from './routes/app.drafts.$id'
+import { Route as AppReviewsIndexRouteImport } from './routes/app.reviews.index'
+import { Route as AppReviewsIdRouteImport } from './routes/app.reviews.$id'
 import { Route as AppInviteTokenRouteImport } from './routes/app_.invite.$token'
 import { Route as AppInvoicesIdRouteImport } from './routes/app_.invoices.$id'
 import { Route as ClientRequestsIdRouteImport } from './routes/client_.requests.$id'
@@ -73,6 +75,7 @@ import { Route as OSlugBookRouteImport } from './routes/o.$slug.book'
 import { Route as ApiLawDocumentsIdRouteImport } from './routes/api/law/documents.$id'
 import { Route as ApiLawDocumentsUploadRouteImport } from './routes/api/law/documents.upload'
 import { Route as ApiLawDraftsIdRouteImport } from './routes/api/law/drafts.$id'
+import { Route as ApiLawReviewsIdRouteImport } from './routes/api/law/reviews.$id'
 import { Route as ApiPortalDocumentsIdRouteImport } from './routes/api/portal/documents.$id'
 import { Route as ApiRequestsIdMessagesRouteImport } from './routes/api/requests.$id.messages'
 import { Route as ApiV1AdminRequestsRouteImport } from './routes/api/v1/admin/requests'
@@ -351,6 +354,16 @@ const AppDraftsIdRoute = AppDraftsIdRouteImport.update({
   path: '/drafts/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppReviewsIndexRoute = AppReviewsIndexRouteImport.update({
+  id: '/reviews/',
+  path: '/reviews/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReviewsIdRoute = AppReviewsIdRouteImport.update({
+  id: '/reviews/$id',
+  path: '/reviews/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppInviteTokenRoute = AppInviteTokenRouteImport.update({
   id: '/app_/invite/$token',
   path: '/app/invite/$token',
@@ -399,6 +412,11 @@ const ApiLawDocumentsUploadRoute = ApiLawDocumentsUploadRouteImport.update({
 const ApiLawDraftsIdRoute = ApiLawDraftsIdRouteImport.update({
   id: '/api/law/drafts/$id',
   path: '/api/law/drafts/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLawReviewsIdRoute = ApiLawReviewsIdRouteImport.update({
+  id: '/api/law/reviews/$id',
+  path: '/api/law/reviews/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPortalDocumentsIdRoute = ApiPortalDocumentsIdRouteImport.update({
@@ -488,6 +506,7 @@ export interface FileRoutesByFullPath {
   '/app/clients/$id': typeof AppClientsIdRoute
   '/app/consultations/$id': typeof AppConsultationsIdRoute
   '/app/drafts/$id': typeof AppDraftsIdRoute
+  '/app/reviews/$id': typeof AppReviewsIdRoute
   '/app/invite/$token': typeof AppInviteTokenRoute
   '/app/invoices/$id': typeof AppInvoicesIdRoute
   '/client/requests/$id': typeof ClientRequestsIdRoute
@@ -499,9 +518,11 @@ export interface FileRoutesByFullPath {
   '/app/clients/': typeof AppClientsIndexRoute
   '/app/consultations/': typeof AppConsultationsIndexRoute
   '/app/drafts/': typeof AppDraftsIndexRoute
+  '/app/reviews/': typeof AppReviewsIndexRoute
   '/api/law/documents/$id': typeof ApiLawDocumentsIdRoute
   '/api/law/documents/upload': typeof ApiLawDocumentsUploadRoute
   '/api/law/drafts/$id': typeof ApiLawDraftsIdRoute
+  '/api/law/reviews/$id': typeof ApiLawReviewsIdRoute
   '/api/portal/documents/$id': typeof ApiPortalDocumentsIdRoute
   '/api/requests/$id/messages': typeof ApiRequestsIdMessagesRoute
   '/api/v1/admin/requests': typeof ApiV1AdminRequestsRouteWithChildren
@@ -559,6 +580,7 @@ export interface FileRoutesByTo {
   '/app/clients/$id': typeof AppClientsIdRoute
   '/app/consultations/$id': typeof AppConsultationsIdRoute
   '/app/drafts/$id': typeof AppDraftsIdRoute
+  '/app/reviews/$id': typeof AppReviewsIdRoute
   '/app/invite/$token': typeof AppInviteTokenRoute
   '/app/invoices/$id': typeof AppInvoicesIdRoute
   '/client/requests/$id': typeof ClientRequestsIdRoute
@@ -570,9 +592,11 @@ export interface FileRoutesByTo {
   '/app/clients': typeof AppClientsIndexRoute
   '/app/consultations': typeof AppConsultationsIndexRoute
   '/app/drafts': typeof AppDraftsIndexRoute
+  '/app/reviews': typeof AppReviewsIndexRoute
   '/api/law/documents/$id': typeof ApiLawDocumentsIdRoute
   '/api/law/documents/upload': typeof ApiLawDocumentsUploadRoute
   '/api/law/drafts/$id': typeof ApiLawDraftsIdRoute
+  '/api/law/reviews/$id': typeof ApiLawReviewsIdRoute
   '/api/portal/documents/$id': typeof ApiPortalDocumentsIdRoute
   '/api/requests/$id/messages': typeof ApiRequestsIdMessagesRoute
   '/api/v1/admin/requests': typeof ApiV1AdminRequestsRouteWithChildren
@@ -633,6 +657,7 @@ export interface FileRoutesById {
   '/app/clients/$id': typeof AppClientsIdRoute
   '/app/consultations/$id': typeof AppConsultationsIdRoute
   '/app/drafts/$id': typeof AppDraftsIdRoute
+  '/app/reviews/$id': typeof AppReviewsIdRoute
   '/app_/invite/$token': typeof AppInviteTokenRoute
   '/app_/invoices/$id': typeof AppInvoicesIdRoute
   '/client_/requests/$id': typeof ClientRequestsIdRoute
@@ -644,9 +669,11 @@ export interface FileRoutesById {
   '/app/clients/': typeof AppClientsIndexRoute
   '/app/consultations/': typeof AppConsultationsIndexRoute
   '/app/drafts/': typeof AppDraftsIndexRoute
+  '/app/reviews/': typeof AppReviewsIndexRoute
   '/api/law/documents/$id': typeof ApiLawDocumentsIdRoute
   '/api/law/documents/upload': typeof ApiLawDocumentsUploadRoute
   '/api/law/drafts/$id': typeof ApiLawDraftsIdRoute
+  '/api/law/reviews/$id': typeof ApiLawReviewsIdRoute
   '/api/portal/documents/$id': typeof ApiPortalDocumentsIdRoute
   '/api/requests/$id/messages': typeof ApiRequestsIdMessagesRoute
   '/api/v1/admin/requests': typeof ApiV1AdminRequestsRouteWithChildren
@@ -708,6 +735,7 @@ export interface FileRouteTypes {
     | '/app/clients/$id'
     | '/app/consultations/$id'
     | '/app/drafts/$id'
+    | '/app/reviews/$id'
     | '/app/invite/$token'
     | '/app/invoices/$id'
     | '/client/requests/$id'
@@ -719,9 +747,11 @@ export interface FileRouteTypes {
     | '/app/clients/'
     | '/app/consultations/'
     | '/app/drafts/'
+    | '/app/reviews/'
     | '/api/law/documents/$id'
     | '/api/law/documents/upload'
     | '/api/law/drafts/$id'
+    | '/api/law/reviews/$id'
     | '/api/portal/documents/$id'
     | '/api/requests/$id/messages'
     | '/api/v1/admin/requests'
@@ -779,6 +809,7 @@ export interface FileRouteTypes {
     | '/app/clients/$id'
     | '/app/consultations/$id'
     | '/app/drafts/$id'
+    | '/app/reviews/$id'
     | '/app/invite/$token'
     | '/app/invoices/$id'
     | '/client/requests/$id'
@@ -790,9 +821,11 @@ export interface FileRouteTypes {
     | '/app/clients'
     | '/app/consultations'
     | '/app/drafts'
+    | '/app/reviews'
     | '/api/law/documents/$id'
     | '/api/law/documents/upload'
     | '/api/law/drafts/$id'
+    | '/api/law/reviews/$id'
     | '/api/portal/documents/$id'
     | '/api/requests/$id/messages'
     | '/api/v1/admin/requests'
@@ -852,6 +885,7 @@ export interface FileRouteTypes {
     | '/app/clients/$id'
     | '/app/consultations/$id'
     | '/app/drafts/$id'
+    | '/app/reviews/$id'
     | '/app_/invite/$token'
     | '/app_/invoices/$id'
     | '/client_/requests/$id'
@@ -863,9 +897,11 @@ export interface FileRouteTypes {
     | '/app/clients/'
     | '/app/consultations/'
     | '/app/drafts/'
+    | '/app/reviews/'
     | '/api/law/documents/$id'
     | '/api/law/documents/upload'
     | '/api/law/drafts/$id'
+    | '/api/law/reviews/$id'
     | '/api/portal/documents/$id'
     | '/api/requests/$id/messages'
     | '/api/v1/admin/requests'
@@ -916,6 +952,7 @@ export interface RootRouteChildren {
   ApiLawDocumentsIdRoute: typeof ApiLawDocumentsIdRoute
   ApiLawDocumentsUploadRoute: typeof ApiLawDocumentsUploadRoute
   ApiLawDraftsIdRoute: typeof ApiLawDraftsIdRoute
+  ApiLawReviewsIdRoute: typeof ApiLawReviewsIdRoute
   ApiPortalDocumentsIdRoute: typeof ApiPortalDocumentsIdRoute
   ApiRequestsIdMessagesRoute: typeof ApiRequestsIdMessagesRoute
   ApiV1AdminRequestsRoute: typeof ApiV1AdminRequestsRouteWithChildren
@@ -1303,6 +1340,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDraftsIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/reviews/': {
+      id: '/app/reviews/'
+      path: '/reviews'
+      fullPath: '/app/reviews/'
+      preLoaderRoute: typeof AppReviewsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/reviews/$id': {
+      id: '/app/reviews/$id'
+      path: '/reviews/$id'
+      fullPath: '/app/reviews/$id'
+      preLoaderRoute: typeof AppReviewsIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app_/invite/$token': {
       id: '/app_/invite/$token'
       path: '/app/invite/$token'
@@ -1371,6 +1422,13 @@ declare module '@tanstack/react-router' {
       path: '/api/law/drafts/$id'
       fullPath: '/api/law/drafts/$id'
       preLoaderRoute: typeof ApiLawDraftsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/law/reviews/$id': {
+      id: '/api/law/reviews/$id'
+      path: '/api/law/reviews/$id'
+      fullPath: '/api/law/reviews/$id'
+      preLoaderRoute: typeof ApiLawReviewsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/portal/documents/$id': {
@@ -1444,10 +1502,12 @@ interface AppRouteChildren {
   AppClientsIdRoute: typeof AppClientsIdRoute
   AppConsultationsIdRoute: typeof AppConsultationsIdRoute
   AppDraftsIdRoute: typeof AppDraftsIdRoute
+  AppReviewsIdRoute: typeof AppReviewsIdRoute
   AppCasesIndexRoute: typeof AppCasesIndexRoute
   AppClientsIndexRoute: typeof AppClientsIndexRoute
   AppConsultationsIndexRoute: typeof AppConsultationsIndexRoute
   AppDraftsIndexRoute: typeof AppDraftsIndexRoute
+  AppReviewsIndexRoute: typeof AppReviewsIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -1469,10 +1529,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppClientsIdRoute: AppClientsIdRoute,
   AppConsultationsIdRoute: AppConsultationsIdRoute,
   AppDraftsIdRoute: AppDraftsIdRoute,
+  AppReviewsIdRoute: AppReviewsIdRoute,
   AppCasesIndexRoute: AppCasesIndexRoute,
   AppClientsIndexRoute: AppClientsIndexRoute,
   AppConsultationsIndexRoute: AppConsultationsIndexRoute,
   AppDraftsIndexRoute: AppDraftsIndexRoute,
+  AppReviewsIndexRoute: AppReviewsIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -1553,6 +1615,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiLawDocumentsIdRoute: ApiLawDocumentsIdRoute,
   ApiLawDocumentsUploadRoute: ApiLawDocumentsUploadRoute,
   ApiLawDraftsIdRoute: ApiLawDraftsIdRoute,
+  ApiLawReviewsIdRoute: ApiLawReviewsIdRoute,
   ApiPortalDocumentsIdRoute: ApiPortalDocumentsIdRoute,
   ApiRequestsIdMessagesRoute: ApiRequestsIdMessagesRoute,
   ApiV1AdminRequestsRoute: ApiV1AdminRequestsRouteWithChildren,

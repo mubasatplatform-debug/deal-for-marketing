@@ -106,3 +106,17 @@ export function reviewInBackground(access: WorkspaceAccess, id: string): void {
     await runReviewCore(sql, access, id, { complete: reviewCompleter, read: documentReader(access.workspace.id) });
   })();
 }
+
+/** Case chronology (JSON) and hearing briefing (text), built in the background. */
+export function caseAiInBackground(access: WorkspaceAccess, caseId: string, kind: "chronology" | "briefing"): void {
+  void (async () => {
+    const sql = await sqlTag();
+    const { runCaseAiCore } = await import("./case-ai-core");
+    await runCaseAiCore(sql, access, caseId, kind, {
+      complete: (m) => aiComplete(m, { maxTokens: 6000, timeoutMs: 170_000, temperature: 0.2 }),
+      completeJson: (m) => aiComplete(m, { maxTokens: 6000, timeoutMs: 170_000, temperature: 0, json: true }),
+      read: documentReader(access.workspace.id),
+      needsOcr,
+    });
+  })();
+}
