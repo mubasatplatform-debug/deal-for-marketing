@@ -6,6 +6,7 @@ import {
   Check,
   ChevronsUpDown,
   CreditCard,
+  FilePenLine,
   KeyRound,
   LayoutDashboard,
   LockKeyhole,
@@ -58,6 +59,7 @@ const MAIN: NavEntry[] = [
   { to: "/app/inbox", label: "التواصل", icon: InboxNavIcon },
   { to: "/app/calls", label: "المكالمات", icon: PhoneCall },
   ...MODULES.map((m) => ({ to: `/app/${m.id}`, label: m.label, icon: m.icon })),
+  { to: "/app/drafts", label: "المسودات", icon: FilePenLine, need: "draft.manage" },
 ];
 
 const OFFICE: NavEntry[] = [
@@ -220,7 +222,7 @@ function Sidebar({
 
       <nav aria-label="أقسام المكتب" className="mt-6 flex-1 overflow-y-auto px-3">
         <ul className="space-y-0.5">
-          {MAIN.map((item) => (
+          {MAIN.filter((item) => !item.need || can(active.role, item.need)).map((item) => (
             <NavRow key={item.to} item={item} current={isActive(item.to)} />
           ))}
         </ul>

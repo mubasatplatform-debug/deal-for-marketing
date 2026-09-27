@@ -198,6 +198,17 @@ export async function uploadDocumentsRoute(request: Request): Promise<Response> 
       return fail(500, "internal", "تعذّر حفظ الملف. حاول مرة أخرى.");
     }
   }
+  // Read the new files' text in the background, so questions about them
+  // («اسأل ملفات القضية») find it ready. Only for offices with AI.
+  try {
+    const { planHas } = await import("@/lib/saas/plans");
+    if (ids.length && planHas(a.workspace.plan, "aiDrafting") && process.env.LAW_AGENT_URL?.trim()) {
+      const { queueReading } = await import("./ai/ai.server");
+      queueReading(a.workspace.id, ids);
+    }
+  } catch (err) {
+    console.error("[law] queueing document reading failed:", err);
+  }
   return reply(201, { ok: true, ids });
 }
 

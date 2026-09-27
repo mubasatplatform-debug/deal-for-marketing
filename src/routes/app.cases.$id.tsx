@@ -13,6 +13,7 @@ import {
   Pencil,
   Plus,
   Save,
+  Sparkles,
   Trash2,
   Upload,
   Wallet,
@@ -21,6 +22,9 @@ import { toast } from "sonner";
 import { Button, Card, EmptyState, Pill } from "@/components/dash/ui";
 import { Dialog } from "@/components/keys/dialog";
 import { useLawApp } from "@/components/law/app-context";
+import { DraftDialog } from "@/components/law/ai/draft-dialog";
+import { FileDraftsCard } from "@/components/law/ai/drafts-ui";
+import { FilesAiPanel } from "@/components/law/ai/files-ai-panel";
 import { AppointmentFormDialog } from "@/components/law/appointment-form";
 import { CaseFormDialog } from "@/components/law/case-form";
 import { DocumentRows, UploadDialog } from "@/components/law/documents-ui";
@@ -64,7 +68,7 @@ function CasePage() {
   const allowed = useCan();
   const [tab, setTab] = useState<Tab>("hearings");
   const [dialog, setDialog] = useState<
-    null | "edit" | "hearing" | "task" | "upload" | "payment" | "delete" | "appointment" | { hearing: HearingRow }
+    null | "edit" | "hearing" | "task" | "upload" | "payment" | "delete" | "appointment" | "draft" | { hearing: HearingRow }
   >(null);
   const [moving, setMoving] = useState<CaseStage | null>(null);
   const res = useLoad(() => getCase({ data: { workspaceId: active.workspace.id, id } }), [active.workspace.id, id]);
@@ -130,6 +134,11 @@ function CasePage() {
           <h1 className="mt-1.5 text-[22px] leading-snug font-extrabold md:text-[26px]">{k.title}</h1>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
+          {allowed("draft.manage") ? (
+            <Button icon={Sparkles} variant="primary" onClick={() => setDialog("draft")}>
+              صياغة مستند
+            </Button>
+          ) : null}
           {allowed("case.edit") ? (
             <Button icon={Pencil} onClick={() => setDialog("edit")}>
               تعديل
@@ -390,6 +399,18 @@ function CasePage() {
         </Card>
       </div>
 
+      <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <div className="min-w-0 xl:col-span-2">
+          <FilesAiPanel key={k.id} caseId={k.id} />
+        </div>
+        <div className="min-w-0 xl:col-span-1">
+          <FileDraftsCard caseId={k.id} onNew={allowed("draft.manage") ? () => setDialog("draft") : undefined} />
+        </div>
+      </div>
+
+      {dialog === "draft" ? (
+        <DraftDialog caseId={k.id} subject={k.title} onClose={() => setDialog(null)} />
+      ) : null}
       {dialog === "edit" ? (
         <CaseFormDialog
           kase={k}

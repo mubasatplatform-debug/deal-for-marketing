@@ -11,12 +11,16 @@ import {
   MessageCircle,
   Pencil,
   Scale,
+  Sparkles,
   Trash2,
   Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, Button, Card, EmptyState, Pill } from "@/components/dash/ui";
 import { useLawApp } from "@/components/law/app-context";
+import { DraftDialog } from "@/components/law/ai/draft-dialog";
+import { FileDraftsCard } from "@/components/law/ai/drafts-ui";
+import { FilesAiPanel } from "@/components/law/ai/files-ai-panel";
 import { AppointmentFormDialog } from "@/components/law/appointment-form";
 import { CaseFormDialog } from "@/components/law/case-form";
 import { ClientFormDialog } from "@/components/law/client-form";
@@ -42,7 +46,7 @@ function ClientProfile() {
   const navigate = useNavigate();
   const allowed = useCan();
   const [tab, setTab] = useState<Tab>("cases");
-  const [dialog, setDialog] = useState<null | "edit" | "case" | "appointment" | "upload" | "delete">(null);
+  const [dialog, setDialog] = useState<null | "edit" | "case" | "appointment" | "upload" | "delete" | "draft">(null);
   const res = useLoad(() => getClient({ data: { workspaceId: active.workspace.id, id } }), [active.workspace.id, id]);
   const p = res.data;
 
@@ -156,7 +160,7 @@ function ClientProfile() {
         </div>
 
         <div className="space-y-4 xl:col-span-2">
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 2xl:grid-cols-4">
             {allowed("case.create") ? (
               <QuickAction icon={Scale} label="قضية جديدة" onClick={() => setDialog("case")} />
             ) : null}
@@ -165,6 +169,9 @@ function ClientProfile() {
             ) : null}
             {allowed("document.upload") ? (
               <QuickAction icon={Upload} label="رفع مستند" onClick={() => setDialog("upload")} />
+            ) : null}
+            {allowed("draft.manage") ? (
+              <QuickAction icon={Sparkles} label="صياغة مستند" onClick={() => setDialog("draft")} />
             ) : null}
           </div>
           <Card className="overflow-hidden">
@@ -252,8 +259,12 @@ function ClientProfile() {
               />
             ) : null}
           </Card>
+          <FilesAiPanel key={c.id} clientId={c.id} />
+          <FileDraftsCard clientId={c.id} onNew={allowed("draft.manage") ? () => setDialog("draft") : undefined} />
         </div>
       </div>
+
+      {dialog === "draft" ? <DraftDialog clientId={c.id} subject={c.name} onClose={() => setDialog(null)} /> : null}
 
       {dialog === "edit" ? (
         <ClientFormDialog
