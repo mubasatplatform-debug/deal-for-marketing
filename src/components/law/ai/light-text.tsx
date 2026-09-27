@@ -58,7 +58,7 @@ function parse(src: string): Block[] {
   return out;
 }
 
-const CITE_RE = /\[\s*م\s*[0-9٠-٩]+[^\]\n]{0,60}\]/;
+const CITE_RE = /\[\s*[من]\s*[0-9٠-٩]+[^\]\n]{0,60}\]/;
 const INLINE_RE = new RegExp(`\\*\\*([^*]+?)\\*\\*|${CITE_RE.source}`, "g");
 
 function clean(text: string): string {

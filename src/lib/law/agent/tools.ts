@@ -175,6 +175,29 @@ export const AGENT_TOOLS: AgentTool[] = [
     },
   }),
   tool({
+    name: "search_saudi_laws",
+    title: "بحث في الأنظمة",
+    description:
+      "Search the Saudi legislation published by the Ministry of Justice (civil transactions, procedure, evidence, enforcement, personal status, commercial courts, bankruptcy, advocacy, arbitration, real estate registration, criminal procedure…) by keywords or a question. Returns articles with the law name, article number (seq), text and official link. Cite only articles returned here; never cite an article number from memory.",
+    input: { query: z.string().min(2).max(300), law: z.string().max(120).optional() },
+    run: async ({ sql }, a) => {
+      const { searchLawsCore } = await import("../ai/library-core.ts");
+      const hits = await searchLawsCore(sql, { query: a.query, law: a.law ?? null, limit: 8 });
+      return hits.map((h) => ({ law: h.law_name, status: h.law_status, article: h.seq, heading: h.heading, text: h.text, url: h.url }));
+    },
+  }),
+  tool({
+    name: "get_law_article",
+    title: "نص مادة نظامية",
+    description: "The exact text of one article of a Saudi law, e.g. law 'نظام الإثبات', article '23' or 'الثالثة والعشرون'.",
+    input: { law: z.string().min(2).max(120), article: z.string().min(1).max(80) },
+    run: async ({ sql }, a) => {
+      const { getArticleCore } = await import("../ai/library-core.ts");
+      const h = await getArticleCore(sql, a.law, a.article);
+      return h ? { law: h.law_name, status: h.law_status, article: h.seq, heading: h.heading, text: h.text, url: h.url } : { found: false };
+    },
+  }),
+  tool({
     name: "list_tasks",
     title: "المهام",
     description: "Tasks: scope 'mine' (assigned to me), 'today', 'overdue' or 'all'.",

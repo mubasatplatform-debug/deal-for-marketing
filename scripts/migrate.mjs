@@ -101,6 +101,16 @@ async function main() {
       count += 1;
     }
     console.log(count ? `[migrate] done — ${count} migration(s) applied.` : "[migrate] up to date.");
+
+    // «مكتبة الأنظمة»: (re)load the shared legislation library when its data
+    // file changed. A failure here must not block the deploy.
+    try {
+      const { seedLaws } = await import("./seed-laws.mjs");
+      const r = await seedLaws(client, { log: (m) => console.log(m.replace("[laws]", "[migrate]")) });
+      if (r !== "loaded") console.log(`[migrate] laws library ${r}.`);
+    } catch (err) {
+      console.error("[migrate] loading the laws library failed:", err?.message || err);
+    }
   } finally {
     client.release();
     await pool.end();

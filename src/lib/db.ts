@@ -60,6 +60,7 @@ const globalRef = globalThis as typeof globalThis & {
   __pgSqlPromise__?: Promise<Sql>;
   __pgliteInstance__?: Promise<import("@electric-sql/pglite").PGlite>;
   __pgliteMigrateChain__?: Promise<void>;
+  __pgliteLawsSeed__?: Promise<void>;
 };
 
 /**
@@ -172,6 +173,21 @@ async function createPgliteSql(): Promise<Sql> {
     .then(migrate);
   globalRef.__pgliteMigrateChain__ = pass;
   await pass;
+
+  // «مكتبة الأنظمة» in local runs: load the legislation library once per
+  // process, in the background (a few seconds), inside one transaction.
+  globalRef.__pgliteLawsSeed__ ??= (async () => {
+    const { seedLaws } = await import("../../scripts/seed-laws.mjs");
+    await pg.transaction(async (tx) => {
+      await seedLaws(
+        {
+          query: async (text: string, params?: unknown[]) =>
+            /^(begin|commit|rollback)$/i.test(text.trim()) ? { rows: [] } : tx.query(text, params),
+        },
+        { log: (m: string) => console.log(m) },
+      );
+    });
+  })().catch((err) => console.error("[laws] loading the library into PGLite failed:", err));
 
   return toSql(async <T>(text: string, params: unknown[]) => {
     const result = await pg.query<T>(text, params);
