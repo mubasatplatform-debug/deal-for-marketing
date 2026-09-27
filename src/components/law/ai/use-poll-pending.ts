@@ -1,8 +1,7 @@
 import { useEffect } from "react";
-import type { DraftRow } from "@/lib/law/ai/drafts-core";
 
-/** Reload while any draft is still being written. */
-export function usePollPending(rows: DraftRow[] | null, reload: () => Promise<void>, ms = 5000) {
+/** Reload while any row (a draft, a contract review…) is still being written. */
+export function usePollPending(rows: readonly { status: string }[] | null, reload: () => Promise<void>, ms = 5000) {
   const pending = rows?.some((d) => d.status === "pending") ?? false;
   useEffect(() => {
     if (!pending) return;

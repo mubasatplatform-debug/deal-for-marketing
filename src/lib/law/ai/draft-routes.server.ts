@@ -5,6 +5,7 @@ import { contentDisposition } from "@/lib/files/validate";
 import { resolveMembership, type SqlTag } from "@/lib/saas/tenancy-core";
 import { draftFileName, getDraftCore } from "./drafts-core";
 import { draftToDocx } from "./docx.server";
+import { getReviewCore, reviewReportBody } from "./review-core";
 
 /**
  * GET /api/law/drafts/<id>?ws=<office id> — the draft as a Word file, for
@@ -41,6 +42,41 @@ export async function downloadDraftRoute(request: Request, id: string): Promise<
       headers: {
         "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "Content-Disposition": contentDisposition(draftFileName(d.title), false),
+        "Content-Length": String(bytes.byteLength),
+        "Cache-Control": "private, no-store",
+        "X-Content-Type-Options": "nosniff",
+        "Content-Security-Policy": "default-src 'none'; sandbox",
+      },
+    });
+  } catch {
+    return plain(404, "Not found");
+  }
+}
+
+/** GET /api/law/reviews/<id>?ws=<office id> — a contract review report as a Word file. */
+export async function downloadReviewRoute(request: Request, id: string): Promise<Response> {
+  let userId: string;
+  try {
+    assertSameSiteRequest();
+    userId = await requireUserId();
+  } catch {
+    return plain(401, "Unauthorized");
+  }
+  const ws = new URL(request.url).searchParams.get("ws") ?? "";
+  const sql = (await getSql()) as unknown as SqlTag;
+  try {
+    const access = await resolveMembership(sql, userId, ws, "staff");
+    const { assertSecondFactor } = await import("@/lib/otp/otp.server");
+    await assertSecondFactor(userId);
+    const r = await getReviewCore(sql, access, id);
+    if (r.status !== "ready") return plain(409, "Not ready");
+    const title = `مراجعة عقد — ${r.document_name.replace(/\.[a-z0-9]+$/i, "")}`;
+    const bytes = await draftToDocx(reviewReportBody(r), { title, office: access.workspace.name });
+    return new Response(new Uint8Array(bytes), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "Content-Disposition": contentDisposition(draftFileName(title), false),
         "Content-Length": String(bytes.byteLength),
         "Cache-Control": "private, no-store",
         "X-Content-Type-Options": "nosniff",

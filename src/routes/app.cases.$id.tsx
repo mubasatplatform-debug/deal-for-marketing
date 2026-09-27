@@ -24,6 +24,9 @@ import { Dialog } from "@/components/keys/dialog";
 import { useLawApp } from "@/components/law/app-context";
 import { DraftDialog } from "@/components/law/ai/draft-dialog";
 import { FileDraftsCard } from "@/components/law/ai/drafts-ui";
+import { ReviewDialog } from "@/components/law/ai/review-dialog";
+import { FileReviewsCard } from "@/components/law/ai/reviews-ui";
+import { CaseAiPanel } from "@/components/law/ai/case-ai-panel";
 import { FilesAiPanel } from "@/components/law/ai/files-ai-panel";
 import { AppointmentFormDialog } from "@/components/law/appointment-form";
 import { CaseFormDialog } from "@/components/law/case-form";
@@ -68,7 +71,7 @@ function CasePage() {
   const allowed = useCan();
   const [tab, setTab] = useState<Tab>("hearings");
   const [dialog, setDialog] = useState<
-    null | "edit" | "hearing" | "task" | "upload" | "payment" | "delete" | "appointment" | "draft" | { hearing: HearingRow }
+    null | "edit" | "hearing" | "task" | "upload" | "payment" | "delete" | "appointment" | "draft" | "review" | { hearing: HearingRow }
   >(null);
   const [moving, setMoving] = useState<CaseStage | null>(null);
   const res = useLoad(() => getCase({ data: { workspaceId: active.workspace.id, id } }), [active.workspace.id, id]);
@@ -400,17 +403,22 @@ function CasePage() {
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <div className="min-w-0 xl:col-span-2">
+        <div className="min-w-0 space-y-4 xl:col-span-2">
           <FilesAiPanel key={k.id} caseId={k.id} />
+          {allowed("ai.documents", { write: false }) ? (
+            <CaseAiPanel key={`ai-${k.id}`} caseId={k.id} onTaskFiled={() => void res.reload()} />
+          ) : null}
         </div>
-        <div className="min-w-0 xl:col-span-1">
+        <div className="min-w-0 space-y-4 xl:col-span-1">
           <FileDraftsCard caseId={k.id} onNew={allowed("draft.manage") ? () => setDialog("draft") : undefined} />
+          <FileReviewsCard caseId={k.id} onNew={allowed("draft.manage") ? () => setDialog("review") : undefined} />
         </div>
       </div>
 
       {dialog === "draft" ? (
         <DraftDialog caseId={k.id} subject={k.title} onClose={() => setDialog(null)} />
       ) : null}
+      {dialog === "review" ? <ReviewDialog caseId={k.id} onClose={() => setDialog(null)} /> : null}
       {dialog === "edit" ? (
         <CaseFormDialog
           kase={k}

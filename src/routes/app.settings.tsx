@@ -1,6 +1,6 @@
 import { useEffect, useId, useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { BellRing, KeyRound, Loader2, ReceiptText, Save, ShieldCheck } from "lucide-react";
+import { BellRing, BookMarked, KeyRound, Loader2, ReceiptText, Save, ShieldCheck } from "lucide-react";
 import { buttonClass } from "@/components/dash/button-class";
 import { toast } from "sonner";
 import { Button, Card, CardHeader } from "@/components/dash/ui";
@@ -13,6 +13,7 @@ import { Field, SelectInput, TextInput } from "@/components/law/fields";
 import { CITIES, TEAM_SIZE_OPTIONS, toLatinDigits } from "@/components/law/office-options";
 import { dateAr } from "@/components/law/format";
 import { getReminderSettings, saveReminderSettings } from "@/lib/law/reminders";
+import { getOfficeAi, saveOfficeAi } from "@/lib/law/ai/reviews";
 import type { ReminderSettings } from "@/lib/law/reminders-core";
 import { TextArea, useLoad } from "@/components/law/kit";
 import { getTaxProfile, saveTaxProfile } from "@/lib/law/invoices";
@@ -176,6 +177,7 @@ function Settings() {
         </div>
       </div>
       {can(active.role, "settings.tax") ? <TaxSettingsCard readOnly={active.lifecycle.readOnly} /> : null}
+      {can(active.role, "draft.manage") ? <OfficeAiCard readOnly={active.lifecycle.readOnly} /> : null}
       <BookingSettingsCard />
       <div className="mt-6 grid gap-6">
         <Card className="flex flex-wrap items-center justify-between gap-3 p-5 md:p-6">
@@ -388,6 +390,130 @@ function TaxSettingsCard({ readOnly }: { readOnly: boolean }) {
                   {busy ? "جارٍ الحفظ…" : "حفظ بيانات الفوترة"}
                 </Button>
                 {!saved ? <span className="text-[13px] text-slate">لن تُصدر فواتير قبل حفظ هذه البيانات</span> : null}
+              </div>
+            ) : null}
+          </form>
+        )}
+      </Card>
+    </section>
+  );
+}
+
+/**
+ * «ملف المكتب للذكاء الاصطناعي» — the office's negotiation playbook (used by
+ * «مراجعة العقود») and house style (used by drafting). Admins edit; lawyers read.
+ */
+function OfficeAiCard({ readOnly }: { readOnly: boolean }) {
+  const { active } = useLawApp();
+  const uid = useId();
+  const res = useLoad(() => getOfficeAi({ data: { workspaceId: active.workspace.id } }), [active.workspace.id]);
+  const saved = res.data;
+  const [playbook, setPlaybook] = useState("");
+  const [style, setStyle] = useState("");
+  const [busy, setBusy] = useState(false);
+  const canEdit = Boolean(saved?.canEdit) && !readOnly;
+
+  useEffect(() => {
+    setPlaybook(saved?.playbook ?? "");
+    setStyle(saved?.house_style ?? "");
+  }, [saved]);
+
+  const dirty = playbook !== (saved?.playbook ?? "") || style !== (saved?.house_style ?? "");
+
+  async function save(e: FormEvent) {
+    e.preventDefault();
+    if (busy || !canEdit) return;
+    setBusy(true);
+    try {
+      await saveOfficeAi({ data: { workspaceId: active.workspace.id, playbook: playbook.trim(), houseStyle: style.trim() } });
+      toast.success("حُفظ ملف المكتب للذكاء الاصطناعي");
+      await res.reload();
+    } catch (err) {
+      toast.error(workspaceErrorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section id="office-ai" className="scroll-mt-20">
+      <h2 className="mt-10 mb-4 flex items-center gap-2 text-[15px] font-bold">
+        <BookMarked className="size-[18px] text-pine" aria-hidden="true" />
+        ملف المكتب للذكاء الاصطناعي
+      </h2>
+      <Card>
+        <CardHeader
+          title="مواقف المكتب وأسلوبه"
+          description={
+            canEdit
+              ? "يطبّقها المساعد في مراجعة العقود وصياغة المستندات، فتأتي النتائج على طريقة مكتبك."
+              : "يطبّقها المساعد في مراجعة العقود وصياغة المستندات. يعدّلها مالك المكتب أو المدير."
+          }
+        />
+        {res.error && !saved ? (
+          <p className="px-5 pt-4 pb-6 text-[13px] text-red-700 md:px-6">{res.error}</p>
+        ) : !saved ? (
+          <div className="m-5 h-48 animate-pulse rounded-xl bg-pine-50/40 md:m-6">
+            <span className="sr-only">جارٍ التحميل…</span>
+          </div>
+        ) : (
+          <form onSubmit={save} noValidate className="grid gap-6 px-5 pt-5 pb-6 md:px-6 lg:grid-cols-2">
+            <div className="min-w-0">
+              <Field
+                id={`${uid}-pb`}
+                label="دليل التفاوض"
+                optional
+                hint="المواقف التي يتخذها المكتب: سقف المسؤولية، مدد الدفع، الاختصاص والتحكيم، الشرط الجزائي، الإنهاء، السرية… يُطبَّق قبل الدليل الافتراضي عند مراجعة العقود."
+              >
+                <TextArea
+                  id={`${uid}-pb`}
+                  rows={10}
+                  maxLength={20000}
+                  value={playbook}
+                  readOnly={!canEdit}
+                  onChange={(e) => setPlaybook(e.target.value)}
+                  placeholder={"- لا نقبل التحكيم خارج الرياض.\n- سقف المسؤولية لا يتجاوز قيمة العقد.\n- مدة السداد لا تزيد على 45 يومًا."}
+                  className="min-h-56 read-only:bg-paper"
+                />
+              </Field>
+              <details className="mt-3 rounded-xl bg-paper px-4 ring-1 ring-line">
+                <summary className="flex min-h-11 cursor-pointer items-center text-[13px] font-semibold text-pine hover:text-pine-deep">
+                  عرض الدليل الافتراضي
+                </summary>
+                <p className="pb-2 text-[12.5px] text-slate">يطبّقه المساعد دائمًا بعد دليل مكتبك، فلا حاجة لتكراره.</p>
+                <pre className="max-h-72 overflow-y-auto pb-4 font-dash text-[12.5px] leading-[1.9] break-words whitespace-pre-wrap text-pine-deep">
+                  {saved.defaultPlaybook}
+                </pre>
+              </details>
+            </div>
+            <div className="min-w-0">
+              <Field
+                id={`${uid}-hs`}
+                label="أسلوب الصياغة"
+                optional
+                hint="أسلوب مسودات المكتب: الافتتاحية والختام، المصطلحات المفضّلة، طريقة الترقيم والتنسيق، وصفة الموقّع."
+              >
+                <TextArea
+                  id={`${uid}-hs`}
+                  rows={10}
+                  maxLength={8000}
+                  value={style}
+                  readOnly={!canEdit}
+                  onChange={(e) => setStyle(e.target.value)}
+                  placeholder={"- نبدأ الخطابات بـ«تحية طيبة وبعد».\n- نستخدم «الموكل» لا «العميل».\n- نختم بـ«وتقبلوا وافر الاحترام»."}
+                  className="min-h-56 read-only:bg-paper"
+                />
+              </Field>
+            </div>
+            {canEdit ? (
+              <div className="flex flex-wrap items-center gap-3 lg:col-span-2">
+                <Button type="submit" variant="primary" disabled={busy || !dirty} icon={busy ? Loader2 : Save}>
+                  {busy ? "جارٍ الحفظ…" : "حفظ ملف المكتب"}
+                </Button>
+                {dirty ? <span className="text-[13px] text-slate">لديك تغييرات غير محفوظة</span> : null}
+                {!dirty && saved.updated_at ? (
+                  <span className="text-[13px] text-slate">آخر تحديث {dateAr(saved.updated_at)}</span>
+                ) : null}
               </div>
             ) : null}
           </form>

@@ -282,6 +282,11 @@ export async function draftContextCore(sql: SqlTag, access: WorkspaceAccess, dra
     }
     if (parts.length) lines.push("", "المستندات (بيانات):", ...parts);
   }
+  // The office's own drafting conventions (its practice profile).
+  const [profile] = await sql<{ house_style: string }>`
+    select house_style from law_office_ai where workspace_id = ${ws}
+  `;
+  if (profile?.house_style?.trim()) lines.push("", "أسلوب المكتب في الصياغة (التزم به):", profile.house_style.trim());
   // The library's articles most related to this draft, so citations are
   // quoted from the official text rather than from memory.
   const topic = [DRAFT_KIND_LABELS[draft.kind], draft.instructions, lines.filter((l) => l.startsWith("- ")).join(" ")]
