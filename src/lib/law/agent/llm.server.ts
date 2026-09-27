@@ -66,7 +66,7 @@ export type AiMessage = {
  */
 export async function aiComplete(
   messages: AiMessage[],
-  opts: { maxTokens: number; timeoutMs: number; temperature?: number },
+  opts: { maxTokens: number; timeoutMs: number; temperature?: number; json?: boolean },
 ): Promise<string> {
   const base = process.env.LAW_AGENT_URL?.trim();
   const token = process.env.LAW_AGENT_TOKEN?.trim();
@@ -79,7 +79,12 @@ export async function aiComplete(
   const res = await fetch(`${base.replace(/\/+$/, "")}/chat/completions`, {
     method: "POST",
     headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
-    body: JSON.stringify({ messages, temperature: opts.temperature ?? 0.2, max_tokens: opts.maxTokens }),
+    body: JSON.stringify({
+      messages,
+      temperature: opts.temperature ?? 0.2,
+      max_tokens: opts.maxTokens,
+      ...(opts.json ? { response_format: { type: "json_object" } } : {}),
+    }),
     signal: AbortSignal.timeout(opts.timeoutMs),
   }).catch((err) => {
     console.error("[law-agent] long completion failed:", err);

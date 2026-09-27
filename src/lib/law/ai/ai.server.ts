@@ -4,6 +4,7 @@ import type { SqlTag, WorkspaceAccess } from "@/lib/saas/tenancy-core";
 import { aiComplete } from "../agent/llm.server";
 import { saveTextCore, unreadDocumentsCore, type DocumentReader } from "./docai-core";
 import { writeDraftCore } from "./drafts-core";
+import { runReviewCore } from "./review-core";
 import { extractDocumentText } from "./extract.server";
 
 /**
@@ -92,5 +93,16 @@ export function writeDraftInBackground(access: WorkspaceAccess, id: string): voi
   void (async () => {
     const sql = await sqlTag();
     await writeDraftCore(sql, access, id, draftCompleter);
+  })();
+}
+
+/** Contract reviews: long structured output (JSON), written in the background. */
+const reviewCompleter = (messages: { role: "system" | "user"; content: string }[]) =>
+  aiComplete(messages, { maxTokens: 8000, timeoutMs: 170_000, temperature: 0.1, json: true });
+
+export function reviewInBackground(access: WorkspaceAccess, id: string): void {
+  void (async () => {
+    const sql = await sqlTag();
+    await runReviewCore(sql, access, id, { complete: reviewCompleter, read: documentReader(access.workspace.id) });
   })();
 }

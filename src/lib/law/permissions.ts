@@ -68,6 +68,8 @@ export const PERMISSIONS = {
   // sees the documents); writing legal drafts is the lawyer's work.
   "ai.documents": "staff",
   "draft.manage": "lawyer",
+  // The office's negotiation playbook and house style every AI skill reads.
+  "settings.ai": "admin",
 
   "settings.booking": "admin",
   "settings.tax": "admin",
