@@ -149,11 +149,11 @@ function ProductTab({ caseId, kind }: { caseId: string; kind: CaseAiKind }) {
 }
 
 /** A [مN صP] marker as links to the file at that page. */
-function SourceLinks({ raw, sources, wsId, k }: { raw: string; sources: Source[]; wsId: string; k: string }): ReactNode {
+function SourceLinks({ raw, sources, wsId }: { raw: string; sources: Source[]; wsId: string }): ReactNode {
   const refs = parseMarker(raw);
   if (!refs.length) return raw;
   return (
-    <span key={k} className="inline-flex flex-wrap gap-1 align-baseline">
+    <span className="inline-flex flex-wrap gap-1 align-baseline">
       {refs.map((r, i) => {
         const s = sources.find((x) => x.n === r.n);
         if (!s) return null;
@@ -194,7 +194,7 @@ function ChronologyView({ result, wsId }: { result: ChronologyResult; wsId: stri
             {e.source ? (
               <p className="mt-0.5 text-[12px] text-slate">
                 المصدر:{" "}
-                {parseMarker(e.source).length ? <SourceLinks raw={e.source} sources={result.sources} wsId={wsId} k="s" /> : e.source}
+                {parseMarker(e.source).length ? <SourceLinks raw={e.source} sources={result.sources} wsId={wsId} /> : e.source}
               </p>
             ) : null}
           </li>
@@ -241,13 +241,13 @@ function BriefingView({ result, wsId }: { result: BriefingResult; wsId: string }
               </span>
             );
           }
-          return <SourceLinks raw={raw} sources={result.sources} wsId={wsId} k={key} />;
+          return <SourceLinks key={key} raw={raw} sources={result.sources} wsId={wsId} />;
         }}
       />
       {result.articles.length ? (
         <details className="mt-5 rounded-xl border border-line">
           <summary className="min-h-11 cursor-pointer px-4 py-3 text-[13px] font-bold text-pine-deep">
-            المواد النظامية المعروضة على المساعد ({result.articles.length.toLocaleString("ar-SA")})
+            المواد النظامية المعروضة على المساعد ({result.articles.length})
           </summary>
           <ul className="space-y-3 border-t border-line px-4 py-3">
             {result.articles.map((a) => (
@@ -362,7 +362,7 @@ function DeadlinesTab({ caseId, canFile, onFiled }: { caseId: string; canFile: b
             }}
             className="size-4 accent-[var(--color-pine)]"
           />
-          حكم في مسألة مستعجلة ({rule.urgentDays.toLocaleString("ar-SA")} أيام بدل {rule.days.toLocaleString("ar-SA")})
+          حكم في مسألة مستعجلة ({rule.urgentDays} أيام بدل {rule.days})
         </label>
       ) : null}
       <div className="mt-4 flex justify-end">
@@ -382,14 +382,14 @@ function DeadlinesTab({ caseId, canFile, onFiled }: { caseId: string; canFile: b
             )}
           >
             {preview.daysLeft < 0
-              ? `انقضت المهلة منذ ${Math.abs(preview.daysLeft).toLocaleString("ar-SA")} يومًا`
+              ? `انقضت المهلة منذ ${Math.abs(preview.daysLeft)} يومًا`
               : preview.daysLeft === 0
                 ? "اليوم آخر يوم"
-                : `باقٍ ${preview.daysLeft.toLocaleString("ar-SA")} يومًا`}
+                : `باقٍ ${preview.daysLeft} يومًا`}
           </p>
           <ul className="mt-3 list-disc space-y-1 ps-5 text-[13px] leading-[1.8] text-pine-deep marker:text-pine/60">
             <li>
-              المدة {preview.days.toLocaleString("ar-SA")} يومًا{preview.urgent ? " (مسألة مستعجلة)" : ""} — {preview.rule.law}، المادة ({preview.rule.article}).
+              المدة {preview.days} يومًا{preview.urgent ? " (مسألة مستعجلة)" : ""} — {preview.rule.law}، المادة ({preview.rule.article}).
             </li>
             <li>لا يُحسب يوم البداية ({dateAr(preview.start)}).</li>
             {preview.movedForWeekend ? (

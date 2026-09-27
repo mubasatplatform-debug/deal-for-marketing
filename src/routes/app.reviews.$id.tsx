@@ -325,7 +325,7 @@ function ReviewReport({ res, pageUrl }: { res: ReviewResult; pageUrl: (page: num
     const el = document.getElementById(`art-${n}`);
     if (!el) return;
     setOpenArts((s) => new Set(s).add(n));
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
     setFlash(n);
     if (flashTimer.current) clearTimeout(flashTimer.current);
     flashTimer.current = setTimeout(() => setFlash(null), 1800);
@@ -649,8 +649,9 @@ function ArticleItem({
   flash: boolean;
   onToggle: () => void;
 }) {
-  const long = a.text.length > 300;
-  const text = open || !long ? a.text : `${a.text.slice(0, 300)}…`;
+  const full = a.text.replace(/\n\s*\n+/g, "\n").trim();
+  const long = full.length > 300;
+  const text = open || !long ? full : `${full.slice(0, 300)}…`;
   return (
     <li
       id={`art-${a.n}`}

@@ -26,6 +26,7 @@ import { DraftDialog } from "@/components/law/ai/draft-dialog";
 import { FileDraftsCard } from "@/components/law/ai/drafts-ui";
 import { ReviewDialog } from "@/components/law/ai/review-dialog";
 import { FileReviewsCard } from "@/components/law/ai/reviews-ui";
+import { CaseAiPanel } from "@/components/law/ai/case-ai-panel";
 import { FilesAiPanel } from "@/components/law/ai/files-ai-panel";
 import { AppointmentFormDialog } from "@/components/law/appointment-form";
 import { CaseFormDialog } from "@/components/law/case-form";
@@ -402,8 +403,11 @@ function CasePage() {
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <div className="min-w-0 xl:col-span-2">
+        <div className="min-w-0 space-y-4 xl:col-span-2">
           <FilesAiPanel key={k.id} caseId={k.id} />
+          {allowed("ai.documents", { write: false }) ? (
+            <CaseAiPanel key={`ai-${k.id}`} caseId={k.id} onTaskFiled={() => void res.reload()} />
+          ) : null}
         </div>
         <div className="min-w-0 space-y-4 xl:col-span-1">
           <FileDraftsCard caseId={k.id} onNew={allowed("draft.manage") ? () => setDialog("draft") : undefined} />
