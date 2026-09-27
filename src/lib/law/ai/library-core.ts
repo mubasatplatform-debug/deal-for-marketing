@@ -84,7 +84,10 @@ export async function searchLawsCore(
   const tsq = terms.join(" | ");
   const rows = await sql.query<ArticleHit>(
     `select a.law_serial, l.name as law_name, l.status as law_status, l.url, a.ord, a.seq, a.heading, a.text,
-            ts_rank_cd(a.search, q) * (case when l.status = 'ملغي' then 0.3 else 1 end) as rank
+            ts_rank_cd(a.search, q)
+              * (case when l.status = 'ملغي' then 0.3 else 1 end)
+              -- Statutes first, their regulations next, guides and rules after.
+              * (case when l.type = 'نظام' then 1 when l.type = 'لائحة' then 0.8 else 0.6 end) as rank
      from law_library_articles a
      join law_library_laws l on l.serial = a.law_serial,
           to_tsquery('simple', $1) q

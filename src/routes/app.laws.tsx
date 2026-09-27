@@ -263,21 +263,46 @@ function AskPanel({ wsId, law }: { wsId: string; law: string }) {
                   );
                 }}
               />
-              {t.res.articles.length ? (
-                <>
-                  <p className="mt-5 text-[13px] font-bold text-pine-deep">المواد التي بُنيت عليها الإجابة</p>
-                  <ul className="mt-2 space-y-3">
-                    {t.res.articles.map((a) => (
-                      <ArticleCard key={`${a.law_serial}-${a.ord}`} a={a} n={i === 0 ? a.n : undefined} />
-                    ))}
-                  </ul>
-                </>
-              ) : null}
+              <Sources turn={t} anchors={i === 0} />
               <p className="mt-4 text-[12px] text-slate">إجابة آلية من نصوص المواد المعروضة فقط — تحقّق منها قبل الاستناد إليها.</p>
             </Card>
           </li>
         ))}
       </ol>
+    </>
+  );
+}
+
+/** The articles an answer cites first; the rest it was given, folded away. */
+function Sources({ turn, anchors }: { turn: Turn; anchors: boolean }) {
+  const [more, setMore] = useState(false);
+  const cited = new Set([...toLatinDigits(turn.res.answer).matchAll(/ن\s*(\d+)/g)].map((m) => Number(m[1])));
+  const primary = turn.res.articles.filter((a) => cited.has(a.n));
+  const rest = turn.res.articles.filter((a) => !cited.has(a.n));
+  if (!turn.res.articles.length) return null;
+  const list = primary.length ? primary : turn.res.articles;
+  return (
+    <>
+      <p className="mt-5 text-[13px] font-bold text-pine-deep">{primary.length ? "المواد التي استندت إليها الإجابة" : "المواد التي عُرضت على المساعد"}</p>
+      <ul className="mt-2 space-y-3">
+        {list.map((a) => (
+          <ArticleCard key={`${a.law_serial}-${a.ord}`} a={a} n={anchors ? a.n : undefined} />
+        ))}
+      </ul>
+      {primary.length && rest.length ? (
+        <>
+          <button type="button" onClick={() => setMore((v) => !v)} className="mt-3 min-h-9 text-[13px] font-semibold text-pine hover:underline">
+            {more ? "إخفاء المواد الأخرى" : `مواد أخرى بحث فيها المساعد (${rest.length.toLocaleString("ar-SA")})`}
+          </button>
+          {more ? (
+            <ul className="mt-2 space-y-3">
+              {rest.map((a) => (
+                <ArticleCard key={`${a.law_serial}-${a.ord}`} a={a} n={anchors ? a.n : undefined} />
+              ))}
+            </ul>
+          ) : null}
+        </>
+      ) : null}
     </>
   );
 }
